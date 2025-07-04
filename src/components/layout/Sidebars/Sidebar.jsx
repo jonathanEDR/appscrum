@@ -1,22 +1,16 @@
 import React from 'react';
-import { Home, FileText, UserCog, LogOut, Shield, History } from 'lucide-react';
+import { Home, UserCircle, FileText, Settings, LogOut } from 'lucide-react';
 
-function SuperAdminSidebar({ currentView, onViewChange, onLogout }) {
+function Sidebar({ currentView, onViewChange, onLogout }) {
   const menuItems = [
-    { id: 'dashboard', icon: Home, label: 'Gestión de Usuarios' },
-    { id: 'notes', icon: FileText, label: 'Gestión de Notas' },
-    { id: 'history', icon: History, label: 'Historial' },
-    { id: 'profile', icon: UserCog, label: 'Mi Perfil' },
+    // { id: 'notes', icon: FileText, label: 'Mis Notas' },
+    { id: 'profile', icon: UserCircle, label: 'Mi Perfil' },
   ];
 
   return (
     <div className="w-64 bg-white h-screen fixed left-0 top-0 shadow-lg">
       <div className="p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-          <Shield className="text-purple-600" size={24} />
-          Panel Super Admin
-        </h2>
-        
+        <h2 className="text-xl font-bold text-gray-800 mb-6">Panel de Usuario</h2>
         <nav className="space-y-2">
           {menuItems.map((item) => {
             const Icon = item.icon;
@@ -26,7 +20,7 @@ function SuperAdminSidebar({ currentView, onViewChange, onLogout }) {
                 onClick={() => onViewChange(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   currentView === item.id
-                    ? 'bg-purple-50 text-purple-600'
+                    ? 'bg-blue-50 text-blue-600'
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
@@ -38,7 +32,11 @@ function SuperAdminSidebar({ currentView, onViewChange, onLogout }) {
         </nav>
       </div>
       
-      <div className="absolute bottom-0 left-0 right-0 p-6">
+      {/* Separador */}
+      <div className="border-t border-gray-200 my-4"></div>
+      
+      {/* Botón de cerrar sesión */}
+      <div className="p-6">
         <button
           onClick={onLogout}
           className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-600 hover:bg-red-50 transition-colors"
@@ -51,4 +49,4 @@ function SuperAdminSidebar({ currentView, onViewChange, onLogout }) {
   );
 }
 
-export default SuperAdminSidebar;
+export default Sidebar;

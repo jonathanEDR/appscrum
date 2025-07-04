@@ -15,38 +15,67 @@ const ProfileManagement = ({ userRole }) => {
   });
   // Función para verificar si el usuario puede editar a otro usuario
   const canEditUser = (targetUser) => {
-    // Si el usuario actual es super_admin, puede editar cualquier usuario
-    if (userRole === 'super_admin') return true;
-    
-    // Si el usuario actual es admin, solo puede editar usuarios normales
-    if (userRole === 'admin') {
-      return targetUser.role === 'user';
-    }
-    
-    // Los usuarios normales no pueden editar a nadie
-    return false;
+    // Solo el super_admin puede editar cualquier usuario
+    return userRole === 'super_admin';
   };
 
+  const API_URL = import.meta.env.VITE_API_URL;
   const fetchUsers = async () => {
     try {
+      setLoading(true);
+      setError('');
+      
+      console.log('Fetching users...');
       const token = await getToken();
-      const response = await fetch(`http://localhost:5000/api/admin/users-profiles${searchTerm ? `?search=${searchTerm}` : ''}`, {
+      console.log('Token obtained:', !!token);
+      
+      const url = `${API_URL}/api/admin/users${searchTerm ? `?search=${searchTerm}` : ''}`;
+      console.log('Fetching from URL:', url);
+      
+      const response = await fetch(url, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
       
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
       if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users);
-        setError('');
+        const contentType = response.headers.get('content-type');
+        console.log('Content-Type:', contentType);
+        
+        if (contentType && contentType.includes('application/json')) {
+          const data = await response.json();
+          console.log('Data received:', data);
+          setUsers(data.users || []);
+          setError('');
+        } else {
+          const text = await response.text();
+          console.error('Received non-JSON response:', text);
+          throw new Error('El servidor devolvió una respuesta inválida (no JSON)');
+        }
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al cargar los usuarios');
+        let errorMessage = `Error del servidor: ${response.status} ${response.statusText}`;
+        try {
+          const contentType = response.headers.get('content-type');
+          if (contentType && contentType.includes('application/json')) {
+            const errorData = await response.json();
+            errorMessage = errorData.message || errorMessage;
+          } else {
+            const text = await response.text();
+            console.error('Error response (non-JSON):', text);
+          }
+        } catch (jsonError) {
+          console.error('Error parsing error response:', jsonError);
+        }
+        throw new Error(errorMessage);
       }
     } catch (error) {
+      console.error('Error fetching users:', error);
       setError('Error al cargar los usuarios: ' + error.message);
+      setUsers([]);
     } finally {
       setLoading(false);
     }
@@ -76,14 +105,16 @@ const ProfileManagement = ({ userRole }) => {
 
   const handleSaveProfile = async (userId) => {
     try {
-      const token = await getToken();      const response = await fetch(`http://localhost:5000/api/auth/update-profile/${userId}`, {
+      const token = await getToken();
+      const response = await fetch(`${API_URL}/api/auth/update-profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(editForm)
-      });      if (response.ok) {
+      });
+      if (response.ok) {
         const result = await response.json();
         setEditingUser(null);
         fetchUsers(); // Recargar la lista de usuarios
@@ -103,27 +134,36 @@ const ProfileManagement = ({ userRole }) => {
     fetchUsers();
   };
 
-  const handlePromoteToAdmin = async (userId) => {
-    if (!window.confirm('¿Estás seguro de que quieres promover este usuario a administrador?')) return;
-    
+  // Función para cambiar el rol de un usuario
+  const handlePromoteRole = async (userId, currentRole) => {
+    let newRole = '';
+    // Secuencia de roles
+    const roles = ['user', 'developers', 'scrum_master', 'product_owner', 'super_admin'];
+    const currentIndex = roles.indexOf(currentRole);
+    if (currentIndex === -1 || currentIndex === roles.length - 1) {
+      setError('No se puede promover más este usuario');
+      return;
+    }
+    newRole = roles[currentIndex + 1];
+    if (!window.confirm(`¿Estás seguro de que quieres cambiar el rol de este usuario a ${newRole}?`)) return;
     try {
       const token = await getToken();
-      const response = await fetch(`http://localhost:5000/api/admin/promote/${userId}`, {
-        method: 'POST',
+      const response = await fetch(`${API_URL}/api/admin/users/${userId}/role`, {
+        method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
-        }
+        },
+        body: JSON.stringify({ role: newRole })
       });
-
       if (response.ok) {
         fetchUsers();
-        setError('success:Usuario promovido exitosamente');
+        setError('success:Rol actualizado exitosamente');
       } else {
-        throw new Error('Error al promover usuario');
+        throw new Error('Error al cambiar el rol');
       }
     } catch (error) {
-      setError('Error al promover usuario: ' + error.message);
+      setError('Error al cambiar el rol: ' + error.message);
     }
   };
 
@@ -260,25 +300,26 @@ const ProfileManagement = ({ userRole }) => {
                     ) : (
                       <div className="flex justify-end gap-2">
                         {/* Mostrar botón de editar si el usuario actual puede editar al usuario */}
-                        {(userRole === 'super_admin' || (userRole === 'admin' && user.role === 'user')) && (
-                          <button
-                            onClick={() => handleEdit(user)}
-                            className="text-blue-600 hover:text-blue-900"
-                            title="Editar usuario"
-                          >
-                            <Edit2 size={18} />
-                          </button>
-                        )}
-                        
-                        {/* Mostrar botón de promover solo si el usuario actual es super_admin y el usuario objetivo no es super_admin */}
-                        {userRole === 'super_admin' && user.role !== 'super_admin' && (
-                          <button
-                            onClick={() => handlePromoteToAdmin(user._id)}
-                            className="text-yellow-600 hover:text-yellow-900"
-                            title="Promover a administrador"
-                          >
-                            <UserPlus size={18} />
-                          </button>
+                        {userRole === 'super_admin' && (
+                          <>
+                            <button
+                              onClick={() => handleEdit(user)}
+                              className="text-blue-600 hover:text-blue-900"
+                              title="Editar usuario"
+                            >
+                              <Edit2 size={18} />
+                            </button>
+                            {/* Botón para promover/cambiar rol */}
+                            {user.role !== 'super_admin' && (
+                              <button
+                                onClick={() => handlePromoteRole(user._id, user.role)}
+                                className="text-yellow-600 hover:text-yellow-900"
+                                title="Promover/Cambiar rol"
+                              >
+                                <UserPlus size={18} />
+                              </button>
+                            )}
+                          </>
                         )}
                       </div>
                     )}
