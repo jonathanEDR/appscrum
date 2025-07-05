@@ -25,6 +25,12 @@ import MyProfile from '../components/auth/MyProfile.jsx';
 // Páginas de gestión
 import CollaboratorsManagement from '../Pages/CollaboratorsManagement.jsx';
 
+// Componentes de Product Owner
+import Productos from '../components/ProductOwner/Productos.jsx';
+import ProductBacklog from '../components/ProductOwner/ProductBacklog.jsx';
+import Roadmap from '../components/ProductOwner/Roadmap.jsx';
+import Metricas from '../components/ProductOwner/Metricas.jsx';
+
 
 // Layout wrapper para páginas de autenticación
 const AuthLayout = ({ children }) => (
@@ -137,19 +143,19 @@ export const router = createBrowserRouter([
       },
       {
         path: 'productos',
-        element: <UnderConstruction module="Gestión de Productos" />,
+        element: <Productos />,
       },
       {
         path: 'backlog',
-        element: <UnderConstruction module="Product Backlog" />,
+        element: <ProductBacklog />,
       },
       {
         path: 'roadmap',
-        element: <UnderConstruction module="Roadmap" />,
+        element: <Roadmap />,
       },
       {
         path: 'metricas',
-        element: <UnderConstruction module="Métricas de Producto" />,
+        element: <Metricas />,
       },
     ],
   },

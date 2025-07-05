@@ -1,5 +1,8 @@
 // Configuración centralizada de la aplicación
 
+// URL base de la API
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
 // URLs y endpoints de la API
 export const API_CONFIG = {
   BASE_URL: '/api',
@@ -104,6 +107,7 @@ export const VALIDATION_CONFIG = {
 };
 
 export default {
+  API_URL,
   API_CONFIG,
   ROLES,
   ROLE_DASHBOARD_ROUTES,
