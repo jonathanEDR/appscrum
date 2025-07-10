@@ -10,7 +10,8 @@ import {
   Mail, 
   Shield,
   MoreVertical,
-  Filter
+  Filter,
+  X
 } from 'lucide-react';
 
 const CollaboratorsManagement = () => {
@@ -22,6 +23,11 @@ const CollaboratorsManagement = () => {
   const [roleFilter, setRoleFilter] = useState('all');
   const [showAddForm, setShowAddForm] = useState(false);
   const [selectedCollaborator, setSelectedCollaborator] = useState(null);
+  const [newCollaborator, setNewCollaborator] = useState({
+    email: '',
+    nombre_negocio: '',
+    role: 'user'
+  });
 
   const API_URL = import.meta.env.VITE_API_URL;
 
@@ -45,7 +51,7 @@ const CollaboratorsManagement = () => {
       if (searchTerm) params.append('search', searchTerm);
       if (roleFilter !== 'all') params.append('role', roleFilter);
       
-      const url = `${API_URL}/api/admin/users${params.toString() ? `?${params.toString()}` : ''}`;
+      const url = `${API_URL}/admin/users${params.toString() ? `?${params.toString()}` : ''}`;
       
       const response = await fetch(url, {
         headers: {
@@ -80,7 +86,7 @@ const CollaboratorsManagement = () => {
     
     try {
       const token = await getToken();
-      const response = await fetch(`${API_URL}/api/admin/users/${userId}/role`, {
+      const response = await fetch(`${API_URL}/admin/users/${userId}/role`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -98,6 +104,39 @@ const CollaboratorsManagement = () => {
       }
     } catch (error) {
       setError('Error al cambiar rol: ' + error.message);
+    }
+  };
+
+  const handleInviteCollaborator = async (e) => {
+    e.preventDefault();
+    
+    if (!newCollaborator.email || !newCollaborator.nombre_negocio) {
+      setError('Por favor completa todos los campos obligatorios');
+      return;
+    }
+
+    try {
+      const token = await getToken();
+      const response = await fetch(`${API_URL}/admin/users/invite`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newCollaborator)
+      });
+      
+      if (response.ok) {
+        setError('success:Invitación enviada exitosamente');
+        setNewCollaborator({ email: '', nombre_negocio: '', role: 'user' });
+        setShowAddForm(false);
+        fetchCollaborators();
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al enviar invitación');
+      }
+    } catch (error) {
+      setError('Error al invitar colaborador: ' + error.message);
     }
   };
 
@@ -298,6 +337,99 @@ const CollaboratorsManagement = () => {
           </div>
         )}
       </div>
+
+      {/* Modal para agregar colaborador */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-semibold text-gray-900">Invitar Colaborador</h3>
+              <button
+                onClick={() => {
+                  setShowAddForm(false);
+                  setNewCollaborator({ email: '', nombre_negocio: '', role: 'user' });
+                  setError('');
+                }}
+                className="text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                <X size={24} />
+              </button>
+            </div>
+            
+            <form onSubmit={handleInviteCollaborator} className="p-6">
+              <div className="space-y-4">
+                <div>
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                    Email *
+                  </label>
+                  <input
+                    type="email"
+                    id="email"
+                    required
+                    value={newCollaborator.email}
+                    onChange={(e) => setNewCollaborator(prev => ({ ...prev, email: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="colaborador@email.com"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="nombre_negocio" className="block text-sm font-medium text-gray-700 mb-1">
+                    Nombre *
+                  </label>
+                  <input
+                    type="text"
+                    id="nombre_negocio"
+                    required
+                    value={newCollaborator.nombre_negocio}
+                    onChange={(e) => setNewCollaborator(prev => ({ ...prev, nombre_negocio: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Nombre del colaborador"
+                  />
+                </div>
+                
+                <div>
+                  <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                    Rol
+                  </label>
+                  <select
+                    id="role"
+                    value={newCollaborator.role}
+                    onChange={(e) => setNewCollaborator(prev => ({ ...prev, role: e.target.value }))}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  >
+                    {roleOptions.map(role => (
+                      <option key={role.value} value={role.value}>
+                        {role.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex gap-3 mt-6">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAddForm(false);
+                    setNewCollaborator({ email: '', nombre_negocio: '', role: 'user' });
+                    setError('');
+                  }}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Enviar Invitación
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

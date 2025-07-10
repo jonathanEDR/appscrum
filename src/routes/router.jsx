@@ -31,6 +31,13 @@ import ProductBacklog from '../components/ProductOwner/ProductBacklog.jsx';
 import Roadmap from '../components/ProductOwner/Roadmap.jsx';
 import Metricas from '../components/ProductOwner/Metricas.jsx';
 
+// Componentes de Scrum Master
+import Impediments from '../components/ScrumMaster/Impediments.jsx';
+import Ceremonies from '../components/ScrumMaster/Ceremonies.jsx';
+import SprintManagement from '../components/ScrumMaster/SprintManagement.jsx';
+import TeamOverview from '../components/ScrumMaster/TeamOverview.jsx';
+import Metrics from '../components/ScrumMaster/Metrics.jsx';
+
 
 // Layout wrapper para páginas de autenticación
 const AuthLayout = ({ children }) => (
@@ -177,20 +184,24 @@ export const router = createBrowserRouter([
         element: <MyProfile />,
       },
       {
-        path: 'equipos',
-        element: <UnderConstruction module="Gestión de Equipos" />,
-      },
-      {
         path: 'sprints',
-        element: <UnderConstruction module="Gestión de Sprints" />,
-      },
-      {
-        path: 'ceremonias',
-        element: <UnderConstruction module="Ceremonias Scrum" />,
+        element: <SprintManagement />,
       },
       {
         path: 'impedimentos',
-        element: <UnderConstruction module="Gestión de Impedimentos" />,
+        element: <Impediments />,
+      },
+      {
+        path: 'ceremonias',
+        element: <Ceremonies />,
+      },
+      {
+        path: 'equipo',
+        element: <TeamOverview />,
+      },
+      {
+        path: 'metricas',
+        element: <Metrics />,
       },
     ],
   },

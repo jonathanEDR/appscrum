@@ -1,4 +1,5 @@
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRole } from '../../../context/RoleContext.jsx';
 import { useDashboardData } from '../../../hooks/useDashboardData.js';
 import { 
@@ -10,7 +11,9 @@ import {
   CheckCircle,
   Clock,
   MessageSquare,
-  Zap
+  Zap,
+  AlertTriangle,
+  Activity
 } from 'lucide-react';
 
 // Tarjeta de estadística
@@ -100,7 +103,12 @@ const TeamOverview = () => {
 
 // Dashboard específico para Scrum Master
 const ScrumMasterDashboard = () => {
+  const navigate = useNavigate();
   const { loading, error } = useDashboardData('scrum_master');
+
+  const handleNavigateToSection = (section) => {
+    navigate(`/scrum_master/${section}`);
+  };
 
   if (loading) {
     return (
@@ -176,31 +184,80 @@ const ScrumMasterDashboard = () => {
           <TeamOverview />
         </div>
 
-        {/* Acciones rápidas */}
-        <div className="bg-white rounded-lg shadow border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Acciones Rápidas</h3>
+        {/* Sidebar derecho */}
+        <div className="space-y-6">
+          {/* Alertas críticas */}
+          <div className="bg-white rounded-lg shadow border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                <AlertTriangle className="h-5 w-5 text-red-500" />
+                Alertas Críticas
+              </h3>
+            </div>
+            <div className="p-6">
+              <div className="space-y-3">
+                <div className="flex items-start gap-3 p-3 bg-red-50 rounded-lg">
+                  <div className="w-2 h-2 bg-red-500 rounded-full mt-2"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-red-900">Impedimento crítico</p>
+                    <p className="text-xs text-red-700">API externa no disponible desde hace 2 días</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-yellow-50 rounded-lg">
+                  <div className="w-2 h-2 bg-yellow-500 rounded-full mt-2"></div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-yellow-900">Sprint en riesgo</p>
+                    <p className="text-xs text-yellow-700">Progreso 25% por debajo de lo esperado</p>
+                  </div>
+                </div>
+              </div>
+              <button 
+                onClick={() => handleNavigateToSection('impedimentos')}
+                className="w-full mt-4 text-sm text-blue-600 hover:text-blue-700 font-medium"
+              >
+                Ver todos los impedimentos →
+              </button>
+            </div>
           </div>
-          <div className="p-6 space-y-4">
-            <button className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 transition-colors">
-              <Target className="h-5 w-5 mr-2" />
-              Sprint Planning
-            </button>
-            
-            <button className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              <MessageSquare className="h-5 w-5 mr-2" />
-              Daily Standup
-            </button>
 
-            <button className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              <BarChart3 className="h-5 w-5 mr-2" />
-              Sprint Review
-            </button>
+          {/* Acciones rápidas */}
+          <div className="bg-white rounded-lg shadow border border-gray-200">
+            <div className="px-6 py-4 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">Acciones Rápidas</h3>
+            </div>
+            <div className="p-6 space-y-4">
+              <button 
+                onClick={() => handleNavigateToSection('sprints')}
+                className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-600 hover:bg-orange-700 transition-colors"
+              >
+                <Target className="h-5 w-5 mr-2" />
+                Sprint Planning
+              </button>
+              
+              <button 
+                onClick={() => handleNavigateToSection('ceremonias')}
+                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <MessageSquare className="h-5 w-5 mr-2" />
+                Daily Standup
+              </button>
 
-            <button className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors">
-              <Users className="h-5 w-5 mr-2" />
-              Retrospectiva
-            </button>
+              <button 
+                onClick={() => handleNavigateToSection('metricas')}
+                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <BarChart3 className="h-5 w-5 mr-2" />
+                Sprint Review
+              </button>
+
+              <button 
+                onClick={() => handleNavigateToSection('ceremonias')}
+                className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <Users className="h-5 w-5 mr-2" />
+                Retrospectiva
+              </button>
+            </div>
           </div>
         </div>
       </div>

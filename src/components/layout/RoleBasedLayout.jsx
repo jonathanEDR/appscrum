@@ -92,15 +92,15 @@ const getRoleNavigation = (role) => {
     ],
     scrum_master: [
       {
-        name: 'Equipos',
-        path: `/scrum_master/equipos`,
-        icon: Users,
-        show: true
-      },
-      {
         name: 'Sprints',
         path: `/scrum_master/sprints`,
         icon: Target,
+        show: true
+      },
+      {
+        name: 'Impedimentos',
+        path: `/scrum_master/impedimentos`,
+        icon: Shield,
         show: true
       },
       {
@@ -110,9 +110,15 @@ const getRoleNavigation = (role) => {
         show: true
       },
       {
-        name: 'Impedimentos',
-        path: `/scrum_master/impedimentos`,
-        icon: Settings,
+        name: 'Equipo',
+        path: `/scrum_master/equipo`,
+        icon: Users,
+        show: true
+      },
+      {
+        name: 'Métricas',
+        path: `/scrum_master/metricas`,
+        icon: BarChart3,
         show: true
       }
     ],
