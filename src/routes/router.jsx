@@ -38,6 +38,12 @@ import SprintManagement from '../components/ScrumMaster/SprintManagement.jsx';
 import TeamOverview from '../components/ScrumMaster/TeamOverview.jsx';
 import Metrics from '../components/ScrumMaster/Metrics.jsx';
 
+// Componentes de Developers
+import { MyTasks, SprintBoard, TimeTracking, CodeRepositories } from '../components/developers/index.js';
+
+// Componentes de User
+import { MyActivities } from '../components/users/index.js';
+
 
 // Layout wrapper para páginas de autenticación
 const AuthLayout = ({ children }) => (
@@ -224,19 +230,19 @@ export const router = createBrowserRouter([
       },
       {
         path: 'tareas',
-        element: <UnderConstruction module="Mis Tareas" />,
+        element: <MyTasks />,
       },
       {
         path: 'sprint-board',
-        element: <UnderConstruction module="Sprint Board" />,
+        element: <SprintBoard />,
       },
       {
         path: 'time-tracking',
-        element: <UnderConstruction module="Seguimiento de Tiempo" />,
+        element: <TimeTracking />,
       },
       {
         path: 'codigo',
-        element: <UnderConstruction module="Repositorios de Código" />,
+        element: <CodeRepositories />,
       },
     ],
   },
@@ -259,7 +265,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'actividades',
-        element: <UnderConstruction module="Mis Actividades" />,
+        element: <MyActivities />,
       },
     ],
   },

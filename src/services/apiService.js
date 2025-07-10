@@ -265,6 +265,114 @@ class ApiService {
       };
     }
   }
+
+  // ========== PANEL DE USUARIO APIs ==========
+  
+  // Obtener dashboard del usuario
+  async getUserDashboard(userId, getToken) {
+    try {
+      const headers = await this.getAuthHeaders(getToken);
+      const response = await fetch(`${this.baseURL}/users/dashboard/${userId}`, {
+        method: 'GET',
+        headers,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user dashboard: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user dashboard:', error);
+      throw error;
+    }
+  }
+
+  // Obtener proyectos del usuario
+  async getUserProjects(userId, getToken) {
+    try {
+      const headers = await this.getAuthHeaders(getToken);
+      const response = await fetch(`${this.baseURL}/users/projects/${userId}`, {
+        method: 'GET',
+        headers,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user projects: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user projects:', error);
+      throw error;
+    }
+  }
+
+  // Obtener actividades del usuario
+  async getUserActivities(userId, getToken, page = 1, limit = 10) {
+    try {
+      const headers = await this.getAuthHeaders(getToken);
+      const response = await fetch(`${this.baseURL}/users/activities/${userId}?page=${page}&limit=${limit}`, {
+        method: 'GET',
+        headers,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user activities: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user activities:', error);
+      throw error;
+    }
+  }
+
+  // Obtener perfil del usuario
+  async getUserProfile(userId, getToken) {
+    try {
+      const headers = await this.getAuthHeaders(getToken);
+      const response = await fetch(`${this.baseURL}/users/profile/${userId}`, {
+        method: 'GET',
+        headers,
+        credentials: 'include'
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch user profile: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user profile:', error);
+      throw error;
+    }
+  }
+
+  // Actualizar perfil del usuario
+  async updateUserProfile(userId, profileData, getToken) {
+    try {
+      const headers = await this.getAuthHeaders(getToken);
+      const response = await fetch(`${this.baseURL}/users/profile/${userId}`, {
+        method: 'PUT',
+        headers,
+        credentials: 'include',
+        body: JSON.stringify(profileData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Failed to update user profile: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error updating user profile:', error);
+      throw error;
+    }
+  }
 }
 
 // Exportar una instancia única del servicio

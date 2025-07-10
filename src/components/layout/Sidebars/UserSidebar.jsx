@@ -1,19 +1,18 @@
 import React from 'react';
-import { Home, FileText, UserCog, LogOut, Shield } from 'lucide-react';
+import { Home, FileText, UserCog, LogOut, Activity } from 'lucide-react';
 
 function UserSidebar({ currentView, onViewChange, onLogout, userRole }) {
   const menuItems = [
-    // { id: 'dashboard', icon: Home, label: 'Gestión de Notas' },
-    { id: 'history', icon: FileText, label: 'Historial' },
-    { id: 'profile', icon: UserCog, label: 'Mi Perfil' }
+    { id: 'dashboard', icon: Home, label: 'Dashboard' },
+    { id: 'profile', icon: UserCog, label: 'Mi Perfil' },
+    { id: 'actividades', icon: Activity, label: 'Mis Actividades' }
   ];
 
   return (
     <div className="w-64 bg-white h-screen fixed left-0 top-0 shadow-lg">
       <div className="p-6">
-        <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-          <Shield className="text-gray-600" size={24} />
-          Panel de Usuario
+        <h2 className="text-sm font-medium text-gray-400 mb-4 uppercase tracking-wide">
+          PANEL USUARIO
         </h2>
         <nav className="space-y-2">
           {menuItems.map((item) => {
@@ -24,7 +23,7 @@ function UserSidebar({ currentView, onViewChange, onLogout, userRole }) {
                 onClick={() => onViewChange(item.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
                   currentView === item.id
-                    ? 'bg-gray-100 text-gray-700'
+                    ? 'bg-blue-100 text-blue-700'
                     : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
