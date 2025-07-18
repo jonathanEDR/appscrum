@@ -18,10 +18,10 @@ export function RoleProvider({ children }) {
 
     try {
       // Primero intentar obtener el perfil del servidor
-      const profileData = await apiService.getUserProfile(getToken);
-      if (profileData?.user?.role) {
-        setServerRole(profileData.user.role);
-        setRole(profileData.user.role);
+      const profileData = await apiService.getUserProfile(user.id, getToken);
+      if (profileData?.role) {
+        setServerRole(profileData.role);
+        setRole(profileData.role);
         setIsRoleLoaded(true);
         return;
       }
