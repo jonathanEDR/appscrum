@@ -45,7 +45,7 @@ const Productos = () => {
       const token = await getToken();
       const params = searchTerm ? `?search=${searchTerm}` : '';
       
-      const response = await fetch(`${API_URL}/api/productos${params}`, {
+      const response = await fetch(`${API_URL}/productos${params}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -72,7 +72,7 @@ const Productos = () => {
   const fetchUsuarios = async () => {
     try {
       const token = await getToken();
-      const response = await fetch(`${API_URL}/api/users-for-assignment`, {
+      const response = await fetch(`${API_URL}/users-for-assignment`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -105,8 +105,8 @@ const Productos = () => {
     try {
       const token = await getToken();
       const url = editingProduct 
-        ? `${API_URL}/api/productos/${editingProduct._id}`
-        : `${API_URL}/api/productos`;
+        ? `${API_URL}/productos/${editingProduct._id}`
+        : `${API_URL}/productos`;
       
       const method = editingProduct ? 'PUT' : 'POST';
       
@@ -154,7 +154,7 @@ const Productos = () => {
     
     try {
       const token = await getToken();
-      const response = await fetch(`${API_URL}/api/productos/${producto._id}`, {
+      const response = await fetch(`${API_URL}/productos/${producto._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

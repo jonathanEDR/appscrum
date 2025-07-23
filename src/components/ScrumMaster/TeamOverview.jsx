@@ -342,8 +342,8 @@ const TeamOverview = () => {
       
       // Intentar endpoint específico para miembros del equipo
       try {
-        console.log('Obteniendo miembros del equipo desde:', `${API_URL}/api/team/members`);
-        const response = await fetch(`${API_URL}/api/team/members`, {
+        console.log('Obteniendo miembros del equipo desde:', `${API_URL}/team/members`);
+        const response = await fetch(`${API_URL}/team/members`, {
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'

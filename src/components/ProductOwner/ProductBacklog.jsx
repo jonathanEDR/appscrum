@@ -78,7 +78,7 @@ const ProductBacklog = () => {
       if (filtroEstado) params.append('estado', filtroEstado);
       if (filtroPrioridad) params.append('prioridad', filtroPrioridad);
       
-      const url = `${config.API_URL}/api/backlog?${params.toString()}`;
+      const url = `${config.API_URL}/backlog?${params.toString()}`;
       console.log('Haciendo petición a:', url);
       
       const response = await fetch(url, {
@@ -114,7 +114,7 @@ const ProductBacklog = () => {
       const token = await getToken();
       console.log('Obteniendo productos con token:', token ? 'válido' : 'inválido');
       
-      const url = `${config.API_URL}/api/productos`;
+      const url = `${config.API_URL}/productos`;
       console.log('URL productos:', url);
       
       const response = await fetch(url, {
@@ -144,7 +144,7 @@ const ProductBacklog = () => {
       const token = await getToken();
       console.log('Cargando usuarios...');
       
-      const response = await fetch(`${config.API_URL}/api/users-for-assignment`, {
+      const response = await fetch(`${config.API_URL}/users-for-assignment`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -169,7 +169,7 @@ const ProductBacklog = () => {
       const token = await getToken();
       console.log('Cargando sprints...');
       
-      const response = await fetch(`${config.API_URL}/api/sprints`, {
+      const response = await fetch(`${config.API_URL}/sprints`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -204,8 +204,8 @@ const ProductBacklog = () => {
     try {
       const token = await getToken();
       const url = editingItem 
-        ? `${config.API_URL}/api/backlog/${editingItem._id}`
-        : `${config.API_URL}/api/backlog`;
+        ? `${config.API_URL}/backlog/${editingItem._id}`
+        : `${config.API_URL}/backlog`;
       
       const method = editingItem ? 'PUT' : 'POST';
       
@@ -278,7 +278,7 @@ const ProductBacklog = () => {
     
     try {
       const token = await getToken();
-      const response = await fetch(`${config.API_URL}/api/backlog/${item._id}`, {
+      const response = await fetch(`${config.API_URL}/backlog/${item._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,

@@ -29,7 +29,7 @@ const ProfileManagement = ({ userRole }) => {
       const token = await getToken();
       console.log('Token obtained:', !!token);
       
-      const url = `${API_URL}/api/admin/users${searchTerm ? `?search=${searchTerm}` : ''}`;
+      const url = `${API_URL}/admin/users${searchTerm ? `?search=${searchTerm}` : ''}`;
       console.log('Fetching from URL:', url);
       
       const response = await fetch(url, {
@@ -106,7 +106,7 @@ const ProfileManagement = ({ userRole }) => {
   const handleSaveProfile = async (userId) => {
     try {
       const token = await getToken();
-      const response = await fetch(`${API_URL}/api/auth/update-profile/${userId}`, {
+      const response = await fetch(`${API_URL}/auth/update-profile/${userId}`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -148,7 +148,7 @@ const ProfileManagement = ({ userRole }) => {
     if (!window.confirm(`¿Estás seguro de que quieres cambiar el rol de este usuario a ${newRole}?`)) return;
     try {
       const token = await getToken();
-      const response = await fetch(`${API_URL}/api/admin/users/${userId}/role`, {
+      const response = await fetch(`${API_URL}/admin/users/${userId}/role`, {
         method: 'PUT',
         headers: {
           'Authorization': `Bearer ${token}`,
