@@ -35,8 +35,10 @@ import Metricas from '../components/ProductOwner/Metricas.jsx';
 import Impediments from '../components/ScrumMaster/Impediments.jsx';
 import Ceremonies from '../components/ScrumMaster/Ceremonies.jsx';
 import SprintManagement from '../components/ScrumMaster/SprintManagement.jsx';
+import SprintPlanning from '../components/ScrumMaster/SprintPlanning.jsx';
 import TeamOverview from '../components/ScrumMaster/TeamOverview.jsx';
 import Metrics from '../components/ScrumMaster/Metrics.jsx';
+import ScrumMasterBacklog from '../components/ScrumMaster/ScrumMasterBacklog.jsx';
 
 // Componentes de Developers
 import { MyTasks, SprintBoard, TimeTracking, CodeRepositories } from '../components/developers/index.js';
@@ -194,6 +196,10 @@ export const router = createBrowserRouter([
         element: <SprintManagement />,
       },
       {
+        path: 'sprint-planning',
+        element: <SprintPlanning />,
+      },
+      {
         path: 'impedimentos',
         element: <Impediments />,
       },
@@ -208,6 +214,10 @@ export const router = createBrowserRouter([
       {
         path: 'metricas',
         element: <Metrics />,
+      },
+      {
+        path: 'backlog-tecnico',
+        element: <ScrumMasterBacklog />,
       },
     ],
   },

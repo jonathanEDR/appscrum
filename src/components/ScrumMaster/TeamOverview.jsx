@@ -201,128 +201,6 @@ const TeamOverview = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
 
-  // Datos mockeados para desarrollo
-  const mockTeamMembers = [
-    {
-      _id: '1',
-      user: {
-        firstName: 'Ana',
-        lastName: 'García',
-        email: 'ana.garcia@email.com',
-        phone: '+1 555-0101'
-      },
-      role: 'scrum_master',
-      status: 'active',
-      availability: 100,
-      workload: {
-        currentStoryPoints: 18,
-        maxStoryPoints: 24
-      },
-      workloadPercentage: 75,
-      skills: [
-        { name: 'Agile' },
-        { name: 'Facilitation' },
-        { name: 'Team Management' }
-      ],
-      lastActiveDate: new Date()
-    },
-    {
-      _id: '2',
-      user: {
-        firstName: 'Carlos',
-        lastName: 'Ruiz',
-        email: 'carlos.ruiz@email.com',
-        phone: '+1 555-0102'
-      },
-      role: 'developer',
-      status: 'active',
-      availability: 90,
-      workload: {
-        currentStoryPoints: 21,
-        maxStoryPoints: 24
-      },
-      workloadPercentage: 87,
-      skills: [
-        { name: 'React' },
-        { name: 'Node.js' },
-        { name: 'JavaScript' },
-        { name: 'TypeScript' }
-      ],
-      lastActiveDate: new Date()
-    },
-    {
-      _id: '3',
-      user: {
-        firstName: 'María',
-        lastName: 'López',
-        email: 'maria.lopez@email.com',
-        phone: '+1 555-0103'
-      },
-      role: 'developer',
-      status: 'busy',
-      availability: 85,
-      workload: {
-        currentStoryPoints: 26,
-        maxStoryPoints: 24
-      },
-      workloadPercentage: 108,
-      skills: [
-        { name: 'Python' },
-        { name: 'Django' },
-        { name: 'PostgreSQL' }
-      ],
-      lastActiveDate: new Date(Date.now() - 86400000) // Ayer
-    },
-    {
-      _id: '4',
-      user: {
-        firstName: 'Juan',
-        lastName: 'Pérez',
-        email: 'juan.perez@email.com',
-        phone: '+1 555-0104'
-      },
-      role: 'product_owner',
-      status: 'active',
-      availability: 100,
-      workload: {
-        currentStoryPoints: 15,
-        maxStoryPoints: 20
-      },
-      workloadPercentage: 75,
-      skills: [
-        { name: 'Product Management' },
-        { name: 'User Stories' },
-        { name: 'Analytics' }
-      ],
-      lastActiveDate: new Date()
-    },
-    {
-      _id: '5',
-      user: {
-        firstName: 'Sofia',
-        lastName: 'Martínez',
-        email: 'sofia.martinez@email.com',
-        phone: '+1 555-0105'
-      },
-      role: 'tester',
-      status: 'on_leave',
-      availability: 0,
-      workload: {
-        currentStoryPoints: 0,
-        maxStoryPoints: 20
-      },
-      workloadPercentage: 0,
-      skills: [
-        { name: 'Testing' },
-        { name: 'Automation' },
-        { name: 'Selenium' }
-      ],
-      lastActiveDate: new Date(Date.now() - 172800000) // Hace 2 días
-    }
-  ];
-
-
-
   // Función optimizada para obtener miembros del equipo
   const fetchTeamMembers = async () => {
     setLoading(true);
@@ -332,77 +210,87 @@ const TeamOverview = () => {
       const token = await getToken();
       const API_URL = import.meta.env.VITE_API_URL;
       
-      // Si no hay API configurada, usa datos mockeados directamente
+      console.log('🔍 DEBUG - API_URL configurada:', API_URL);
+      console.log('🔍 DEBUG - Token obtenido:', token ? 'SÍ' : 'NO');
+      
+      // Si no hay API configurada, mostrar error
       if (!API_URL) {
-        console.info('API_URL no configurada, usando datos de demostración');
-        setTeamMembers(mockTeamMembers);
-        setLoading(false);
-        return;
+        throw new Error('API_URL no configurada');
       }
       
       // Intentar endpoint específico para miembros del equipo
-      try {
-        console.log('Obteniendo miembros del equipo desde:', `${API_URL}/api/team/members`);
-        const response = await fetch(`${API_URL}/api/team/members`, {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        });
+      console.log('🔍 DEBUG - Haciendo fetch a:', `${API_URL}/team/members`);
+      const response = await fetch(`${API_URL}/team/members`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      console.log('🔍 DEBUG - Respuesta del servidor:', {
+        ok: response.ok,
+        status: response.status,
+        statusText: response.statusText
+      });
+      
+      if (response.ok) {
+        const teamData = await response.json();
+        console.log('🔍 DEBUG - Datos del equipo obtenidos:', teamData);
+        console.log('🔍 DEBUG - Total miembros en respuesta:', teamData.members?.length || teamData.length || 0);
         
-        if (response.ok) {
-          const teamData = await response.json();
-          console.log('Datos del equipo obtenidos:', teamData);
-          
-          // Mapear datos de la API al formato del componente
-          const mapped = (teamData.members || teamData || []).map(member => ({
-            _id: member._id || Math.random().toString(36),
-            user: {
-              firstName: member.user?.firstName || member.user?.nombre_negocio || 'Usuario',
-              lastName: member.user?.lastName || '',
-              email: member.user?.email || 'usuario@email.com',
-              phone: member.user?.phone || ''
-            },
-            role: member.role || 'developer',
-            status: member.status || 'active',
-            availability: member.availability || 100,
-            workload: {
-              currentStoryPoints: member.workload?.currentStoryPoints || 0,
-              maxStoryPoints: member.workload?.maxStoryPoints || 24,
-              completedPoints: member.workload?.completedPoints || 0
-            },
-            workloadPercentage: member.workload ? 
-              Math.round((member.workload.currentStoryPoints / member.workload.maxStoryPoints) * 100) : 0,
-            skills: member.skills || [],
-            lastActiveDate: member.updatedAt ? new Date(member.updatedAt) : new Date(),
-            sprintInfo: {
-              currentSprint: null,
-              assignedItems: 0,
+        // Mapear datos de la API al formato del componente
+        const mapped = (teamData.members || teamData || []).map(member => ({
+          _id: member._id || Math.random().toString(36),
+          user: {
+            firstName: member.user?.firstName || member.user?.nombre_negocio?.split(' ')[0] || 'Usuario',
+            lastName: member.user?.lastName || member.user?.nombre_negocio?.split(' ').slice(1).join(' ') || '',
+            email: member.user?.email || 'usuario@email.com',
+            phone: member.user?.phone || ''
+          },
+          role: member.role || 'developer',
+          status: member.status || 'active',
+          availability: member.availability || 100,
+          workload: {
+            currentStoryPoints: member.workload?.currentStoryPoints || 0,
+            maxStoryPoints: member.workload?.maxStoryPoints || 24,
+            completedPoints: member.workload?.completedPoints || 0
+          },
+          workloadPercentage: member.workload ? 
+            Math.round((member.workload.currentStoryPoints / member.workload.maxStoryPoints) * 100) : 0,
+          skills: member.skills || [],
+          lastActiveDate: member.updatedAt ? new Date(member.updatedAt) : new Date(),
+          sprintInfo: {
+            currentSprint: null,
+            assignedItems: 0,
               completedItems: 0
             }
           }));
           
+          console.log('🔍 DEBUG - Miembros mapeados:', mapped.length);
+          console.log('🔍 DEBUG - Miembros mapeados detalle:', mapped.map(m => ({
+            name: `${m.user.firstName} ${m.user.lastName}`,
+            email: m.user.email,
+            role: m.role
+          })));
+          
           if (mapped.length > 0) {
             setTeamMembers(mapped);
             setError('');
+            console.log('✅ DEBUG - Datos reales establecidos en el estado');
           } else {
-            console.info('No se encontraron miembros del equipo, usando datos de demostración');
-            setTeamMembers(mockTeamMembers);
-            setError('No se encontraron miembros del equipo. Mostrando datos de demostración.');
+            console.info('⚠️ DEBUG - No se encontraron miembros del equipo');
+            setTeamMembers([]);
+            setError('No se encontraron miembros del equipo registrados.');
           }
         } else {
+          console.error('❌ DEBUG - Error en response:', response.status, response.statusText);
           throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-      } catch (apiError) {
-        console.warn('Error al conectar con la API:', apiError.message);
-        setTeamMembers(mockTeamMembers);
-        setError('Conectando con el servidor... Mostrando datos de demostración mientras tanto.');
-      }
       
     } catch (error) {
-      console.error('Error general al obtener miembros del equipo:', error);
-      setTeamMembers(mockTeamMembers);
-      setError('Error de conexión. Mostrando datos de demostración.');
+      console.error('❌ DEBUG - Error al obtener miembros del equipo:', error);
+      setTeamMembers([]);
+      setError('Error de conexión con el servidor: ' + error.message);
     }
     
     setLoading(false);

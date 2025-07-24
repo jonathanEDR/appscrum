@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
 import sprintService from '../../services/sprintService';
+import { useScrumMasterDashboard } from '../../hooks/useScrumMasterDashboard';
+import { MetricCard, SprintProgressCard, CriticalAlertsCard } from './MetricCards';
+import SprintTechnicalItems from './SprintTechnicalItems';
 import { 
   Target, 
   TrendingUp, 
@@ -17,7 +21,13 @@ import {
   RefreshCw,
   Eye,
   Edit,
-  User
+  User,
+  ExternalLink,
+  ArrowRight,
+  Code,
+  Bug,
+  Settings,
+  CheckSquare
 } from 'lucide-react';
 
 // Datos mock para el sprint actual
@@ -52,39 +62,153 @@ const mockSprintData = {
   ]
 };
 
-const SprintProgressCard = ({ title, value, total, icon: Icon, color = 'blue' }) => {
-  const percentage = total > 0 ? (value / total) * 100 : 0;
-  
-  const colorClasses = {
-    blue: 'bg-blue-500 text-blue-600',
-    green: 'bg-green-500 text-green-600',
-    yellow: 'bg-yellow-500 text-yellow-600',
-    red: 'bg-red-500 text-red-600'
-  };
+// Componente mejorado para navegación rápida
+const QuickActionsPanel = ({ onNavigateToSprint, onNavigateToBacklog, sprintData, onQuickAction }) => {
+  const navigate = useNavigate();
+
+  const actions = [
+    {
+      id: 'sprint-planning',
+      title: 'Sprint Planning',
+      description: 'Asignar historias al sprint',
+      icon: Target,
+      color: 'bg-orange-500',
+      onClick: onNavigateToSprint,
+      external: true
+    },
+    {
+      id: 'backlog-tecnico',
+      title: 'Items Técnicos',
+      description: 'Gestionar tareas y bugs',
+      icon: Code,
+      color: 'bg-purple-500',
+      onClick: onNavigateToBacklog,
+      external: true
+    },
+    {
+      id: 'daily',
+      title: 'Daily Standup',
+      description: 'Reunión diaria del equipo',
+      icon: Users,
+      color: 'bg-blue-500',
+      onClick: () => onQuickAction('daily')
+    },
+    {
+      id: 'metrics',
+      title: 'Actualizar Métricas',
+      description: 'Refrescar datos del sprint',
+      icon: BarChart3,
+      color: 'bg-green-500',
+      onClick: () => onQuickAction('metrics')
+    }
+  ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className={`p-2 ${colorClasses[color].split(' ')[0]} bg-opacity-10 rounded-lg`}>
-            <Icon className={`h-5 w-5 ${colorClasses[color].split(' ')[1]}`} />
-          </div>
-          <div>
-            <p className="text-sm font-medium text-gray-600">{title}</p>
-            <p className="text-2xl font-bold text-gray-900">{value}</p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="text-lg font-semibold text-gray-700">{percentage.toFixed(0)}%</p>
-          <p className="text-xs text-gray-500">de {total}</p>
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+      <div className="px-6 py-4 border-b border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-900">Acciones Rápidas</h3>
+      </div>
+      <div className="p-6 space-y-3">
+        {actions.map((action) => {
+          const Icon = action.icon;
+          return (
+            <button
+              key={action.id}
+              onClick={action.onClick}
+              className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all group"
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-2 ${action.color} rounded-lg text-white`}>
+                  <Icon className="h-4 w-4" />
+                </div>
+                <div className="text-left">
+                  <div className="font-medium text-gray-900">{action.title}</div>
+                  <div className="text-sm text-gray-500">{action.description}</div>
+                </div>
+              </div>
+              {action.external ? (
+                <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+              ) : (
+                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+              )}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Componente mejorado para métricas técnicas
+const TechnicalItemsMetrics = ({ sprintData, onNavigateToBacklog }) => {
+  const technicalItems = sprintData?.technicalItems || [];
+  const totalTechnical = technicalItems.length;
+  const completedTechnical = technicalItems.filter(item => 
+    item.estado === 'completado' || item.status === 'completed'
+  ).length;
+  const pendingTasks = technicalItems.filter(item => 
+    item.tipo === 'tarea' && item.estado !== 'completado'
+  ).length;
+  const criticalBugs = technicalItems.filter(item => 
+    item.tipo === 'bug' && ['muy_alta', 'alta'].includes(item.prioridad)
+  ).length;
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+      <div className="px-6 py-4 border-b border-gray-200">
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold text-gray-900">Items Técnicos</h3>
+          <button
+            onClick={onNavigateToBacklog}
+            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Gestionar →
+          </button>
         </div>
       </div>
-      
-      <div className="w-full bg-gray-200 rounded-full h-2">
-        <div 
-          className={`${colorClasses[color].split(' ')[0]} h-2 rounded-full transition-all duration-300`}
-          style={{ width: `${Math.min(percentage, 100)}%` }}
-        ></div>
+      <div className="p-6">
+        <div className="grid grid-cols-2 gap-4 mb-4">
+          <div className="text-center">
+            <div className="text-2xl font-bold text-gray-900">{totalTechnical}</div>
+            <div className="text-sm text-gray-600">Total</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl font-bold text-green-600">{completedTechnical}</div>
+            <div className="text-sm text-gray-600">Completados</div>
+          </div>
+        </div>
+
+        <div className="space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Code className="h-4 w-4 text-blue-600" />
+              <span className="text-sm text-gray-600">Tareas pendientes</span>
+            </div>
+            <span className="text-sm font-medium text-gray-900">{pendingTasks}</span>
+          </div>
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Bug className="h-4 w-4 text-red-600" />
+              <span className="text-sm text-gray-600">Bugs críticos</span>
+            </div>
+            <span className="text-sm font-medium text-red-600">{criticalBugs}</span>
+          </div>
+        </div>
+
+        {totalTechnical > 0 && (
+          <div className="mt-4">
+            <div className="flex justify-between text-sm text-gray-600 mb-2">
+              <span>Progreso</span>
+              <span>{completedTechnical}/{totalTechnical}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div 
+                className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
+                style={{ width: `${totalTechnical > 0 ? (completedTechnical / totalTechnical) * 100 : 0}%` }}
+              />
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -233,6 +357,174 @@ const BurndownChart = ({ data }) => {
         {data.map((d, i) => (
           <span key={i}>Día {d.day}</span>
         ))}
+      </div>
+    </div>
+  );
+};
+
+// Componente placeholder para Sprint Planning
+const SprintPlanningTab = ({ sprintData, onRefresh }) => {
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="text-center py-12">
+        <Target className="h-16 w-16 text-orange-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Sprint Planning</h3>
+        <p className="text-gray-600 mb-6">
+          Aquí podrás asignar historias del Product Backlog a este sprint.
+        </p>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="bg-blue-50 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-blue-600">{sprintData?.backlogItems?.length || 0}</div>
+              <div className="text-sm text-blue-800">Historias Asignadas</div>
+            </div>
+            <div className="bg-green-50 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-green-600">{sprintData?.totalStoryPoints || 0}</div>
+              <div className="text-sm text-green-800">Story Points Total</div>
+            </div>
+            <div className="bg-purple-50 p-4 rounded-lg">
+              <div className="text-2xl font-bold text-purple-600">{sprintData?.capacity || 0}</div>
+              <div className="text-sm text-purple-800">Capacidad del Sprint</div>
+            </div>
+          </div>
+          
+          <button
+            onClick={() => window.open('/scrum_master/sprint-planning', '_blank')}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+          >
+            <Target className="h-5 w-5" />
+            Abrir Sprint Planning Completo
+            <ExternalLink className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Componente placeholder para Backlog Técnico
+const BacklogTecnicoTab = ({ sprintData, onRefresh }) => {
+  const technicalItems = sprintData?.technicalItems || [];
+  const tareas = technicalItems.filter(item => item.tipo === 'tarea');
+  const bugs = technicalItems.filter(item => item.tipo === 'bug');
+  const mejoras = technicalItems.filter(item => item.tipo === 'mejora');
+  
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className="text-center py-8">
+        <Code className="h-16 w-16 text-purple-400 mx-auto mb-4" />
+        <h3 className="text-xl font-semibold text-gray-900 mb-2">Items Técnicos del Sprint</h3>
+        <p className="text-gray-600 mb-6">
+          Gestiona tareas técnicas, bugs y mejoras asociadas a este sprint.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="bg-blue-50 p-4 rounded-lg">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <CheckSquare className="h-5 w-5 text-blue-600" />
+              <span className="text-2xl font-bold text-blue-600">{tareas.length}</span>
+            </div>
+            <div className="text-sm text-blue-800">Tareas</div>
+          </div>
+          <div className="bg-red-50 p-4 rounded-lg">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Bug className="h-5 w-5 text-red-600" />
+              <span className="text-2xl font-bold text-red-600">{bugs.length}</span>
+            </div>
+            <div className="text-sm text-red-800">Bugs</div>
+          </div>
+          <div className="bg-green-50 p-4 rounded-lg">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <Settings className="h-5 w-5 text-green-600" />
+              <span className="text-2xl font-bold text-green-600">{mejoras.length}</span>
+            </div>
+            <div className="text-sm text-green-800">Mejoras</div>
+          </div>
+        </div>
+
+        <button
+          onClick={() => window.open('/scrum_master/backlog-tecnico', '_blank')}
+          className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
+        >
+          <Code className="h-5 w-5" />
+          Abrir Backlog Técnico Completo
+          <ExternalLink className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// Componente para navegación por pestañas
+const SprintTabNavigation = ({ activeTab, onTabChange, sprintData }) => {
+  const tabs = [
+    {
+      id: 'overview',
+      label: 'Vista General',
+      icon: BarChart3,
+      description: 'Métricas y estado del sprint',
+      badge: null
+    },
+    {
+      id: 'planning',
+      label: 'Sprint Planning',
+      icon: Target,
+      description: 'Asignar historias al sprint',
+      badge: sprintData?.backlogItems?.length || null
+    },
+    {
+      id: 'backlog',
+      label: 'Items Técnicos',
+      icon: Code,
+      description: 'Gestionar tareas y bugs',
+      badge: sprintData?.technicalItems?.length || null
+    }
+  ];
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-6">
+      <div className="border-b border-gray-200">
+        <nav className="flex space-x-8 px-6" aria-label="Tabs">
+          {tabs.map((tab) => {
+            const IconComponent = tab.icon;
+            const isActive = activeTab === tab.id;
+            
+            return (
+              <button
+                key={tab.id}
+                onClick={() => onTabChange(tab.id)}
+                className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  isActive
+                    ? 'border-orange-500 text-orange-600'
+                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                }`}
+              >
+                <IconComponent
+                  className={`mr-2 h-5 w-5 ${
+                    isActive ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-500'
+                  }`}
+                />
+                <span className="mr-2">{tab.label}</span>
+                {tab.badge !== null && tab.badge > 0 && (
+                  <span className={`inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none rounded-full ${
+                    isActive 
+                      ? 'bg-orange-100 text-orange-800' 
+                      : 'bg-gray-100 text-gray-800'
+                  }`}>
+                    {tab.badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
+      
+      {/* Descripción de la pestaña activa */}
+      <div className="px-6 py-3 bg-gray-50">
+        <p className="text-sm text-gray-600">
+          {tabs.find(tab => tab.id === activeTab)?.description}
+        </p>
       </div>
     </div>
   );
@@ -413,22 +705,76 @@ const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggle
 
 const SprintManagement = () => {
   const { getToken } = useAuth();
+  const navigate = useNavigate();
+  const { data: dashboardData, loading: dashboardLoading } = useScrumMasterDashboard();
+  
   const [sprintData, setSprintData] = useState(null);
   const [sprints, setSprints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [activeSprint, setActiveSprint] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
+  
+  // Nuevo estado para controlar las pestañas
+  const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'planning', 'backlog'
 
   useEffect(() => {
     fetchSprints();
   }, []);
+
+  // Integrar datos del dashboard cuando estén disponibles
+  useEffect(() => {
+    if (dashboardData && !dashboardLoading) {
+      setSprints(dashboardData.sprints || []);
+      if (dashboardData.activeSprint && !activeSprint) {
+        setActiveSprint(dashboardData.activeSprint);
+        fetchSprintDetails(dashboardData.activeSprint._id);
+      }
+    }
+  }, [dashboardData, dashboardLoading]);
+
+  const handleNavigateToSprint = () => {
+    navigate('/scrum_master/sprint-planning');
+  };
+
+  const handleNavigateToBacklog = () => {
+    navigate('/scrum_master/backlog-tecnico');
+  };
+
+  // Nueva función para manejar cambio de pestañas
+  const handleTabChange = (tabId) => {
+    if (tabId === 'planning') {
+      navigate('/scrum_master/sprint-planning');
+    } else if (tabId === 'backlog') {
+      navigate('/scrum_master/backlog-tecnico');
+    } else {
+      setActiveTab(tabId);
+    }
+  };
 
   const fetchSprints = async () => {
     try {
       setLoading(true);
       setError('');
       
+      // Primero intentar usar datos del dashboard si están disponibles
+      if (dashboardData?.sprints?.length > 0) {
+        setSprints(dashboardData.sprints);
+        
+        // Buscar sprint activo
+        const active = dashboardData.activeSprint;
+        if (active) {
+          setActiveSprint(active);
+          await fetchSprintDetails(active._id);
+        } else if (dashboardData.sprints.length > 0) {
+          const latest = dashboardData.sprints[0];
+          setActiveSprint(latest);
+          await fetchSprintDetails(latest._id);
+        }
+        return;
+      }
+      
+      // Fallback: obtener desde API directamente
       const token = await getToken();
       const sprints = await sprintService.getSprints(token);
       
@@ -447,13 +793,11 @@ const SprintManagement = () => {
         setActiveSprint(latest);
         await fetchSprintDetails(latest._id);
       } else {
-        setError('No hay sprints disponibles. Mostrando datos de demostración.');
-        setSprintData(mockSprintData);
+        setError('No hay sprints disponibles. Los sprints se crean desde el módulo Product Owner.');
       }
     } catch (error) {
       console.error('Error fetching sprints:', error);
-      setError('Error al conectar con el servidor. Mostrando datos de demostración.');
-      setSprintData(mockSprintData);
+      setError('Error al conectar con el servidor. Verifica tu conexión e intenta nuevamente.');
     } finally {
       setLoading(false);
     }
@@ -462,21 +806,165 @@ const SprintManagement = () => {
   const fetchSprintDetails = async (sprintId) => {
     try {
       const token = await getToken();
-      const metrics = await sprintService.getSprintMetrics(token, sprintId);
       
-      // Obtener también las historias del backlog
-      const backlogItems = await sprintService.getSprintBacklogItems(token, sprintId);
+      // Obtener métricas del sprint, items del backlog, items técnicos y datos del equipo en paralelo
+      const [metrics, backlogItems, technicalItemsData, teamMembers] = await Promise.all([
+        sprintService.getSprintMetrics(token, sprintId),
+        sprintService.getSprintBacklogItems(token, sprintId),
+        fetchTechnicalItemsForSprint(token, sprintId),
+        fetchTeamMembersWithSprintData(token, sprintId)
+      ]);
       
-      // Agregar las historias al objeto de métricas
+      // Agregar las historias, miembros reales y items técnicos al objeto de métricas
       const enhancedMetrics = {
         ...metrics,
-        backlogItems: backlogItems || []
+        _id: sprintId, // Asegurar que el ID del sprint esté incluido
+        backlogItems: backlogItems || [],
+        teamMembers: teamMembers || metrics.teamMembers || [],
+        technicalItems: technicalItemsData || [],
+        // Métricas mejoradas que incluyen items técnicos
+        totalItems: (backlogItems?.length || 0) + (technicalItemsData?.length || 0),
+        totalCompletedItems: (backlogItems?.filter(item => 
+          item.estado === 'completado' || item.status === 'completed'
+        ).length || 0) + (technicalItemsData?.filter(item => 
+          item.estado === 'completado' || item.status === 'completed'
+        ).length || 0)
       };
       
       setSprintData(enhancedMetrics);
     } catch (error) {
       console.error('Error fetching sprint details:', error);
-      setSprintData(mockSprintData);
+      // Usar datos del dashboard como fallback si están disponibles
+      if (dashboardData?.activeSprint) {
+        setSprintData({
+          ...dashboardData.activeSprint,
+          _id: sprintId, // Asegurar que el ID del sprint esté incluido
+          backlogItems: dashboardData.activeSprintItems || [],
+          technicalItems: dashboardData.technicalItems || [],
+          teamMembers: dashboardData.teamMembers || []
+        });
+      } else {
+        setSprintData({
+          ...mockSprintData,
+          _id: sprintId // Asegurar que el ID del sprint esté incluido
+        });
+      }
+    }
+  };
+
+  // Nueva función para obtener items técnicos específicos del sprint
+  const fetchTechnicalItemsForSprint = async (token, sprintId) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      
+      // Obtener items técnicos del sprint específico
+      const response = await fetch(
+        `${API_URL}/backlog?tipo=tarea,bug,mejora&sprint=${sprintId}&limit=100`,
+        {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (!response.ok) {
+        console.warn('Error al obtener items técnicos, usando fallback');
+        return dashboardData?.technicalItems || [];
+      }
+
+      const data = await response.json();
+      return data.items || [];
+      
+    } catch (error) {
+      console.error('Error fetching technical items for sprint:', error);
+      // Usar datos del dashboard como fallback
+      return dashboardData?.technicalItems || [];
+    }
+  };
+
+  // Nueva función para obtener miembros del equipo con datos del sprint
+  const fetchTeamMembersWithSprintData = async (token, sprintId) => {
+    try {
+      const API_URL = import.meta.env.VITE_API_URL;
+      
+      // Obtener miembros del equipo desde el endpoint dedicado
+      const teamResponse = await fetch(`${API_URL}/team/members`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (!teamResponse.ok) {
+        throw new Error('Error al obtener miembros del equipo');
+      }
+      
+      const teamData = await teamResponse.json();
+      const teamMembers = teamData.members || teamData || [];
+      
+      // Obtener items del backlog del sprint para calcular workload real
+      const backlogItems = await sprintService.getSprintBacklogItems(token, sprintId);
+      
+      // Mapear miembros del equipo con datos reales del sprint
+      const enhancedTeamMembers = teamMembers.map(member => {
+        // Encontrar items asignados a este miembro en el sprint actual
+        const memberItems = backlogItems.filter(item => {
+          const assignedUser = item.asignado_a || item.assignedTo;
+          return assignedUser && (
+            assignedUser._id === member._id ||
+            assignedUser.email === member.user?.email ||
+            assignedUser.id === member._id
+          );
+        });
+        
+        // Calcular métricas basadas en items asignados
+        const completed = memberItems.filter(item => 
+          item.estado === 'completado' || item.status === 'completed'
+        ).length;
+        
+        const planned = memberItems.length;
+        
+        const completedPoints = memberItems
+          .filter(item => item.estado === 'completado' || item.status === 'completed')
+          .reduce((sum, item) => sum + (item.puntos_historia || item.storyPoints || 1), 0);
+        
+        const plannedPoints = memberItems
+          .reduce((sum, item) => sum + (item.puntos_historia || item.storyPoints || 1), 0);
+
+        return {
+          id: member._id,
+          name: member.user ? 
+            `${member.user.firstName || ''} ${member.user.lastName || ''}`.trim() || 
+            member.user.nombre_negocio || 
+            member.user.email : 
+            'Usuario Desconocido',
+          role: member.role || 'Developer',
+          completed: completedPoints,
+          planned: plannedPoints > 0 ? plannedPoints : member.workload?.maxStoryPoints || 24,
+          availability: member.status === 'active' ? 'available' : 
+                       member.status === 'busy' ? 'busy' : 'off',
+          email: member.user?.email || '',
+          workload: {
+            currentStoryPoints: plannedPoints,
+            maxStoryPoints: member.workload?.maxStoryPoints || 24,
+            completedPoints: completedPoints
+          },
+          sprintAssignment: {
+            itemsCount: planned,
+            completedCount: completed,
+            storyPoints: plannedPoints,
+            completedPoints: completedPoints
+          }
+        };
+      });
+      
+      return enhancedTeamMembers;
+      
+    } catch (error) {
+      console.error('Error fetching team members with sprint data:', error);
+      // Fallback a datos generados por el sprint service
+      return null;
     }
   };
 
@@ -529,6 +1017,13 @@ const SprintManagement = () => {
     setLoading(true);
     await fetchSprintDetails(sprint._id);
     setLoading(false);
+  };
+
+  // Función para refrescar solo el componente de items técnicos
+  const handleRefreshTechnicalItems = async () => {
+    if (activeSprint) {
+      await fetchSprintDetails(activeSprint._id);
+    }
   };
 
   const handleToggleStory = (story) => {
@@ -628,11 +1123,22 @@ const SprintManagement = () => {
       {/* Contenido principal solo si hay datos del sprint */}
       {sprintData && (
         <>
-          {/* Header del Sprint */}
-          <div className="bg-gradient-to-r from-orange-600 to-red-600 rounded-lg shadow-lg text-white p-6">
+          {/* Header del Sprint mejorado */}
+          <div className="bg-gradient-to-r from-orange-600 to-red-600 rounded-xl shadow-lg text-white p-6">
             <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">{sprintData.name}</h1>
+              <div className="flex-1">
+                <div className="flex items-center gap-3 mb-2">
+                  <h1 className="text-3xl font-bold">{sprintData.name}</h1>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    sprintData.status === 'active' ? 'bg-green-500' :
+                    sprintData.status === 'completed' ? 'bg-gray-500' :
+                    'bg-blue-500'
+                  }`}>
+                    {sprintData.status === 'active' ? 'Activo' :
+                     sprintData.status === 'completed' ? 'Completado' :
+                     'Planificado'}
+                  </span>
+                </div>
                 <p className="text-orange-100 mb-4">{sprintData.goal}</p>
                 <div className="flex items-center gap-6 text-sm">
                   <div className="flex items-center gap-1">
@@ -642,186 +1148,195 @@ const SprintManagement = () => {
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
                     <span>{sprintStatus.daysRemaining} días restantes</span>
-              </div>
-            </div>
-          </div>
-          
-          <div className="text-right">
-            <div className="text-4xl font-bold mb-1">{progress.toFixed(0)}%</div>
-            <div className="text-orange-100">Progreso</div>
-            <div className="flex gap-2 mt-4">
-              {sprintData.status === 'active' && (
-                <>
-                  <button
-                    onClick={() => handleSprintAction('pause')}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-white bg-opacity-20 rounded-md hover:bg-opacity-30 transition-colors"
-                  >
-                    <Pause className="h-4 w-4" />
-                    Pausar
-                  </button>
-                  <button
-                    onClick={() => handleSprintAction('end')}
-                    className="inline-flex items-center gap-1 px-3 py-1.5 bg-white bg-opacity-20 rounded-md hover:bg-opacity-30 transition-colors"
-                  >
-                    <Square className="h-4 w-4" />
-                    Finalizar
-                  </button>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Detalles del Sprint Backlog */}
-      <SprintBacklogDetails
-        sprintData={sprintData}
-        onToggleStory={handleToggleStory}
-        showDetails={showDetails}
-        onToggleDetails={() => setShowDetails(!showDetails)}
-      />
-
-      {/* Métricas del Sprint */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <SprintProgressCard
-          title="Completado"
-          value={sprintData.completed}
-          total={sprintData.planned}
-          icon={CheckCircle}
-          color="green"
-        />
-        <SprintProgressCard
-          title="En Progreso"
-          value={sprintData.inProgress}
-          total={sprintData.planned}
-          icon={Clock}
-          color="yellow"
-        />
-        <SprintProgressCard
-          title="Restante"
-          value={sprintData.remaining}
-          total={sprintData.planned}
-          icon={AlertTriangle}
-          color="red"
-        />
-        <div className="bg-white rounded-lg border border-gray-200 p-6">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <p className="text-sm font-medium text-gray-600">Velocidad</p>
-              <p className="text-2xl font-bold text-gray-900">{sprintData.velocity}</p>
-            </div>
-          </div>
-          <div className="flex items-center text-sm">
-            <span className="text-green-600">
-              +{((sprintData.velocity - sprintData.previousVelocity) / sprintData.previousVelocity * 100).toFixed(0)}%
-            </span>
-            <span className="text-gray-500 ml-1">vs sprint anterior</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Contenido principal */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Burndown Chart */}
-        <div className="lg:col-span-2">
-          <BurndownChart data={sprintData.burndownData} />
-        </div>
-
-        {/* Alertas y estado */}
-        <div className="space-y-6">
-          {/* Estado del sprint */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              Estado del Sprint
-            </h3>
-            
-            <div className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Días transcurridos</span>
-                <span className="font-medium">{sprintStatus.daysElapsed}/{sprintStatus.totalDays}</span>
-              </div>
-              
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Puntos completados</span>
-                <span className="font-medium">{sprintData.completed}/{sprintData.planned}</span>
-              </div>
-              
-              <div className="flex justify-between text-sm">
-                <span className="text-gray-600">Velocidad proyectada</span>
-                <span className="font-medium">{sprintData.velocity} pts</span>
-              </div>
-
-              {sprintStatus.isOverdue && (
-                <div className="p-3 bg-red-50 rounded-lg">
-                  <div className="flex items-center gap-2 text-red-700">
-                    <AlertTriangle className="h-4 w-4" />
-                    <span className="text-sm font-medium">Sprint retrasado</span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Target className="h-4 w-4" />
+                    <span>{sprintData.totalStoryPoints || 0} Story Points</span>
                   </div>
                 </div>
-              )}
-
-              {progress < 50 && sprintStatus.daysElapsed > sprintStatus.totalDays / 2 && (
-                <div className="p-3 bg-yellow-50 rounded-lg">
-                  <div className="flex items-center gap-2 text-yellow-700">
-                    <AlertTriangle className="h-4 w-4" />
-                    <span className="text-sm font-medium">Progreso por debajo de lo esperado</span>
-                  </div>
+              </div>
+              
+              <div className="flex items-center gap-6">
+                <div className="text-right">
+                  <div className="text-4xl font-bold mb-1">{progress.toFixed(0)}%</div>
+                  <div className="text-orange-100">Progreso</div>
                 </div>
-              )}
+                
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={handleNavigateToSprint}
+                    className={`inline-flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                      activeTab === 'planning' 
+                        ? 'bg-white bg-opacity-30' 
+                        : 'bg-white bg-opacity-20 hover:bg-opacity-30'
+                    }`}
+                  >
+                    <Target className="h-4 w-4" />
+                    Sprint Planning
+                  </button>
+                  
+                  {sprintData.status === 'active' && (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleSprintAction('pause')}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-white bg-opacity-20 rounded-md hover:bg-opacity-30 transition-colors"
+                      >
+                        <Pause className="h-4 w-4" />
+                        Pausar
+                      </button>
+                      <button
+                        onClick={() => handleSprintAction('end')}
+                        className="inline-flex items-center gap-1 px-3 py-1.5 bg-white bg-opacity-20 rounded-md hover:bg-opacity-30 transition-colors"
+                      >
+                        <Square className="h-4 w-4" />
+                        Finalizar
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Acciones rápidas */}
-          <div className="bg-white rounded-lg border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4">Acciones Rápidas</h3>
-            <div className="space-y-3">
-              <button 
-                onClick={() => handleQuickAction('daily')}
-                className="w-full flex items-center gap-2 px-4 py-3 text-left border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <Users className="h-4 w-4 text-gray-600" />
-                <span className="text-sm font-medium">Daily Standup</span>
-              </button>
-              <button 
-                onClick={() => handleQuickAction('metrics')}
-                className="w-full flex items-center gap-2 px-4 py-3 text-left border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <BarChart3 className="h-4 w-4 text-gray-600" />
-                <span className="text-sm font-medium">Actualizar métricas</span>
-              </button>
-              <button 
-                onClick={() => handleQuickAction('review')}
-                className="w-full flex items-center gap-2 px-4 py-3 text-left border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
-              >
-                <Target className="h-4 w-4 text-gray-600" />
-                <span className="text-sm font-medium">Review del sprint</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
+          {/* Navegación por Pestañas */}
+          <SprintTabNavigation 
+            activeTab={activeTab}
+            onTabChange={handleTabChange}
+            sprintData={sprintData}
+          />
 
-      {/* Equipo */}
-      <div>
-        <h2 className="text-lg font-semibold text-gray-900 mb-4">Estado del Equipo</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {sprintData.teamMembers.map((member, index) => (
-            <TeamMemberCard key={index} member={member} />
-          ))}
-        </div>
-      </div>
+          {/* Contenido según la pestaña activa */}
+          {activeTab === 'overview' && (
+            <>
+              {/* Métricas del Sprint mejoradas */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <MetricCard
+                  title="Completado"
+                  value={sprintData.completed || 0}
+                  subtitle={`${sprintData.totalStoryPoints || 0} Story Points`}
+                  icon={CheckCircle}
+                  color="green"
+                  trend="up"
+                  trendValue="+12%"
+                />
+                
+                <MetricCard
+                  title="En Progreso"
+                  value={sprintData.inProgress || 0}
+                  subtitle="Items activos"
+                  icon={Clock}
+                  color="blue"
+                />
+                
+                <MetricCard
+                  title="Items Técnicos"
+                  value={sprintData.technicalItems?.length || 0}
+                  subtitle="Tareas, bugs, mejoras"
+                  icon={Code}
+                  color="purple"
+                  isClickable={true}
+                  onClick={handleNavigateToBacklog}
+                />
+                
+                <MetricCard
+                  title="Velocidad"
+                  value={sprintData.velocity || 0}
+                  subtitle="Story Points"
+                  icon={TrendingUp}
+                  color="orange"
+                  trend="up"
+                  trendValue={sprintData.previousVelocity ? 
+                    `+${((sprintData.velocity - sprintData.previousVelocity) / sprintData.previousVelocity * 100).toFixed(0)}%` : 
+                    undefined
+                  }
+                />
+              </div>
 
-      {/* Detalles del Backlog del Sprint */}
-      <SprintBacklogDetails 
-        sprintData={sprintData} 
-        onToggleStory={() => {}} 
-        showDetails={showDetails} 
-        onToggleDetails={() => setShowDetails(prev => !prev)} 
-      />
+              {/* Contenido principal */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                {/* Burndown Chart */}
+                <div className="lg:col-span-2 space-y-6">
+                  <BurndownChart data={sprintData.burndownData} />
+                  
+                  {/* Items Técnicos del Sprint - Ahora dentro del grid */}
+                  <SprintTechnicalItems 
+                    sprintData={sprintData}
+                    onRefresh={handleRefreshTechnicalItems}
+                  />
+                </div>
+
+                {/* Alertas y estado */}
+                <div className="space-y-6">
+                  {/* Items técnicos */}
+                  <TechnicalItemsMetrics 
+                    sprintData={sprintData}
+                    onNavigateToBacklog={handleNavigateToBacklog}
+                  />
+
+                  {/* Estado del sprint */}
+                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                      <Activity className="h-5 w-5" />
+                      Estado del Sprint
+                    </h3>
+                    
+                    <div className="space-y-4">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Días transcurridos</span>
+                        <span className="font-medium">{sprintStatus.daysElapsed}/{sprintStatus.totalDays}</span>
+                      </div>
+                      
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Puntos completados</span>
+                        <span className="font-medium">{sprintData.completed}/{sprintData.planned}</span>
+                      </div>
+                      
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Velocidad proyectada</span>
+                        <span className="font-medium">{sprintData.velocity} pts</span>
+                      </div>
+
+                      {sprintStatus.isOverdue && (
+                        <div className="p-3 bg-red-50 rounded-lg">
+                          <div className="flex items-center gap-2 text-red-700">
+                            <AlertTriangle className="h-4 w-4" />
+                            <span className="text-sm font-medium">Sprint retrasado</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {progress < 50 && sprintStatus.daysElapsed > sprintStatus.totalDays / 2 && (
+                        <div className="p-3 bg-yellow-50 rounded-lg">
+                          <div className="flex items-center gap-2 text-yellow-700">
+                            <AlertTriangle className="h-4 w-4" />
+                            <span className="text-sm font-medium">Progreso por debajo de lo esperado</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Acciones rápidas mejoradas */}
+                  <QuickActionsPanel
+                    onNavigateToSprint={handleNavigateToSprint}
+                    onNavigateToBacklog={handleNavigateToBacklog}
+                    sprintData={sprintData}
+                    onQuickAction={handleQuickAction}
+                  />
+                </div>
+              </div>
+
+              {/* Equipo */}
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-4">Estado del Equipo</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {sprintData.teamMembers.map((member, index) => (
+                    <TeamMemberCard key={index} member={member} />
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
         </>
       )}
     </div>

@@ -27,7 +27,7 @@ class SprintService {
         if (value) queryParams.append(key, value);
       });
 
-      const url = `${this.API_URL}/api/sprints${queryParams.toString() ? `?${queryParams}` : ''}`;
+      const url = `${this.API_URL}/sprints${queryParams.toString() ? `?${queryParams}` : ''}`;
       
       const response = await fetch(url, {
         headers: {
@@ -60,7 +60,7 @@ class SprintService {
         throw new Error('API_URL no configurada');
       }
 
-      const response = await fetch(`${this.API_URL}/api/sprints/${sprintId}`, {
+      const response = await fetch(`${this.API_URL}/sprints/${sprintId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -107,7 +107,7 @@ class SprintService {
         throw new Error('API_URL no configurada');
       }
 
-      const response = await fetch(`${this.API_URL}/api/backlog?sprint=${sprintId}`, {
+      const response = await fetch(`${this.API_URL}/backlog?sprint=${sprintId}`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -314,7 +314,7 @@ class SprintService {
         throw new Error('API_URL no configurada');
       }
 
-      const response = await fetch(`${this.API_URL}/api/sprints/${sprintId}/${action}`, {
+      const response = await fetch(`${this.API_URL}/sprints/${sprintId}/${action}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
