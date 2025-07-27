@@ -54,12 +54,9 @@ const Metricas = () => {
     try {
       console.log('Iniciando carga de productos...');
       setLoading(true);
-      const token = await getToken();
-      console.log('Token obtenido:', token ? 'Sí' : 'No');
       
-      const response = await fetch(`${API_BASE_URL}/api/products`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
+      // Usar ruta temporal sin autenticación para testing
+      const response = await fetch(`${API_BASE_URL}/api/productos-demo`);
       
       console.log('Respuesta productos:', response.status, response.ok);
       if (!response.ok) throw new Error('Error al cargar productos');
@@ -97,16 +94,10 @@ const Metricas = () => {
       setLoading(true);
       setError(null);
 
-      const token = await getToken();
-      console.log('Token para métricas obtenido:', token ? 'Sí' : 'No');
-
+      // Usar rutas sin autenticación para testing
       const [dashboardRes, velocityRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/metricas/dashboard/${selectedProduct}?periodo=${periodo}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }),
-        fetch(`${API_BASE_URL}/api/metricas/velocity/${selectedProduct}`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        })
+        fetch(`${API_BASE_URL}/api/metricas/dashboard/${selectedProduct}?periodo=${periodo}`),
+        fetch(`${API_BASE_URL}/api/metricas/velocity/${selectedProduct}`)
       ]);
 
       console.log('Respuesta dashboard:', dashboardRes.status, dashboardRes.ok);
@@ -400,17 +391,17 @@ const DashboardTab = ({ metricas, getTendenciaIcon, getTendenciaColor }) => {
           </p>
         </div>
 
-        <div className="bg-gradient-to-r from-blue-50 to-blue-100 rounded-lg p-6">
+        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-lg p-6">
           <div className="flex items-center gap-3 mb-4">
-            <div className="p-2 bg-blue-200 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-blue-700" />
+            <div className="p-2 bg-orange-200 rounded-lg">
+              <TrendingUp className="h-5 w-5 text-orange-700" />
             </div>
             <h3 className="font-semibold text-gray-900">Progreso General</h3>
           </div>
-          <div className="text-3xl font-bold text-blue-700 mb-2">
+          <div className="text-3xl font-bold text-orange-700 mb-2">
             {Math.round(metricas.progreso.porcentaje)}%
           </div>
-          <p className="text-sm text-blue-600">
+          <p className="text-sm text-orange-600">
             {metricas.progreso.historias_completadas} de {metricas.progreso.historias_totales} historias
           </p>
         </div>
@@ -420,12 +411,12 @@ const DashboardTab = ({ metricas, getTendenciaIcon, getTendenciaColor }) => {
             <div className="p-2 bg-purple-200 rounded-lg">
               <Clock className="h-5 w-5 text-purple-700" />
             </div>
-            <h3 className="font-semibold text-gray-900">Precisión</h3>
+            <h3 className="font-semibold text-gray-900">Calidad</h3>
           </div>
           <div className="text-3xl font-bold text-purple-700 mb-2">
-            {Math.round(metricas.calidad.precision_estimacion * 100)}%
+            {metricas.calidad.coberturaPruebas}%
           </div>
-          <p className="text-sm text-purple-600">Precisión de estimación</p>
+          <p className="text-sm text-purple-600">Cobertura de pruebas</p>
         </div>
       </div>
 
@@ -434,56 +425,145 @@ const DashboardTab = ({ metricas, getTendenciaIcon, getTendenciaColor }) => {
         <div className="bg-white border rounded-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución por Estado</h3>
           <div className="space-y-3">
-            {metricas.distribucion.por_estado.map(item => (
-              <div key={item.estado} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 capitalize">
-                  {item.estado.replace('_', ' ')}
-                </span>
-                <div className="flex items-center gap-3">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-orange-600 h-2 rounded-full"
-                      style={{ 
-                        width: `${metricas.progreso.historias_totales > 0 
-                          ? (item.cantidad / metricas.progreso.historias_totales) * 100 
-                          : 0}%` 
-                      }}
-                    ></div>
+            {metricas.distribucion.por_estado.map((item, index) => {
+              const colors = ['bg-green-500', 'bg-orange-500', 'bg-gray-400', 'bg-blue-500'];
+              const bgColors = ['bg-green-100', 'bg-orange-100', 'bg-gray-100', 'bg-blue-100'];
+              const textColors = ['text-green-700', 'text-orange-700', 'text-gray-700', 'text-blue-700'];
+              
+              return (
+                <div key={item.estado} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
+                    <span className="text-sm text-gray-600 capitalize">
+                      {item.estado.replace('_', ' ')}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900 w-8 text-right">
-                    {item.cantidad}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-32 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${colors[index % colors.length]}`}
+                        style={{ 
+                          width: `${metricas.progreso.historias_totales > 0 
+                            ? (item.cantidad / metricas.progreso.historias_totales) * 100 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                    <span className={`text-sm font-medium w-8 text-right ${textColors[index % textColors.length]}`}>
+                      {item.cantidad}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
 
         <div className="bg-white border rounded-lg p-6">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">Distribución por Prioridad</h3>
           <div className="space-y-3">
-            {metricas.distribucion.por_prioridad.map(item => (
-              <div key={item.prioridad} className="flex items-center justify-between">
-                <span className="text-sm text-gray-600 capitalize">
-                  {item.prioridad}
-                </span>
-                <div className="flex items-center gap-3">
-                  <div className="w-32 bg-gray-200 rounded-full h-2">
-                    <div 
-                      className="bg-orange-600 h-2 rounded-full"
-                      style={{ 
-                        width: `${metricas.progreso.historias_totales > 0 
-                          ? (item.cantidad / metricas.progreso.historias_totales) * 100 
-                          : 0}%` 
-                      }}
-                    ></div>
+            {metricas.distribucion.por_prioridad.map((item, index) => {
+              const colors = ['bg-red-500', 'bg-yellow-500', 'bg-green-500'];
+              const textColors = ['text-red-700', 'text-yellow-700', 'text-green-700'];
+              
+              return (
+                <div key={item.prioridad} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-3 h-3 rounded-full ${colors[index % colors.length]}`}></div>
+                    <span className="text-sm text-gray-600 capitalize">
+                      {item.prioridad}
+                    </span>
                   </div>
-                  <span className="text-sm font-medium text-gray-900 w-8 text-right">
-                    {item.cantidad}
-                  </span>
+                  <div className="flex items-center gap-3">
+                    <div className="w-32 bg-gray-200 rounded-full h-2">
+                      <div 
+                        className={`h-2 rounded-full ${colors[index % colors.length]}`}
+                        style={{ 
+                          width: `${metricas.progreso.historias_totales > 0 
+                            ? (item.cantidad / metricas.progreso.historias_totales) * 100 
+                            : 0}%` 
+                        }}
+                      ></div>
+                    </div>
+                    <span className={`text-sm font-medium w-8 text-right ${textColors[index % textColors.length]}`}>
+                      {item.cantidad}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
+          </div>
+        </div>
+      </div>
+
+      {/* Métricas adicionales de equipo y calidad */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="bg-white border rounded-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-blue-100 rounded-lg">
+              <Users className="h-5 w-5 text-blue-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Sprints</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Total</span>
+              <span className="text-lg font-bold text-blue-600">{metricas.sprints.total}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Completados</span>
+              <span className="text-lg font-bold text-green-600">{metricas.sprints.completados}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">En progreso</span>
+              <span className="text-lg font-bold text-orange-600">{metricas.sprints.enProgreso}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border rounded-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-purple-100 rounded-lg">
+              <Target className="h-5 w-5 text-purple-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Releases</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Total</span>
+              <span className="text-lg font-bold text-purple-600">{metricas.releases.total}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Completados</span>
+              <span className="text-lg font-bold text-green-600">{metricas.releases.completados}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">En progreso</span>
+              <span className="text-lg font-bold text-orange-600">{metricas.releases.enProgreso}</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white border rounded-lg p-6">
+          <div className="flex items-center gap-3 mb-4">
+            <div className="p-2 bg-red-100 rounded-lg">
+              <Activity className="h-5 w-5 text-red-600" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900">Calidad</h3>
+          </div>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Defectos</span>
+              <span className="text-lg font-bold text-red-600">{metricas.calidad.defectos}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Cobertura</span>
+              <span className="text-lg font-bold text-green-600">{metricas.calidad.coberturaPruebas}%</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">T. Resolución</span>
+              <span className="text-lg font-bold text-blue-600">{metricas.calidad.tiempoPromedioResolucion}d</span>
+            </div>
           </div>
         </div>
       </div>
@@ -497,10 +577,10 @@ const VelocityTab = ({ velocityData, getTendenciaIcon, getTendenciaColor }) => {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold text-gray-900">Histórico de Velocidad</h3>
-        <div className={`flex items-center gap-2 ${getTendenciaColor(velocityData.tendencia)}`}>
-          {getTendenciaIcon(velocityData.tendencia)}
+        <div className={`flex items-center gap-2 ${getTendenciaColor(velocityData.trend)}`}>
+          {getTendenciaIcon(velocityData.trend)}
           <span className="text-sm font-medium">
-            Tendencia: {velocityData.tendencia}
+            Tendencia: {velocityData.trend}
           </span>
         </div>
       </div>
@@ -508,7 +588,7 @@ const VelocityTab = ({ velocityData, getTendenciaIcon, getTendenciaColor }) => {
       <div className="bg-gray-50 rounded-lg p-6">
         <div className="text-center mb-6">
           <div className="text-3xl font-bold text-gray-900 mb-2">
-            {Math.round(velocityData.promedio)}
+            {Math.round(velocityData.averageVelocity)}
           </div>
           <p className="text-gray-600">Velocidad promedio (puntos por sprint)</p>
         </div>
@@ -516,29 +596,29 @@ const VelocityTab = ({ velocityData, getTendenciaIcon, getTendenciaColor }) => {
         {/* Gráfico de velocidad */}
         <div className="space-y-4">
           <div className="flex items-end justify-between gap-2 h-64">
-            {velocityData.sprints.map((sprint, index) => {
-              const maxVelocidad = Math.max(...velocityData.sprints.map(s => Math.max(s.velocidad_planificada || 0, s.velocidad_real || 0)));
-              const alturaPlanificada = ((sprint.velocidad_planificada || 0) / maxVelocidad) * 100;
-              const alturaReal = ((sprint.velocidad_real || 0) / maxVelocidad) * 100;
+            {velocityData.velocityHistory.map((sprint, index) => {
+              const maxVelocidad = Math.max(...velocityData.velocityHistory.map(s => Math.max(s.plannedPoints || 0, s.completedPoints || 0)));
+              const alturaPlanificada = ((sprint.plannedPoints || 0) / maxVelocidad) * 100;
+              const alturaReal = ((sprint.completedPoints || 0) / maxVelocidad) * 100;
               
               return (
-                <div key={sprint._id} className="flex flex-col items-center gap-2 flex-1">
+                <div key={sprint.sprintName} className="flex flex-col items-center gap-2 flex-1">
                   <div className="flex items-end gap-1 h-48">
                     <div 
-                      className="bg-blue-300 w-4 rounded-t"
+                      className="bg-orange-300 w-4 rounded-t hover:bg-orange-400 transition-colors cursor-pointer"
                       style={{ height: `${alturaPlanificada}%` }}
-                      title={`Planificada: ${sprint.velocidad_planificada}`}
+                      title={`Planificada: ${sprint.plannedPoints} puntos`}
                     ></div>
                     <div 
-                      className="bg-blue-600 w-4 rounded-t"
+                      className="bg-orange-600 w-4 rounded-t hover:bg-orange-700 transition-colors cursor-pointer"
                       style={{ height: `${alturaReal}%` }}
-                      title={`Real: ${sprint.velocidad_real}`}
+                      title={`Completada: ${sprint.completedPoints} puntos`}
                     ></div>
                   </div>
                   <div className="text-xs text-gray-600 text-center">
-                    <div className="font-medium">{sprint.nombre}</div>
+                    <div className="font-medium">{sprint.sprintName}</div>
                     <div className="text-gray-500">
-                      {new Date(sprint.fecha_fin).toLocaleDateString('es-ES', { month: 'short' })}
+                      {new Date(sprint.endDate).toLocaleDateString('es-ES', { month: 'short', day: '2-digit' })}
                     </div>
                   </div>
                 </div>
@@ -548,12 +628,12 @@ const VelocityTab = ({ velocityData, getTendenciaIcon, getTendenciaColor }) => {
           
           <div className="flex items-center justify-center gap-6 text-sm">
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-300 rounded"></div>
+              <div className="w-3 h-3 bg-orange-300 rounded"></div>
               <span className="text-gray-600">Velocidad Planificada</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-3 h-3 bg-blue-600 rounded"></div>
-              <span className="text-gray-600">Velocidad Real</span>
+              <div className="w-3 h-3 bg-orange-600 rounded"></div>
+              <span className="text-gray-600">Velocidad Completada</span>
             </div>
           </div>
         </div>
