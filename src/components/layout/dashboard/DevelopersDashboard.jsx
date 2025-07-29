@@ -17,28 +17,30 @@ import {
   AlertTriangle
 } from 'lucide-react';
 
-// Tarjeta de estadística
-const StatCard = ({ title, value, icon: Icon, color = 'blue', trend = null }) => {
+// Tarjeta de estadística con colores mejorados
+const StatCard = ({ title, value, icon: Icon, color = 'primary', trend = null }) => {
   const colorClasses = {
-    blue: 'bg-blue-500',
-    green: 'bg-green-500',
-    yellow: 'bg-yellow-500',
-    red: 'bg-red-500',
-    purple: 'bg-purple-500'
+    primary: 'bg-gradient-to-br from-primary-500 to-primary-600',
+    accent: 'bg-gradient-to-br from-accent-500 to-accent-600',
+    success: 'bg-gradient-to-br from-success-500 to-success-600',
+    warning: 'bg-gradient-to-br from-yellow-500 to-amber-600',
+    danger: 'bg-gradient-to-br from-red-500 to-red-600',
+    info: 'bg-gradient-to-br from-blue-500 to-cyan-600',
+    purple: 'bg-gradient-to-br from-purple-500 to-violet-600'
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 hover:shadow-md transition-shadow">
+    <div className="bg-white rounded-xl shadow-soft border border-gray-100 p-6 hover:shadow-medium transition-all duration-200 group">
       <div className="flex items-center justify-between">
         <div className="flex items-center">
-          <div className={`${colorClasses[color]} rounded-lg p-3`}>
+          <div className={`${colorClasses[color]} rounded-xl p-3 shadow-sm group-hover:scale-105 transition-transform duration-200`}>
             <Icon className="h-6 w-6 text-white" />
           </div>
           <div className="ml-4">
             <p className="text-sm font-medium text-gray-600">{title}</p>
-            <p className="text-3xl font-bold text-gray-900">{value}</p>
+            <p className="text-3xl font-bold text-gray-900 group-hover:text-primary-700 transition-colors">{value}</p>
             {trend && (
-              <p className={`text-xs ${trend.positive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1`}>
+              <p className={`text-xs ${trend.positive ? 'text-success-600' : 'text-red-600'} flex items-center mt-1`}>
                 <TrendingUp className="h-3 w-3 mr-1" />
                 {trend.value}
               </p>
@@ -199,20 +201,20 @@ const DevelopersDashboard = () => {
       title: 'Tareas Asignadas',
       value: '4',
       icon: Target,
-      color: 'blue'
+      color: 'primary'
     },
     {
       title: 'Completadas Hoy',
       value: '1',
       icon: CheckCircle,
-      color: 'green',
+      color: 'success',
       trend: { positive: true, value: '+1 desde ayer' }
     },
     {
       title: 'Bugs Resueltos',
       value: '3',
       icon: Bug,
-      color: 'red',
+      color: 'danger',
       trend: { positive: true, value: 'Esta semana' }
     },
     {
@@ -227,12 +229,18 @@ const DevelopersDashboard = () => {
   return (
     <>
       <div className="space-y-6">
-        {/* Bienvenida */}
-        <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-xl shadow-lg text-white p-8">
-          <h1 className="text-3xl font-bold mb-2">Panel Desarrollador</h1>
-          <p className="text-blue-100 text-lg">
-            Gestiona tus tareas y contribuye al éxito del sprint
-          </p>
+        {/* Header mejorado con gradiente equilibrado */}
+        <div className="bg-gradient-to-r from-primary-600 via-purple-600 to-accent-500 rounded-xl shadow-lg text-white p-8 relative overflow-hidden">
+          <div className="absolute inset-0 bg-black/10"></div>
+          <div className="relative z-10">
+            <h1 className="text-3xl font-bold mb-2">Panel Desarrollador</h1>
+            <p className="text-white/90 text-lg">
+              Gestiona tus tareas y contribuye al éxito del sprint
+            </p>
+          </div>
+          <div className="absolute -right-4 -top-4 opacity-20">
+            <Code className="h-24 w-24 text-white" />
+          </div>
         </div>
 
         {/* Estadísticas */}

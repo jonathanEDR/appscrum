@@ -211,9 +211,9 @@ const Sidebar = ({ isOpen, onClose, role }) => {
           </button>
         </div>
 
-        {/* Indicador de rol */}
-        <div className="px-4 py-3 bg-blue-50 border-b border-blue-100">
-          <p className="text-xs font-medium text-blue-600 uppercase tracking-wide">
+        {/* Indicador de rol mejorado */}
+        <div className="px-4 py-3 bg-gradient-to-r from-primary-50 to-accent-50 border-b border-gray-200">
+          <p className="text-xs font-medium text-primary-700 uppercase tracking-wide">
             {getRoleTitle(role)}
           </p>
         </div>
@@ -230,14 +230,18 @@ const Sidebar = ({ isOpen, onClose, role }) => {
                     onClose();
                   }}
                   className={`
-                    w-full flex items-center px-4 py-3 text-left rounded-lg transition-colors text-sm
+                    w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-sm group
                     ${isActive(item.path)
-                      ? 'bg-blue-100 text-blue-700 border-r-2 border-blue-700'
-                      : 'text-gray-600 hover:bg-gray-100'
+                      ? 'bg-gradient-to-r from-primary-100 to-accent-50 text-primary-700 shadow-sm border-l-4 border-primary-500'
+                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
                     }
                   `}
                 >
-                  <Icon className="h-5 w-5 mr-3" />
+                  <Icon className={`h-5 w-5 mr-3 transition-colors ${
+                    isActive(item.path) 
+                      ? 'text-primary-600' 
+                      : 'text-gray-400 group-hover:text-gray-600'
+                  }`} />
                   {item.name}
                 </button>
               );
@@ -346,28 +350,32 @@ const RoleBasedLayout = () => {
   const pageTitle = getPageTitle(location.pathname, role);
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      {/* Sidebar */}
-      <Sidebar 
-        isOpen={sidebarOpen} 
-        onClose={() => setSidebarOpen(false)}
-        role={role}
-      />
-
-      {/* Contenido principal */}
-      <div className="flex-1 flex flex-col">
-        {/* Header */}
-        <DashboardHeader 
-          onMenuClick={() => setSidebarOpen(true)}
-          title={pageTitle}
+    <div className="min-h-screen bg-gray-50">
+      <div className="dashboard-layout">
+        {/* Sidebar */}
+        <Sidebar 
+          isOpen={sidebarOpen} 
+          onClose={() => setSidebarOpen(false)}
+          role={role}
         />
 
-        {/* Área de contenido */}
-        <main className="flex-1 overflow-auto">
-          <div className="p-6">
-            <Outlet />
-          </div>
-        </main>
+        {/* Contenido principal */}
+        <div className="main-content flex flex-col min-h-screen">
+          {/* Header */}
+          <DashboardHeader 
+            onMenuClick={() => setSidebarOpen(true)}
+            title={pageTitle}
+          />
+
+          {/* Área de contenido centrada y mejorada */}
+          <main className="flex-1 w-full">
+            <div className="content-area">
+              <div className="w-full max-w-full">
+                <Outlet />
+              </div>
+            </div>
+          </main>
+        </div>
       </div>
     </div>
   );
