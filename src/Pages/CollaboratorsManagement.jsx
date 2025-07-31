@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useRole } from '../context/RoleContext.jsx';
 import { 
   Users, 
   UserPlus, 
@@ -16,6 +17,7 @@ import {
 
 const CollaboratorsManagement = () => {
   const { getToken } = useAuth();
+  const { role } = useRole();
   const [collaborators, setCollaborators] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -51,7 +53,15 @@ const CollaboratorsManagement = () => {
       if (searchTerm) params.append('search', searchTerm);
       if (roleFilter !== 'all') params.append('role', roleFilter);
       
-      const url = `${API_URL}/admin/users${params.toString() ? `?${params.toString()}` : ''}`;
+      // Usar endpoint diferente según el rol del usuario
+      let url;
+      if (role === 'super_admin') {
+        // Solo Super Admin puede acceder al endpoint de admin
+        url = `${API_URL}/admin/users${params.toString() ? `?${params.toString()}` : ''}`;
+      } else {
+        // Product Owner y otros roles usan el endpoint de team
+        url = `${API_URL}/team/members${params.toString() ? `?${params.toString()}` : ''}`;
+      }
       
       const response = await fetch(url, {
         headers: {
@@ -64,7 +74,27 @@ const CollaboratorsManagement = () => {
         const contentType = response.headers.get('content-type');
         if (contentType && contentType.includes('application/json')) {
           const data = await response.json();
-          setCollaborators(data.users || []);
+          
+          // Procesar datos según el endpoint usado
+          if (role === 'super_admin') {
+            // Endpoint /admin/users devuelve { users: [...] }
+            setCollaborators(data.users || []);
+          } else {
+            // Endpoint /team/members devuelve { teamMembers: [...] }
+            // Necesitamos transformar los datos de TeamMember a formato de usuario
+            const users = (data.teamMembers || []).map(teamMember => ({
+              _id: teamMember.user?._id || teamMember._id,
+              nombre_negocio: teamMember.user?.nombre_negocio || teamMember.user?.firstName + ' ' + teamMember.user?.lastName,
+              email: teamMember.user?.email,
+              role: teamMember.role,
+              avatar: teamMember.user?.avatar,
+              status: teamMember.status || 'active',
+              team: teamMember.team,
+              position: teamMember.position,
+              skills: teamMember.skills
+            }));
+            setCollaborators(users);
+          }
         } else {
           throw new Error('Respuesta inválida del servidor');
         }
@@ -82,6 +112,12 @@ const CollaboratorsManagement = () => {
   };
 
   const handleRoleChange = async (userId, newRole) => {
+    // Solo Super Admin puede cambiar roles
+    if (role !== 'super_admin') {
+      setError('No tienes permisos para cambiar roles de usuario');
+      return;
+    }
+    
     if (!window.confirm(`¿Estás seguro de cambiar el rol a ${newRole}?`)) return;
     
     try {
@@ -109,6 +145,12 @@ const CollaboratorsManagement = () => {
 
   const handleInviteCollaborator = async (e) => {
     e.preventDefault();
+    
+    // Solo Super Admin puede invitar usuarios
+    if (role !== 'super_admin') {
+      setError('No tienes permisos para invitar nuevos usuarios');
+      return;
+    }
     
     if (!newCollaborator.email || !newCollaborator.nombre_negocio) {
       setError('Por favor completa todos los campos obligatorios');
@@ -179,13 +221,16 @@ const CollaboratorsManagement = () => {
               <p className="text-gray-600">Administra los usuarios y sus roles en el sistema</p>
             </div>
           </div>
-          <button
-            onClick={() => setShowAddForm(true)}
-            className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
-          >
-            <UserPlus size={20} />
-            Invitar Colaborador
-          </button>
+          {/* Solo mostrar botón de invitar para Super Admin */}
+          {role === 'super_admin' && (
+            <button
+              onClick={() => setShowAddForm(true)}
+              className="flex items-center gap-2 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
+            >
+              <UserPlus size={20} />
+              Invitar Colaborador
+            </button>
+          )}
         </div>
 
         {/* Filtros y búsqueda */}
@@ -297,17 +342,24 @@ const CollaboratorsManagement = () => {
                       </span>
 
                       <div className="flex items-center space-x-2">
-                        <select
-                          value={collaborator.role}
-                          onChange={(e) => handleRoleChange(collaborator._id, e.target.value)}
-                          className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        >
-                          {roleOptions.map(role => (
-                            <option key={role.value} value={role.value}>
-                              {role.label}
-                            </option>
-                          ))}
-                        </select>
+                        {/* Solo mostrar selector de roles para Super Admin */}
+                        {role === 'super_admin' ? (
+                          <select
+                            value={collaborator.role}
+                            onChange={(e) => handleRoleChange(collaborator._id, e.target.value)}
+                            className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                          >
+                            {roleOptions.map(role => (
+                              <option key={role.value} value={role.value}>
+                                {role.label}
+                              </option>
+                            ))}
+                          </select>
+                        ) : (
+                          <span className="text-sm text-gray-600">
+                            Solo lectura
+                          </span>
+                        )}
 
                         <button
                           onClick={() => setSelectedCollaborator(collaborator)}
@@ -338,8 +390,8 @@ const CollaboratorsManagement = () => {
         )}
       </div>
 
-      {/* Modal para agregar colaborador */}
-      {showAddForm && (
+      {/* Modal para agregar colaborador - Solo para Super Admin */}
+      {showAddForm && role === 'super_admin' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
             <div className="flex items-center justify-between p-6 border-b border-gray-200">

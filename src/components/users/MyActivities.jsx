@@ -120,29 +120,29 @@ const MyActivities = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2 flex items-center">
+      <div className="bg-white rounded-lg shadow-sm border border-primary-100 p-6">
+        <h1 className="text-2xl font-bold text-primary-900 mb-2 flex items-center">
           <Activity className="h-6 w-6 mr-2 text-indigo-600" />
           Mis Actividades
         </h1>
-        <p className="text-gray-600">
+        <p className="text-primary-600">
           Historial completo de todas tus actividades en los proyectos
         </p>
       </div>
 
       {/* Filtros y búsqueda */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+      <div className="bg-white rounded-lg shadow-sm border border-primary-100 p-6">
         <div className="flex flex-col sm:flex-row gap-4">
           {/* Filtro por tipo */}
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-primary-700 mb-2">
               <Filter className="h-4 w-4 inline mr-1" />
               Filtrar por tipo
             </label>
             <select
               value={filter}
               onChange={(e) => setFilter(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full border border-primary-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             >
               {filterOptions.map(option => (
                 <option key={option.value} value={option.value}>
@@ -154,7 +154,7 @@ const MyActivities = () => {
 
           {/* Búsqueda */}
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-primary-700 mb-2">
               <Search className="h-4 w-4 inline mr-1" />
               Buscar actividades
             </label>
@@ -163,16 +163,16 @@ const MyActivities = () => {
               placeholder="Buscar por título, descripción o proyecto..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+              className="w-full border border-primary-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
             />
           </div>
         </div>
       </div>
 
       {/* Lista de actividades */}
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">
+      <div className="bg-white rounded-lg shadow-sm border border-primary-100">
+        <div className="px-6 py-4 border-b border-primary-200">
+          <h3 className="text-lg font-medium text-primary-900">
             Actividades recientes ({filteredActivities.length})
           </h3>
         </div>
@@ -193,13 +193,13 @@ const MyActivities = () => {
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <h4 className="text-base font-medium text-gray-900 mb-1">
+                          <h4 className="text-base font-medium text-primary-900 mb-1">
                             {activity.title}
                           </h4>
-                          <p className="text-sm text-gray-600 mb-2">
+                          <p className="text-sm text-primary-600 mb-2">
                             {activity.description}
                           </p>
-                          <div className="flex items-center text-xs text-gray-500">
+                          <div className="flex items-center text-xs text-primary-500">
                             <span className="font-medium">{activity.project}</span>
                             <span className="mx-2">•</span>
                             <span className="flex items-center">
@@ -216,11 +216,11 @@ const MyActivities = () => {
             </div>
           ) : (
             <div className="text-center py-12">
-              <Activity className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <Activity className="h-12 w-12 text-primary-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-primary-900 mb-2">
                 No se encontraron actividades
               </h3>
-              <p className="text-gray-500">
+              <p className="text-primary-500">
                 {searchTerm || filter !== 'all' 
                   ? 'Intenta cambiar los filtros de búsqueda'
                   : 'Aún no tienes actividades registradas'
@@ -233,42 +233,42 @@ const MyActivities = () => {
 
       {/* Estadísticas rápidas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-primary-100 p-6">
           <div className="flex items-center">
             <div className="bg-green-100 rounded-lg p-3 mr-4">
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Tareas Completadas</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-primary-600">Tareas Completadas</p>
+              <p className="text-2xl font-bold text-primary-900">
                 {activities.filter(a => a.type === 'task_completed').length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-primary-100 p-6">
           <div className="flex items-center">
             <div className="bg-blue-100 rounded-lg p-3 mr-4">
               <Users className="h-6 w-6 text-blue-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Reuniones</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-primary-600">Reuniones</p>
+              <p className="text-2xl font-bold text-primary-900">
                 {activities.filter(a => a.type === 'meeting').length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+        <div className="bg-white rounded-lg shadow-sm border border-primary-100 p-6">
           <div className="flex items-center">
             <div className="bg-purple-100 rounded-lg p-3 mr-4">
               <FileText className="h-6 w-6 text-purple-600" />
             </div>
             <div>
-              <p className="text-sm text-gray-600">Documentos</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className="text-sm text-primary-600">Documentos</p>
+              <p className="text-2xl font-bold text-primary-900">
                 {activities.filter(a => a.type === 'document_created').length}
               </p>
             </div>

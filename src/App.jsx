@@ -7,14 +7,22 @@ function App() {
   console.log('App component rendering...');
   
   try {
-    return <RouterProvider router={router} />;
+    return (
+      <div className="min-h-screen bg-gradient-galaxy">
+        <RouterProvider router={router} />
+      </div>
+    );
   } catch (error) {
     console.error('Error in App component:', error);
     return (
-      <div style={{ padding: '20px', fontFamily: 'Arial, sans-serif' }}>
-        <h1>Error en la Aplicación</h1>
-        <p>Error: {error.message}</p>
-        <pre>{error.stack}</pre>
+      <div className="min-h-screen bg-gradient-galaxy flex items-center justify-center p-6">
+        <div className="glass-card p-8 max-w-md w-full shadow-galaxy-enhanced">
+          <h1 className="text-2xl font-bold text-gradient-galaxy mb-4">Error en la Aplicación</h1>
+          <p className="text-primary-600 mb-4">Error: {error.message}</p>
+          <pre className="text-sm text-neutral-600 bg-neutral-50 p-4 rounded-lg overflow-auto max-h-40">
+            {error.stack}
+          </pre>
+        </div>
       </div>
     );
   }

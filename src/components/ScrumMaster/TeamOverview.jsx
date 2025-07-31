@@ -24,18 +24,18 @@ import {
 const TeamMemberCard = ({ member, onEdit, onMessage }) => {
   const getStatusColor = (status) => {
     const colors = {
-      active: 'bg-green-100 text-green-800 border-green-200',
-      busy: 'bg-yellow-100 text-yellow-800 border-yellow-200',
-      on_leave: 'bg-gray-100 text-gray-800 border-gray-200',
-      inactive: 'bg-red-100 text-red-800 border-red-200'
+      active: 'bg-success-100 text-success-800 border-success-200',
+      busy: 'bg-warning-100 text-warning-800 border-warning-200',
+      on_leave: 'bg-primary-100 text-primary-800 border-primary-200',
+      inactive: 'bg-error-100 text-error-800 border-error-200'
     };
     return colors[status] || colors.active;
   };
 
   const getWorkloadColor = (percentage) => {
-    if (percentage > 100) return 'text-red-600';
-    if (percentage > 80) return 'text-yellow-600';
-    return 'text-green-600';
+    if (percentage > 100) return 'text-error-600';
+    if (percentage > 80) return 'text-warning-600';
+    return 'text-success-600';
   };
 
   const getRoleIcon = (role) => {
@@ -51,22 +51,23 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-      <div className="p-6">
+    <div className="bg-white/80 backdrop-blur-lg rounded-xl border-0 shadow-galaxy hover:shadow-large transition-all duration-300 overflow-hidden relative group">
+      <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-primary-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+      <div className="relative z-10 p-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
-            <div className="h-12 w-12 rounded-full bg-orange-100 flex items-center justify-center">
-              <span className="text-orange-600 font-semibold text-lg">
+            <div className="h-12 w-12 rounded-xl bg-gradient-to-br from-primary-400 to-primary-500 flex items-center justify-center shadow-medium">
+              <span className="text-white font-semibold text-lg">
                 {member.user?.firstName?.[0]}{member.user?.lastName?.[0]}
               </span>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-primary-900 group-hover:text-primary-700 transition-colors">
                 {member.user?.firstName} {member.user?.lastName}
               </h3>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-600">{getRoleIcon(member.role)} {member.role.replace('_', ' ')}</span>
-                <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(member.status)}`}>
+                <span className="text-sm text-primary-600 bg-primary-50 px-2 py-1 rounded-full font-medium">{getRoleIcon(member.role)} {member.role.replace('_', ' ')}</span>
+                <span className={`px-2 py-1 rounded-full text-xs font-medium border shadow-soft ${getStatusColor(member.status)}`}>
                   {member.status.replace('_', ' ')}
                 </span>
               </div>
@@ -74,20 +75,20 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
           </div>
           
           <div className="relative">
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
-              <MoreHorizontal className="h-5 w-5 text-gray-400" />
+            <button className="p-2 hover:bg-primary-100 rounded-xl transition-all duration-300 hover:scale-110">
+              <MoreHorizontal className="h-5 w-5 text-primary-400" />
             </button>
           </div>
         </div>
         
         {/* Información de contacto */}
         <div className="mt-4 space-y-2">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-primary-600">
             <Mail className="h-4 w-4" />
             <span>{member.user?.email}</span>
           </div>
           {member.user?.phone && (
-            <div className="flex items-center gap-2 text-sm text-gray-600">
+            <div className="flex items-center gap-2 text-sm text-primary-600">
               <Phone className="h-4 w-4" />
               <span>{member.user.phone}</span>
             </div>
@@ -97,26 +98,26 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
         {/* Carga de trabajo */}
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-gray-700">Carga de trabajo</span>
+            <span className="text-sm font-medium text-primary-700">Carga de trabajo</span>
             <span className={`text-sm font-semibold ${getWorkloadColor(member.workloadPercentage)}`}>
               {member.workloadPercentage}%
             </span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-2">
+          <div className="w-full bg-primary-100 rounded-full h-2 shadow-inner">
             <div 
-              className={`h-2 rounded-full transition-all duration-300 ${
-                member.workloadPercentage > 100 ? 'bg-red-500' :
-                member.workloadPercentage > 80 ? 'bg-yellow-500' : 'bg-green-500'
+              className={`h-2 rounded-full transition-all duration-500 shadow-soft ${
+                member.workloadPercentage > 100 ? 'bg-gradient-to-r from-error-500 to-error-600' :
+                member.workloadPercentage > 80 ? 'bg-gradient-to-r from-warning-500 to-warning-600' : 'bg-gradient-to-r from-success-500 to-success-600'
               }`}
               style={{ width: `${Math.min(member.workloadPercentage, 100)}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-gray-500 mt-1">
+          <div className="flex justify-between text-xs text-primary-500 mt-1">
             <span>{member.workload?.currentStoryPoints || 0} SP actuales</span>
             <span>{member.workload?.maxStoryPoints || 0} SP máx</span>
           </div>
           {member.workload?.completedPoints > 0 && (
-            <div className="text-xs text-green-600 mt-1">
+            <div className="text-xs text-success-600 mt-1">
               ✓ {member.workload.completedPoints} SP completados
             </div>
           )}
@@ -139,18 +140,18 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
         {/* Habilidades */}
         {member.skills && member.skills.length > 0 && (
           <div className="mt-4">
-            <span className="text-sm font-medium text-gray-700">Habilidades</span>
+            <span className="text-sm font-medium text-primary-700">Habilidades</span>
             <div className="flex flex-wrap gap-1 mt-2">
               {member.skills.slice(0, 4).map((skill, index) => (
                 <span 
                   key={index}
-                  className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-md"
+                  className="px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-md shadow-soft"
                 >
                   {skill.name}
                 </span>
               ))}
               {member.skills.length > 4 && (
-                <span className="px-2 py-1 bg-gray-100 text-gray-600 text-xs rounded-md">
+                <span className="px-2 py-1 bg-accent-100 text-accent-600 text-xs rounded-md shadow-soft">
                   +{member.skills.length - 4} más
                 </span>
               )}
@@ -160,28 +161,28 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
         
         {/* Disponibilidad */}
         <div className="mt-4">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
+          <div className="flex items-center gap-2 text-sm text-primary-600">
             <Activity className="h-4 w-4" />
             <span>Disponibilidad: {member.availability}%</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mt-1">
+          <div className="flex items-center gap-2 text-sm text-primary-500 mt-1">
             <Clock className="h-4 w-4" />
             <span>Última actividad: {new Date(member.lastActiveDate).toLocaleDateString()}</span>
           </div>
         </div>
         
         {/* Acciones */}
-        <div className="flex gap-2 mt-4 pt-4 border-t border-gray-100">
+        <div className="flex gap-2 mt-4 pt-4 border-t border-primary-100">
           <button 
             onClick={() => onEdit(member)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-xl transition-all duration-300 font-medium shadow-soft hover:shadow-medium"
           >
             <Edit className="h-4 w-4" />
             Editar
           </button>
           <button 
             onClick={() => onMessage(member)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-700 hover:bg-gray-50 rounded-md transition-colors"
+            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-accent-600 hover:text-accent-700 hover:bg-accent-50 rounded-xl transition-all duration-300 font-medium shadow-soft hover:shadow-medium"
           >
             <MessageSquare className="h-4 w-4" />
             Mensaje
@@ -463,14 +464,14 @@ const TeamOverview = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Resumen del Equipo</h1>
-          <p className="text-gray-600">Gestiona y supervisa el estado del equipo de desarrollo</p>
+          <h1 className="text-2xl font-bold text-primary-900">Resumen del Equipo</h1>
+          <p className="text-primary-600">Gestiona y supervisa el estado del equipo de desarrollo</p>
         </div>
         <div className="flex gap-2">
           <button 
             onClick={handleRefresh}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-700 bg-white border border-primary-300 rounded-xl hover:bg-primary-50 transition-all duration-300 disabled:opacity-50 shadow-soft hover:shadow-medium"
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Actualizar

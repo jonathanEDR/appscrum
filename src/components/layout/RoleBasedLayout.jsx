@@ -18,6 +18,11 @@ import {
   Briefcase
 } from 'lucide-react';
 import LogoutButton from '../auth/LogoutButton';
+import ProductOwnerSidebar from './Sidebars/ProductOwnerSidebar';
+import ScrumMasterSidebar from './Sidebars/ScrumMasterSidebar';
+import DevelopersSidebar from './Sidebars/DevelopersSidebar';
+import UserSidebar from './Sidebars/UserSidebar';
+import SuperAdminSidebar from './Sidebars/SuperAdminSidebar';
 
 // Configuración de navegación por rol
 const getRoleNavigation = (role) => {
@@ -174,11 +179,303 @@ const getRoleTitle = (role) => {
 };
 
 // Componente de navegación lateral
-const Sidebar = ({ isOpen, onClose, role }) => {
+const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const navigationItems = getRoleNavigation(role);
 
+  // Si es Product Owner, usar nuestro sidebar personalizado
+  if (role === 'product_owner') {
+    // Determinar la vista actual basada en la ruta
+    const getCurrentView = () => {
+      const path = location.pathname;
+      if (path === '/product_owner') return 'dashboard';
+      if (path.includes('/productos')) return 'productos';
+      if (path.includes('/backlog')) return 'backlog';
+      if (path.includes('/roadmap')) return 'roadmap';
+      if (path.includes('/metricas')) return 'metricas';
+      if (path.includes('/colaboradores')) return 'colaboradores';
+      if (path.includes('/perfil')) return 'perfil';
+      return 'dashboard';
+    };
+
+    const currentView = getCurrentView();
+    const handleViewChange = (view) => {
+      // Navegar a las diferentes vistas del Product Owner
+      switch(view) {
+        case 'dashboard':
+          navigate('/product_owner');
+          break;
+        case 'productos':
+          navigate('/product_owner/productos');
+          break;
+        case 'backlog':
+          navigate('/product_owner/backlog');
+          break;
+        case 'roadmap':
+          navigate('/product_owner/roadmap');
+          break;
+        case 'metricas':
+          navigate('/product_owner/metricas');
+          break;
+        case 'colaboradores':
+          navigate('/product_owner/colaboradores');
+          break;
+        case 'perfil':
+          navigate('/product_owner/perfil');
+          break;
+        default:
+          navigate('/product_owner');
+      }
+    };
+
+    const handleLogout = () => {
+      // Cerrar sidebar primero
+      onClose();
+      // Aquí deberíamos ejecutar la lógica real de logout
+      // Por ahora, redirigir al usuario para forzar re-autenticación
+      window.location.href = '/sign-in';
+    };
+
+    return (
+      <ProductOwnerSidebar
+        currentView={currentView}
+        onViewChange={handleViewChange}
+        onLogout={handleLogout}
+        userRole={role}
+        isOpen={isOpen}
+        onToggle={onToggle}
+      />
+    );
+  }
+
+  // Si es Scrum Master, usar nuestro sidebar personalizado
+  if (role === 'scrum_master') {
+    // Determinar la vista actual basada en la ruta
+    const getCurrentView = () => {
+      const path = location.pathname;
+      if (path === '/scrum_master') return 'dashboard';
+      if (path.includes('/sprints')) return 'sprints';
+      if (path.includes('/impedimentos')) return 'impediments';
+      if (path.includes('/ceremonias')) return 'ceremonies';
+      if (path.includes('/equipo')) return 'team';
+      if (path.includes('/metricas')) return 'metrics';
+      if (path.includes('/perfil')) return 'profile';
+      return 'dashboard';
+    };
+
+    const currentView = getCurrentView();
+    const handleViewChange = (view) => {
+      // Navegar a las diferentes vistas del Scrum Master
+      switch(view) {
+        case 'dashboard':
+          navigate('/scrum_master');
+          break;
+        case 'sprints':
+          navigate('/scrum_master/sprints');
+          break;
+        case 'impediments':
+          navigate('/scrum_master/impedimentos');
+          break;
+        case 'ceremonies':
+          navigate('/scrum_master/ceremonias');
+          break;
+        case 'team':
+          navigate('/scrum_master/equipo');
+          break;
+        case 'metrics':
+          navigate('/scrum_master/metricas');
+          break;
+        case 'profile':
+          navigate('/scrum_master/perfil');
+          break;
+        default:
+          navigate('/scrum_master');
+      }
+    };
+
+    const handleLogout = () => {
+      // Cerrar sidebar primero
+      onClose();
+      // Aquí deberíamos ejecutar la lógica real de logout
+      // Por ahora, redirigir al usuario para forzar re-autenticación
+      window.location.href = '/sign-in';
+    };
+
+    return (
+      <ScrumMasterSidebar
+        currentView={currentView}
+        onViewChange={handleViewChange}
+        onLogout={handleLogout}
+        userRole={role}
+        isOpen={isOpen}
+        onToggle={onToggle}
+      />
+    );
+  }
+
+  // Si es Developer, usar nuestro sidebar personalizado
+  if (role === 'developers') {
+    // Determinar la vista actual basada en la ruta
+    const getCurrentView = () => {
+      const path = location.pathname;
+      if (path === '/developers') return 'dashboard';
+      if (path.includes('/tareas')) return 'tasks';
+      if (path.includes('/sprint-board')) return 'sprint-board';
+      if (path.includes('/time-tracking')) return 'time-tracking';
+      if (path.includes('/codigo')) return 'code';
+      if (path.includes('/perfil')) return 'profile';
+      return 'dashboard';
+    };
+
+    const currentView = getCurrentView();
+    const handleViewChange = (view) => {
+      // Navegar a las diferentes vistas del Developer
+      switch(view) {
+        case 'dashboard':
+          navigate('/developers');
+          break;
+        case 'tasks':
+          navigate('/developers/tareas');
+          break;
+        case 'sprint-board':
+          navigate('/developers/sprint-board');
+          break;
+        case 'time-tracking':
+          navigate('/developers/time-tracking');
+          break;
+        case 'code':
+          navigate('/developers/codigo');
+          break;
+        case 'profile':
+          navigate('/developers/perfil');
+          break;
+        default:
+          navigate('/developers');
+      }
+    };
+
+    const handleLogout = () => {
+      // Cerrar sidebar primero
+      onClose();
+      // Aquí deberíamos ejecutar la lógica real de logout
+      // Por ahora, redirigir al usuario para forzar re-autenticación
+      window.location.href = '/sign-in';
+    };
+
+    return (
+      <DevelopersSidebar
+        currentView={currentView}
+        onViewChange={handleViewChange}
+        onLogout={handleLogout}
+        userRole={role}
+        isOpen={isOpen}
+        onToggle={onToggle}
+      />
+    );
+  }
+
+  // Si es User, usar nuestro sidebar personalizado
+  if (role === 'user') {
+    // Determinar la vista actual basada en la ruta
+    const getCurrentView = () => {
+      const path = location.pathname;
+      if (path === '/user') return 'dashboard';
+      if (path.includes('/actividades')) return 'actividades';
+      if (path.includes('/perfil')) return 'profile';
+      return 'dashboard';
+    };
+
+    const currentView = getCurrentView();
+    const handleViewChange = (view) => {
+      // Navegar a las diferentes vistas del User
+      switch(view) {
+        case 'dashboard':
+          navigate('/user');
+          break;
+        case 'actividades':
+          navigate('/user/actividades');
+          break;
+        case 'profile':
+          navigate('/user/perfil');
+          break;
+        default:
+          navigate('/user');
+      }
+    };
+
+    const handleLogout = () => {
+      // Cerrar sidebar primero
+      onClose();
+      // Aquí deberíamos ejecutar la lógica real de logout
+      // Por ahora, redirigir al usuario para forzar re-autenticación
+      window.location.href = '/sign-in';
+    };
+
+    return (
+      <UserSidebar
+        currentView={currentView}
+        onViewChange={handleViewChange}
+        onLogout={handleLogout}
+        userRole={role}
+        isOpen={isOpen}
+        onToggle={onToggle}
+      />
+    );
+  }
+
+  // Si es Super Admin, usar nuestro sidebar personalizado
+  if (role === 'super_admin') {
+    // Determinar la vista actual basada en la ruta
+    const getCurrentView = () => {
+      const path = location.pathname;
+      if (path === '/super_admin') return 'dashboard';
+      if (path.includes('/usuarios')) return 'dashboard'; // Gestión de usuarios
+      if (path.includes('/colaboradores')) return 'dashboard'; // También gestión
+      if (path.includes('/historial')) return 'history';
+      if (path.includes('/perfil')) return 'profile';
+      return 'dashboard';
+    };
+
+    const currentView = getCurrentView();
+    const handleViewChange = (view) => {
+      // Navegar a las diferentes vistas del Super Admin
+      switch(view) {
+        case 'dashboard':
+          navigate('/super_admin/usuarios'); // Gestión de usuarios como dashboard principal
+          break;
+        case 'history':
+          navigate('/super_admin/historial');
+          break;
+        case 'profile':
+          navigate('/super_admin/perfil');
+          break;
+        default:
+          navigate('/super_admin/usuarios');
+      }
+    };
+
+    const handleLogout = () => {
+      // Cerrar sidebar primero
+      onClose();
+      // Aquí deberíamos ejecutar la lógica real de logout
+      // Por ahora, redirigir al usuario para forzar re-autenticación
+      window.location.href = '/sign-in';
+    };
+
+    return (
+      <SuperAdminSidebar
+        currentView={currentView}
+        onViewChange={handleViewChange}
+        onLogout={handleLogout}
+        userRole={role}
+        isOpen={isOpen}
+        onToggle={onToggle}
+      />
+    );
+  }
+
+  // Para otros roles, usar el sidebar original
   const isActive = (path) => {
     return location.pathname === path || location.pathname.startsWith(path + '/');
   };
@@ -195,25 +492,33 @@ const Sidebar = ({ isOpen, onClose, role }) => {
       
       {/* Sidebar */}
       <div className={`
-        fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+        fixed inset-y-0 left-0 z-50 w-64 shadow-lg transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         lg:translate-x-0 lg:static lg:inset-0
-      `}>
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-200">
-          <div className="flex items-center">
-            <h1 className="text-xl font-bold text-gray-800">AppScrum</h1>
+      `}
+      style={{
+        background: 'linear-gradient(180deg, #1e3a8a 0%, #312e81 50%, #1e1b4b 100%)'
+      }}>
+        <div className="flex items-center justify-between h-16 px-4 border-b border-blue-400/20">
+          <div className="flex items-center space-x-3">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+              <span className="text-white font-bold text-sm">AS</span>
+            </div>
+            <h1 className="text-xl font-bold text-white">AppScrum</h1>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-md text-gray-400 hover:text-gray-600 lg:hidden"
+            className="p-2 rounded-md text-white/70 hover:text-white transition-colors lg:hidden"
           >
             <X className="h-6 w-6" />
           </button>
         </div>
 
         {/* Indicador de rol mejorado */}
-        <div className="px-4 py-3 bg-gradient-to-r from-primary-50 to-accent-50 border-b border-gray-200">
-          <p className="text-xs font-medium text-primary-700 uppercase tracking-wide">
+        <div className="px-4 py-3 border-b border-blue-400/20" style={{
+          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(168, 85, 247, 0.2))'
+        }}>
+          <p className="text-xs font-medium uppercase tracking-wide text-blue-300">
             {getRoleTitle(role)}
           </p>
         </div>
@@ -230,17 +535,34 @@ const Sidebar = ({ isOpen, onClose, role }) => {
                     onClose();
                   }}
                   className={`
-                    w-full flex items-center px-4 py-3 text-left rounded-lg transition-all duration-200 text-sm group
+                    w-full flex items-center px-4 py-3 text-left rounded-xl transition-all duration-200 text-sm group
                     ${isActive(item.path)
-                      ? 'bg-gradient-to-r from-primary-100 to-accent-50 text-primary-700 shadow-sm border-l-4 border-primary-500'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'text-white shadow-lg'
+                      : 'text-white/70 hover:text-white'
                     }
                   `}
+                  style={{
+                    background: isActive(item.path)
+                      ? 'linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(168, 85, 247, 0.3))'
+                      : 'transparent',
+                    boxShadow: isActive(item.path) ? '0 4px 20px rgba(59, 130, 246, 0.3)' : 'none',
+                    border: isActive(item.path) ? '1px solid rgba(59, 130, 246, 0.3)' : '1px solid transparent'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!isActive(item.path)) {
+                      e.target.style.background = 'rgba(255, 255, 255, 0.1)';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!isActive(item.path)) {
+                      e.target.style.background = 'transparent';
+                    }
+                  }}
                 >
                   <Icon className={`h-5 w-5 mr-3 transition-colors ${
                     isActive(item.path) 
-                      ? 'text-primary-600' 
-                      : 'text-gray-400 group-hover:text-gray-600'
+                      ? 'text-blue-300' 
+                      : 'text-white/60 group-hover:text-white/80'
                   }`} />
                   {item.name}
                 </button>
@@ -250,12 +572,19 @@ const Sidebar = ({ isOpen, onClose, role }) => {
         </nav>
 
         {/* Información del usuario y logout */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-200">
-          <div className="mb-4">
-            <p className="text-xs text-gray-500 mb-1">Rol actual:</p>
-            <p className="text-sm font-medium text-gray-800 capitalize">
-              {role?.replace('_', ' ')}
-            </p>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-blue-400/20">
+          <div className="mb-4 px-4 py-3 rounded-xl bg-white/5">
+            <div className="flex items-center space-x-3">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center">
+                <span className="text-white text-sm font-medium">U</span>
+              </div>
+              <div className="flex-1">
+                <p className="text-white text-sm font-medium">Usuario</p>
+                <p className="text-xs text-white/60 capitalize">
+                  {role?.replace('_', ' ')}
+                </p>
+              </div>
+            </div>
           </div>
           <LogoutButton />
         </div>
@@ -267,16 +596,19 @@ const Sidebar = ({ isOpen, onClose, role }) => {
 // Header del dashboard
 const DashboardHeader = ({ onMenuClick, title }) => {
   return (
-    <header className="bg-white shadow-sm border-b border-gray-200 px-6 py-4">
+    <header className="shadow-sm border-b border-white/20 px-6 py-4" style={{
+      background: 'rgba(255, 255, 255, 0.95)',
+      backdropFilter: 'blur(10px)'
+    }}>
       <div className="flex items-center justify-between">
         <div className="flex items-center">
           <button
             onClick={onMenuClick}
-            className="p-2 rounded-md text-gray-400 hover:text-gray-600 lg:hidden"
+            className="p-2 rounded-md text-slate-400 hover:text-slate-600 lg:hidden"
           >
             <Menu className="h-6 w-6" />
           </button>
-          <h2 className="ml-4 text-2xl font-semibold text-gray-800 lg:ml-0">
+          <h2 className="ml-4 text-2xl font-semibold text-slate-800 lg:ml-0">
             {title}
           </h2>
         </div>
@@ -332,16 +664,18 @@ const getPageTitle = (pathname, role) => {
 
 // Layout principal del dashboard
 const RoleBasedLayout = () => {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Cambiar a true por defecto
   const { role, isLoaded } = useRole();
   const location = useLocation();
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center" style={{
+        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 50%, #cbd5e1 75%, #94a3b8 100%)'
+      }}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando dashboard...</p>
+          <p className="mt-4 text-slate-600">Cargando dashboard...</p>
         </div>
       </div>
     );
@@ -350,33 +684,132 @@ const RoleBasedLayout = () => {
   const pageTitle = getPageTitle(location.pathname, role);
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="dashboard-layout">
-        {/* Sidebar */}
-        <Sidebar 
-          isOpen={sidebarOpen} 
-          onClose={() => setSidebarOpen(false)}
-          role={role}
-        />
+    <div className="min-h-screen" style={{
+      background: role === 'product_owner' 
+        ? '#0f172a' // Fondo sólido oscuro para Product Owner
+        : role === 'scrum_master'
+        ? '#f8fafc' // Fondo claro suave para Scrum Master
+        : role === 'developers'
+        ? '#f0fdf4' // Fondo claro esmeralda para Developers
+        : role === 'user'
+        ? '#f0f9ff' // Fondo claro azul cielo para User
+        : role === 'super_admin'
+        ? '#fffbeb' // Fondo claro dorado para Super Admin
+        : 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 50%, #cbd5e1 75%, #94a3b8 100%)'
+    }}>
+      {/* Botón de toggle flotante - Solo para roles que no tengan sidebar personalizado */}
+      {!['product_owner', 'scrum_master', 'developers', 'user', 'super_admin'].includes(role) && (
+        <button
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="fixed top-6 left-6 z-50 p-3 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl lg:block"
+          style={{
+            background: 'linear-gradient(135deg, #6366f1, #a855f7)',
+            color: 'white',
+            transform: sidebarOpen ? 'translateX(252px)' : 'translateX(0)'
+          }}
+          onMouseEnter={(e) => {
+            e.target.style.transform = sidebarOpen ? 'translateX(252px) scale(1.1)' : 'translateX(0) scale(1.1)';
+          }}
+          onMouseLeave={(e) => {
+            e.target.style.transform = sidebarOpen ? 'translateX(252px) scale(1)' : 'translateX(0) scale(1)';
+          }}
+        >
+          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
+        </button>
+      )}
 
-        {/* Contenido principal */}
-        <div className="main-content flex flex-col min-h-screen">
-          {/* Header */}
-          <DashboardHeader 
-            onMenuClick={() => setSidebarOpen(true)}
-            title={pageTitle}
+      {/* Layout específico para Product Owner */}
+      {role === 'product_owner' ? (
+        <div className="product-owner-layout product-owner-theme">
+          <Sidebar 
+            isOpen={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            role={role}
           />
-
-          {/* Área de contenido centrada y mejorada */}
-          <main className="flex-1 w-full">
-            <div className="content-area">
-              <div className="w-full max-w-full">
-                <Outlet />
-              </div>
-            </div>
+          <main className={`product-owner-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
+            <Outlet />
           </main>
         </div>
-      </div>
+      ) : role === 'scrum_master' ? (
+        <div className="scrum-master-layout scrum-master-theme">
+          <Sidebar 
+            isOpen={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            role={role}
+          />
+          <main className={`scrum-master-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
+            <Outlet />
+          </main>
+        </div>
+      ) : role === 'developers' ? (
+        <div className="developers-layout developers-theme">
+          <Sidebar 
+            isOpen={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            role={role}
+          />
+          <main className={`developers-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
+            <Outlet />
+          </main>
+        </div>
+      ) : role === 'user' ? (
+        <div className="user-layout user-theme">
+          <Sidebar 
+            isOpen={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            role={role}
+          />
+          <main className={`user-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
+            <Outlet />
+          </main>
+        </div>
+      ) : role === 'super_admin' ? (
+        <div className="super-admin-layout super-admin-theme">
+          <Sidebar 
+            isOpen={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            role={role}
+          />
+          <main className={`super-admin-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
+            <Outlet />
+          </main>
+        </div>
+      ) : (
+        <div className="dashboard-layout">
+          {/* Sidebar */}
+          <Sidebar 
+            isOpen={sidebarOpen} 
+            onClose={() => setSidebarOpen(false)}
+            onToggle={() => setSidebarOpen(!sidebarOpen)}
+            role={role}
+          />
+
+          {/* Contenido principal */}
+          <div className="main-content flex flex-col min-h-screen">
+            {/* Header - Solo mostrar para roles que no tengan sidebar personalizado */}
+            {!['product_owner', 'scrum_master', 'developers', 'user', 'super_admin'].includes(role) && (
+              <DashboardHeader 
+                onMenuClick={() => setSidebarOpen(true)}
+                title={pageTitle}
+              />
+            )}
+
+            {/* Área de contenido centrada y mejorada */}
+            <main className="flex-1 w-full">
+              <div className="content-area">
+                <div className="w-full max-w-full">
+                  <Outlet />
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -120,7 +120,7 @@ const MisActividades = () => {
       testing: 'bg-purple-100 text-purple-800',
       review: 'bg-orange-100 text-orange-800',
       debugging: 'bg-red-100 text-red-800',
-      documentation: 'bg-gray-100 text-gray-800',
+      documentation: 'bg-primary-100 text-primary-800',
       meeting: 'bg-indigo-100 text-indigo-800',
       research: 'bg-teal-100 text-teal-800'
     };
@@ -148,10 +148,10 @@ const MisActividades = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 p-6 flex items-center justify-center">
+      <div className="min-h-screen bg-primary-50 p-6 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando actividades...</p>
+          <p className="mt-4 text-primary-600">Cargando actividades...</p>
         </div>
       </div>
     );

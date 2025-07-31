@@ -13,32 +13,41 @@ import {
   UserDashboard 
 } from '../components/layout';
 
-// Componente de loading
+// Componente de loading premium con efecto galaxia mejorado
 const LoadingSpinner = ({ message = "Cargando dashboard..." }) => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-    <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-      <p className="mt-4 text-gray-600">{message}</p>
+  <div className="min-h-screen bg-gradient-galaxy flex items-center justify-center">
+    <div className="text-center animate-fadeIn">
+      <div className="spinner-galaxy w-16 h-16 mx-auto animate-galaxy-pulse"></div>
+      <p className="mt-6 text-gradient-galaxy font-medium animate-float">{message}</p>
+      <div className="mt-2 w-24 h-1 bg-gradient-to-r from-primary-300 via-primary-500 to-primary-300 rounded-full mx-auto animate-pulse"></div>
     </div>
   </div>
 );
 
-// Componente de error
+// Componente de error premium con diseño galaxia mejorado
 const ErrorDisplay = ({ error, onRetry, onReload }) => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-    <div className="bg-red-50 border border-red-200 rounded-lg p-6 max-w-md">
-      <h2 className="text-xl font-bold text-red-800 mb-2">Error</h2>
-      <p className="text-red-600 mb-4">{error}</p>
-      <div className="flex gap-2">
+  <div className="min-h-screen bg-gradient-galaxy flex items-center justify-center p-6">
+    <div className="glass-card p-8 max-w-md w-full shadow-galaxy-enhanced animate-fadeIn hover-lift">
+      {/* Icono de error con gradiente mejorado */}
+      <div className="w-16 h-16 bg-gradient-to-br from-error-400 to-error-500 rounded-full flex items-center justify-center mx-auto mb-6 shadow-galaxy animate-galaxy-pulse">
+        <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+        </svg>
+      </div>
+      
+      <h2 className="text-2xl font-bold text-gradient-galaxy mb-3 text-center animate-float">¡Oops! Algo salió mal</h2>
+      <p className="text-primary-600 mb-6 text-center leading-relaxed opacity-80">{error}</p>
+      
+      <div className="flex flex-col sm:flex-row gap-3">
         <button 
           onClick={onRetry} 
-          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors"
+          className="btn-galaxy flex-1"
         >
           Reintentar
         </button>
         <button 
           onClick={onReload} 
-          className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors"
+          className="btn-galaxy flex-1"
         >
           Recargar página
         </button>
@@ -145,8 +154,11 @@ function Dashboard() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-      <div className="max-w-6xl mx-auto p-6">
+    <div className="min-h-screen bg-gradient-galaxy">
+      {/* Overlay sutil para profundidad */}
+      <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-transparent to-primary-900/5 pointer-events-none"></div>
+      
+      <div className="relative max-w-7xl mx-auto p-6">
         {renderDashboard()}
       </div>
     </div>

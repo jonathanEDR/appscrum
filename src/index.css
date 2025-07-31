@@ -2,36 +2,77 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Variables CSS globales */
+/* Variables CSS globales - Azul Galaxia Luxury */
 :root {
-  font-family: system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
-  line-height: 1.5;
+  font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, sans-serif;
+  line-height: 1.6;
   font-weight: 400;
-  background-color: #f9fafb;
-  color: #1f2937;
+  background-color: #f8fafc;
+  color: #0f172a;
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   
-  /* Variables de colores del sistema - Paleta mejorada */
-  --color-primary: #6366f1;        /* Indigo menos saturado */
-  --color-primary-dark: #4f46e5;   /* Indigo oscuro */
-  --color-primary-light: #a5b4fc;  /* Indigo claro */
-  --color-secondary: #64748b;      /* Slate */
-  --color-accent: #f97316;         /* Orange para elementos destacados */
-  --color-success: #059669;        /* Green más equilibrado */
-  --color-warning: #d97706;        /* Amber más suave */
-  --color-error: #dc2626;          /* Red menos agresivo */
-  --color-info: #0ea5e9;           /* Sky blue */
-  --color-background: #f8fafc;     /* Slate muy claro */
-  --color-surface: #ffffff;        /* Blanco puro */
+  /* Paleta principal - Azul Galaxia Premium */
+  --color-primary: #64748b;        /* Azul galaxia principal */
+  --color-primary-dark: #475569;   /* Azul galaxia oscuro */
+  --color-primary-deep: #334155;   /* Azul galaxia profundo */
+  --color-primary-light: #94a3b8;  /* Azul galaxia claro */
+  --color-primary-50: #f8fafc;     /* Azul galaxia muy claro */
+  
+  /* Paleta secundaria - Violeta Premium */
+  --color-secondary: #a855f7;      /* Violeta principal */
+  --color-secondary-dark: #9333ea; /* Violeta intenso */
+  --color-secondary-light: #c084fc; /* Violeta claro */
+  
+  /* Paleta de acento - Cyan Cristalino */
+  --color-accent: #22d3ee;         /* Cyan cristalino principal */
+  --color-accent-dark: #06b6d4;    /* Cyan brillante */
+  --color-accent-light: #67e8f9;   /* Cyan claro */
+  
+  /* Colores funcionales premium */
+  --color-success: #10b981;        /* Verde esmeralda */
+  --color-warning: #fbbf24;        /* Ámbar suave */
+  --color-error: #f87171;          /* Rosa coral */
+  --color-info: #22d3ee;           /* Cyan cristalino */
+  
+  /* Superficies y fondos */
+  --color-background: #f8fafc;     /* Fondo principal */
+  --color-surface: #ffffff;        /* Superficie blanca */
   --color-surface-alt: #f1f5f9;    /* Superficie alternativa */
-  --color-border: #e2e8f0;         /* Border más suave */
+  --color-surface-glass: rgba(248, 250, 252, 0.8); /* Efecto cristal */
+  
+  /* Bordes y divisores */
+  --color-border: #e2e8f0;         /* Border suave */
+  --color-border-light: #f1f5f9;   /* Border muy suave */
+  --color-border-dark: #cbd5e1;    /* Border más marcado */
+  
+  /* Texto y tipografía */
   --color-text: #0f172a;           /* Texto principal */
   --color-text-secondary: #475569; /* Texto secundario */
   --color-text-muted: #64748b;     /* Texto atenuado */
+  --color-text-light: #94a3b8;     /* Texto claro */
+  
+  /* OVERRIDE PARA GRISES - SOLUCION CENTRALIZADA */
+  --gray-50: #f8fafc;      /* Reemplaza bg-gray-50 */
+  --gray-100: #f1f5f9;     /* Reemplaza bg-gray-100 */
+  --gray-200: #e2e8f0;     /* Reemplaza bg-gray-200 */
+  --gray-300: #cbd5e1;     /* Reemplaza bg-gray-300 */
+  --gray-400: #94a3b8;     /* Reemplaza text-gray-400 */
+  --gray-500: #64748b;     /* Reemplaza text-gray-500 */
+  --gray-600: #475569;     /* Reemplaza text-gray-600 */
+  --gray-700: #334155;     /* Reemplaza text-gray-700 */
+  --gray-800: #1e293b;     /* Reemplaza text-gray-800 */
+  --gray-900: #0f172a;     /* Reemplaza text-gray-900 */
+  
+  /* Sombras premium */
+  --shadow-soft: 0 1px 3px 0 rgba(15, 23, 42, 0.04), 0 1px 2px 0 rgba(15, 23, 42, 0.06);
+  --shadow-medium: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -1px rgba(15, 23, 42, 0.06);
+  --shadow-large: 0 10px 15px -3px rgba(15, 23, 42, 0.08), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+  --shadow-galaxy: 0 8px 32px rgba(15, 23, 42, 0.12), 0 4px 16px rgba(100, 116, 139, 0.08);
+  --shadow-glass: 0 8px 32px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(255, 255, 255, 0.1);
 }
 
 /* Reset y configuración base */
@@ -95,9 +136,9 @@ h3 {
   font-size: 1.5rem;
 }
 
-/* Botones base mejorados */
-button {
-  border-radius: 0.5rem;
+/* Botones premium con efectos galaxia - SOLO PARA BOTONES ESPECÍFICOS */
+button.btn-default {
+  border-radius: 0.75rem;
   border: 1px solid transparent;
   padding: 0.75rem 1.5rem;
   font-size: 0.875rem;
@@ -113,96 +154,189 @@ button {
   gap: 0.5rem;
   position: relative;
   overflow: hidden;
+  box-shadow: var(--shadow-soft);
 }
 
-button::before {
+button.btn-default::before {
   content: '';
   position: absolute;
   top: 0;
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-  transition: left 0.5s;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-button:hover {
-  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
-  transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+button.btn-default:hover {
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary-deep));
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-galaxy);
 }
 
-button:hover::before {
+button.btn-default:hover::before {
   left: 100%;
 }
 
-button:focus,
-button:focus-visible {
-  outline: 2px solid var(--color-primary);
+button.btn-default:focus,
+button.btn-default:focus-visible {
+  outline: 2px solid var(--color-accent);
   outline-offset: 2px;
 }
 
-button:disabled {
+button.btn-default:active {
+  transform: translateY(0);
+}
+
+button.btn-default:disabled {
   opacity: 0.5;
   cursor: not-allowed;
   transform: none;
+  box-shadow: var(--shadow-soft);
 }
 
-/* Clases de botones específicas */
-.btn-primary {
-  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark));
-  color: white;
+/* Reset básico para todos los botones */
+button {
   border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+/* Clases de botones específicas mejoradas */
+.btn-primary {
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-dark)) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: var(--shadow-soft) !important;
 }
 
 .btn-primary:hover {
-  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary));
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3);
+  background: linear-gradient(135deg, var(--color-primary-dark), var(--color-primary)) !important;
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.3) !important;
+  transform: translateY(-1px) !important;
 }
 
 .btn-secondary {
-  background: linear-gradient(135deg, var(--color-secondary), #475569);
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, var(--color-secondary), #475569) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: var(--shadow-soft) !important;
 }
 
 .btn-secondary:hover {
-  background: linear-gradient(135deg, #475569, var(--color-secondary));
-  box-shadow: 0 8px 25px rgba(100, 116, 139, 0.3);
+  background: linear-gradient(135deg, #475569, var(--color-secondary)) !important;
+  box-shadow: 0 8px 25px rgba(100, 116, 139, 0.3) !important;
+  transform: translateY(-1px) !important;
 }
 
 .btn-accent {
-  background: linear-gradient(135deg, var(--color-accent), #ea580c);
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, var(--color-accent), #ea580c) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: var(--shadow-soft) !important;
 }
 
 .btn-accent:hover {
-  background: linear-gradient(135deg, #ea580c, var(--color-accent));
-  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3);
+  background: linear-gradient(135deg, #ea580c, var(--color-accent)) !important;
+  box-shadow: 0 8px 25px rgba(249, 115, 22, 0.3) !important;
+  transform: translateY(-1px) !important;
 }
 
 .btn-success {
-  background: linear-gradient(135deg, var(--color-success), #047857);
-  color: white;
-  border: none;
+  background: linear-gradient(135deg, var(--color-success), #047857) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  box-shadow: var(--shadow-soft) !important;
 }
 
 .btn-success:hover {
-  background: linear-gradient(135deg, #047857, var(--color-success));
-  box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3);
+  background: linear-gradient(135deg, #047857, var(--color-success)) !important;
+  box-shadow: 0 8px 25px rgba(5, 150, 105, 0.3) !important;
+  transform: translateY(-1px) !important;
 }
 
 .btn-outline {
-  background: white;
-  color: var(--color-primary);
-  border: 2px solid var(--color-primary);
+  background: rgba(255, 255, 255, 0.9) !important;
+  color: var(--color-primary) !important;
+  border: 2px solid var(--color-primary) !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 500 !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  backdrop-filter: blur(8px) !important;
 }
 
 .btn-outline:hover {
-  background: var(--color-primary);
-  color: white;
-  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2);
+  background: var(--color-primary) !important;
+  color: white !important;
+  box-shadow: 0 8px 25px rgba(99, 102, 241, 0.2) !important;
+  transform: translateY(-1px) !important;
+}
+
+/* Clase premium btn-galaxy */
+.btn-galaxy {
+  background: linear-gradient(135deg, #1e40af, #3b82f6, #6366f1) !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.75rem !important;
+  padding: 0.75rem 1.5rem !important;
+  font-size: 0.875rem !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.025em !important;
+  box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  cursor: pointer !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  text-decoration: none !important;
+  outline: none !important;
+  position: relative !important;
+  overflow: hidden !important;
+}
+
+.btn-galaxy::before {
+  content: '' !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: -100% !important;
+  width: 100% !important;
+  height: 100% !important;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent) !important;
+  transition: left 0.6s !important;
+}
+
+.btn-galaxy:hover::before {
+  left: 100% !important;
+}
+
+.btn-galaxy:hover {
+  background: linear-gradient(135deg, #1d4ed8, #2563eb, #7c3aed) !important;
+  transform: translateY(-2px) scale(1.02) !important;
+  box-shadow: 0 12px 40px rgba(99, 102, 241, 0.4) !important;
 }
 
 /* Scrollbar personalizado */
@@ -270,6 +404,24 @@ button:disabled {
   background: linear-gradient(135deg, var(--color-primary), var(--color-accent));
 }
 
+/* Gradiente azul galaxia para sidebars */
+.gradient-sidebar-galaxy {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 25%, #334155 50%, #475569 75%, #64748b 100%) !important;
+}
+
+/* Gradientes específicos para roles */
+.gradient-product-owner {
+  background: linear-gradient(135deg, #22d3ee, #06b6d4) !important;
+}
+
+.gradient-scrum-master {
+  background: linear-gradient(135deg, #a855f7, #9333ea) !important;
+}
+
+.gradient-developer {
+  background: linear-gradient(135deg, #10b981, #047857) !important;
+}
+
 /* Animaciones mejoradas */
 @keyframes fadeIn {
   from {
@@ -302,6 +454,42 @@ button:disabled {
   }
 }
 
+@keyframes shimmer {
+  0% {
+    background-position: -468px 0;
+  }
+  100% {
+    background-position: 468px 0;
+  }
+}
+
+@keyframes galaxyPulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.3), 0 0 40px rgba(99, 102, 241, 0.1);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(99, 102, 241, 0.5), 0 0 60px rgba(99, 102, 241, 0.2);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out;
 }
@@ -312,4 +500,394 @@ button:disabled {
 
 .animate-pulse {
   animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background-size: 468px 100%;
+}
+
+.animate-galaxy-pulse {
+  animation: galaxyPulse 3s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Efectos de hover premium */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Efectos de glassmorfismo mejorados */
+.glass-card {
+  background: rgba(255, 255, 255, 0.25);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 16px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+/* Fondo de glassmorfismo para sidebars */
+.bg-gradient-glass {
+  background: linear-gradient(135deg, rgba(248, 250, 252, 0.8) 0%, rgba(241, 245, 249, 0.6) 100%);
+}
+
+/* Gradientes galaxia mejorados */
+.gradient-galaxy-enhanced {
+  background: linear-gradient(135deg, 
+    rgba(99, 102, 241, 0.1) 0%,
+    rgba(168, 85, 247, 0.05) 25%,
+    rgba(34, 211, 238, 0.05) 50%,
+    rgba(16, 185, 129, 0.05) 75%,
+    rgba(99, 102, 241, 0.1) 100%);
+}
+
+/* Sombras premium mejoradas */
+.shadow-galaxy-enhanced {
+  box-shadow: 
+    0 10px 25px -3px rgba(99, 102, 241, 0.1),
+    0 4px 6px -2px rgba(99, 102, 241, 0.05),
+    0 0 0 1px rgba(255, 255, 255, 0.05);
+}
+
+.shadow-galaxy-hover {
+  box-shadow: 
+    0 20px 40px -4px rgba(99, 102, 241, 0.15),
+    0 8px 16px -4px rgba(99, 102, 241, 0.1),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
+/* Efectos de texto premium */
+.text-gradient-galaxy {
+  background: linear-gradient(135deg, #6366f1, #a855f7, #22d3ee);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Botones premium con efectos mejorados */
+.btn-galaxy {
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  border: none;
+  border-radius: 12px;
+  color: white;
+  padding: 12px 24px;
+  font-weight: 600;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 14px 0 rgba(99, 102, 241, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-galaxy::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-galaxy:hover::before {
+  left: 100%;
+}
+
+.btn-galaxy:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px 0 rgba(99, 102, 241, 0.4);
+}
+
+/* Loading spinner galaxia mejorado */
+.spinner-galaxy {
+  position: relative;
+  width: 40px;
+  height: 40px;
+}
+
+.spinner-galaxy::before {
+  content: '';
+  position: absolute;
+  border: 3px solid rgba(99, 102, 241, 0.1);
+  border-top: 3px solid #6366f1;
+  border-radius: 50%;
+  width: 100%;
+  height: 100%;
+  animation: spin 1s linear infinite;
+}
+
+.spinner-galaxy::after {
+  content: '';
+  position: absolute;
+  top: 6px;
+  left: 6px;
+  border: 2px solid rgba(168, 85, 247, 0.1);
+  border-top: 2px solid #a855f7;
+  border-radius: 50%;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  animation: spin 0.8s linear infinite reverse;
+}
+
+/* =================================================================
+   OVERRIDE GLOBAL DE CLASES GRISES - SOLUCION CENTRALIZADA
+   ================================================================= */
+
+/* Override de fondos grises a colores premium */
+.bg-gray-50 {
+  background-color: var(--gray-50) !important;
+}
+
+.bg-gray-100 {
+  background-color: var(--gray-100) !important;
+}
+
+.bg-gray-200 {
+  background-color: var(--gray-200) !important;
+}
+
+.bg-gray-300 {
+  background-color: var(--gray-300) !important;
+}
+
+/* Override de textos grises a colores premium */
+.text-gray-400 {
+  color: var(--gray-400) !important;
+}
+
+.text-gray-500 {
+  color: var(--gray-500) !important;
+}
+
+.text-gray-600 {
+  color: var(--gray-600) !important;
+}
+
+.text-gray-700 {
+  color: var(--gray-700) !important;
+}
+
+.text-gray-800 {
+  color: var(--gray-800) !important;
+}
+
+.text-gray-900 {
+  color: var(--gray-900) !important;
+}
+
+/* Override de bordes grises */
+.border-gray-200 {
+  border-color: var(--gray-200) !important;
+}
+
+.border-gray-300 {
+  border-color: var(--gray-300) !important;
+}
+
+/* Override de hover states grises */
+.hover\:bg-gray-50:hover {
+  background-color: rgba(248, 250, 252, 0.8) !important;
+  backdrop-filter: blur(4px);
+}
+
+.hover\:bg-gray-100:hover {
+  background-color: rgba(241, 245, 249, 0.8) !important;
+  backdrop-filter: blur(4px);
+}
+
+.hover\:bg-gray-200:hover {
+  background-color: rgba(226, 232, 240, 0.8) !important;
+  backdrop-filter: blur(4px);
+}
+
+/* Override para fondos blancos simples - convertir a glass */
+.bg-white {
+  background: rgba(255, 255, 255, 0.9) !important;
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* =================================================================
+   ESTILOS ESPECÍFICOS PARA BOTONES DE SIDEBAR Y NAVEGACIÓN
+   ================================================================= */
+
+/* Resetear botones de sidebar para que no usen estilos globales */
+.sidebar-button,
+nav button:not(.btn-default):not(.btn-primary):not(.btn-secondary):not(.btn-accent),
+.navigation-button {
+  background: none !important;
+  border: none !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  color: inherit !important;
+  display: flex !important;
+  align-items: center !important;
+  width: 100% !important;
+  text-align: left !important;
+  transition: all 0.3s ease !important;
+}
+
+.sidebar-button:hover,
+nav button:not(.btn-default):not(.btn-primary):not(.btn-secondary):not(.btn-accent):hover,
+.navigation-button:hover {
+  background: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Estilos para botones de métricas y tarjetas */
+.metric-button,
+.card-button {
+  background: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  box-shadow: none !important;
+  transform: none !important;
+  color: inherit !important;
+  font-size: inherit !important;
+  font-weight: inherit !important;
+  width: 100% !important;
+  text-align: left !important;
+}
+
+.metric-button:hover,
+.card-button:hover {
+  background: none !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Layout específico para Product Owner */
+.product-owner-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.product-owner-main {
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+  margin-left: 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 50%, #cbd5e1 75%, #94a3b8 100%);
+}
+
+.product-owner-main.sidebar-open {
+  margin-left: 288px; /* 72 * 4 = 288px (w-72) */
+}
+
+@media (max-width: 1024px) {
+  .product-owner-main.sidebar-open {
+    margin-left: 0;
+  }
+}
+
+/* Layout específico para Scrum Master */
+.scrum-master-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.scrum-master-main {
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+  margin-left: 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 25%, #d1d5db 50%, #c4b5fd 75%, #ddd6fe 100%);
+}
+
+.scrum-master-main.sidebar-open {
+  margin-left: 288px; /* 72 * 4 = 288px (w-72) */
+}
+
+@media (max-width: 1024px) {
+  .scrum-master-main.sidebar-open {
+    margin-left: 0;
+  }
+}
+
+/* Layout específico para Developers */
+.developers-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.developers-main {
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+  margin-left: 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 25%, #a7f3d0 50%, #6ee7b7 75%, #34d399 100%);
+}
+
+.developers-main.sidebar-open {
+  margin-left: 288px; /* 72 * 4 = 288px (w-72) */
+}
+
+@media (max-width: 1024px) {
+  .developers-main.sidebar-open {
+    margin-left: 0;
+  }
+}
+
+/* Layout específico para User */
+.user-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.user-main {
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+  margin-left: 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 25%, #bfdbfe 50%, #93c5fd 75%, #60a5fa 100%);
+}
+
+.user-main.sidebar-open {
+  margin-left: 288px; /* 72 * 4 = 288px (w-72) */
+}
+
+@media (max-width: 1024px) {
+  .user-main.sidebar-open {
+    margin-left: 0;
+  }
+}
+
+/* Layout específico para Super Admin */
+.super-admin-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.super-admin-main {
+  flex: 1;
+  transition: margin-left 0.3s ease-in-out;
+  margin-left: 0;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 25%, #fde68a 50%, #fcd34d 75%, #f59e0b 100%);
+}
+
+.super-admin-main.sidebar-open {
+  margin-left: 288px; /* 72 * 4 = 288px (w-72) */
+}
+
+@media (max-width: 1024px) {
+  .super-admin-main.sidebar-open {
+    margin-left: 0;
+  }
 }

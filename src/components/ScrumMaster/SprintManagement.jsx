@@ -104,9 +104,9 @@ const QuickActionsPanel = ({ onNavigateToSprint, onNavigateToBacklog, sprintData
   ];
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-semibold text-gray-900">Acciones Rápidas</h3>
+    <div className="glass-card shadow-galaxy-enhanced">
+      <div className="px-6 py-4 border-b border-primary-200/50">
+        <h3 className="text-lg font-semibold text-primary-800">Acciones Rápidas</h3>
       </div>
       <div className="p-6 space-y-3">
         {actions.map((action) => {
@@ -115,21 +115,21 @@ const QuickActionsPanel = ({ onNavigateToSprint, onNavigateToBacklog, sprintData
             <button
               key={action.id}
               onClick={action.onClick}
-              className="w-full flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 hover:bg-gray-50 transition-all group"
+              className="w-full flex items-center justify-between p-4 border border-primary-200/50 rounded-xl hover:border-primary-300 hover:bg-primary-50/50 transition-all group glass-card hover-lift"
             >
               <div className="flex items-center gap-3">
-                <div className={`p-2 ${action.color} rounded-lg text-white`}>
+                <div className={`p-2 ${action.color} rounded-xl text-white shadow-medium`}>
                   <Icon className="h-4 w-4" />
                 </div>
                 <div className="text-left">
-                  <div className="font-medium text-gray-900">{action.title}</div>
-                  <div className="text-sm text-gray-500">{action.description}</div>
+                  <div className="font-medium text-primary-800">{action.title}</div>
+                  <div className="text-sm text-primary-600">{action.description}</div>
                 </div>
               </div>
               {action.external ? (
-                <ExternalLink className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+                <ExternalLink className="h-4 w-4 text-primary-400 group-hover:text-primary-600" />
               ) : (
-                <ArrowRight className="h-4 w-4 text-gray-400 group-hover:text-gray-600" />
+                <ArrowRight className="h-4 w-4 text-primary-400 group-hover:text-primary-600" />
               )}
             </button>
           );

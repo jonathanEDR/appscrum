@@ -49,7 +49,7 @@ import { MyActivities } from '../components/users/index.js';
 
 // Layout wrapper para páginas de autenticación
 const AuthLayout = ({ children }) => (
-  <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+  <div className="min-h-screen bg-gradient-galaxy flex items-center justify-center">
     <div className="max-w-md w-full">
       {children}
     </div>
@@ -59,10 +59,10 @@ const AuthLayout = ({ children }) => (
 // Componente para páginas en construcción
 const UnderConstruction = ({ module }) => (
   <div className="flex items-center justify-center h-64">
-    <div className="text-center">
-      <div className="text-6xl mb-4">🚧</div>
-      <h2 className="text-2xl font-semibold text-gray-700 mb-2">En Construcción</h2>
-      <p className="text-gray-500">El módulo "{module}" estará disponible pronto.</p>
+    <div className="glass-card p-8 text-center shadow-galaxy-enhanced hover-lift animate-fadeIn">
+      <div className="text-6xl mb-4 animate-galaxy-pulse">🚧</div>
+      <h2 className="text-2xl font-semibold text-gradient-galaxy mb-2 animate-float">En Construcción</h2>
+      <p className="text-primary-600 opacity-80">El módulo "{module}" estará disponible pronto.</p>
     </div>
   </div>
 );
@@ -171,6 +171,10 @@ export const router = createBrowserRouter([
       {
         path: 'metricas',
         element: <Metricas />,
+      },
+      {
+        path: 'colaboradores',
+        element: <CollaboratorsManagement />,
       },
     ],
   },
