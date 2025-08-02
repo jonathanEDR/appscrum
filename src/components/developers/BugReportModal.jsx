@@ -6,15 +6,19 @@ import {
   FileText, 
   Camera,
   Send,
-  AlertCircle
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
+import { useBugReports } from '../../hooks/useBugReports';
 
-const BugReportModal = ({ isOpen, onClose, onSubmit }) => {
+const BugReportModal = ({ isOpen, onClose }) => {
+  const { createBugReport, loading } = useBugReports();
+  
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 'medium',
-    type: 'bug',
+    severity: 'medium',
     stepsToReproduce: '',
     expectedBehavior: '',
     actualBehavior: '',
@@ -59,32 +63,30 @@ const BugReportModal = ({ isOpen, onClose, onSubmit }) => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (validateForm()) {
-      onSubmit({
-        ...formData,
-        id: Date.now(),
-        reportedBy: 'Developer', // En un sistema real, esto vendría del contexto de usuario
-        reportedAt: new Date().toISOString(),
-        status: 'open'
-      });
-      
-      // Resetear formulario
-      setFormData({
-        title: '',
-        description: '',
-        priority: 'medium',
-        type: 'bug',
-        stepsToReproduce: '',
-        expectedBehavior: '',
-        actualBehavior: '',
-        environment: '',
-        attachments: []
-      });
-      
-      onClose();
+      try {
+        await createBugReport(formData);
+        
+        // Resetear formulario
+        setFormData({
+          title: '',
+          description: '',
+          priority: 'medium',
+          severity: 'medium',
+          stepsToReproduce: '',
+          expectedBehavior: '',
+          actualBehavior: '',
+          environment: '',
+          attachments: []
+        });
+        
+        onClose();
+      } catch (error) {
+        console.error('Error creando bug report:', error);
+      }
     }
   };
 
@@ -149,22 +151,22 @@ const BugReportModal = ({ isOpen, onClose, onSubmit }) => {
             )}
           </div>
 
-          {/* Tipo y Prioridad */}
+          {/* Severidad y Prioridad */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo
+                Severidad
               </label>
               <select
-                name="type"
-                value={formData.type}
+                name="severity"
+                value={formData.severity}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="bug">Bug</option>
-                <option value="feature">Feature Request</option>
-                <option value="improvement">Mejora</option>
-                <option value="security">Seguridad</option>
+                <option value="low">Baja</option>
+                <option value="medium">Media</option>
+                <option value="high">Alta</option>
+                <option value="critical">Crítica</option>
               </select>
             </div>
             
@@ -331,10 +333,20 @@ const BugReportModal = ({ isOpen, onClose, onSubmit }) => {
             </button>
             <button
               type="submit"
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+              disabled={loading}
+              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-lg hover:bg-red-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
             >
-              <Send className="h-4 w-4" />
-              Reportar Bug
+              {loading ? (
+                <>
+                  <RefreshCw className="h-4 w-4 animate-spin" />
+                  Reportando...
+                </>
+              ) : (
+                <>
+                  <Send className="h-4 w-4" />
+                  Reportar Bug
+                </>
+              )}
             </button>
           </div>
         </form>

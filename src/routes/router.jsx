@@ -41,7 +41,7 @@ import Metrics from '../components/ScrumMaster/Metrics.jsx';
 import ScrumMasterBacklog from '../components/ScrumMaster/ScrumMasterBacklog.jsx';
 
 // Componentes de Developers
-import { MyTasks, SprintBoard, TimeTracking, CodeRepositories } from '../components/developers/index.js';
+import { MyTasks, SprintBoard, TimeTracking, CodeRepositories, Projects } from '../components/developers/index.js';
 
 // Componentes de User
 import { MyActivities } from '../components/users/index.js';
@@ -245,6 +245,10 @@ export const router = createBrowserRouter([
       {
         path: 'tareas',
         element: <MyTasks />,
+      },
+      {
+        path: 'proyectos',
+        element: <Projects />,
       },
       {
         path: 'sprint-board',

@@ -135,6 +135,12 @@ const getRoleNavigation = (role) => {
         show: true
       },
       {
+        name: 'Proyectos',
+        path: `/developers/proyectos`,
+        icon: Briefcase,
+        show: true
+      },
+      {
         name: 'Sprint Board',
         path: `/developers/sprint-board`,
         icon: Calendar,
@@ -321,6 +327,7 @@ const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
       const path = location.pathname;
       if (path === '/developers') return 'dashboard';
       if (path.includes('/tareas')) return 'tasks';
+      if (path.includes('/proyectos')) return 'projects';
       if (path.includes('/sprint-board')) return 'sprint-board';
       if (path.includes('/time-tracking')) return 'time-tracking';
       if (path.includes('/codigo')) return 'code';
@@ -337,6 +344,9 @@ const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
           break;
         case 'tasks':
           navigate('/developers/tareas');
+          break;
+        case 'projects':
+          navigate('/developers/proyectos');
           break;
         case 'sprint-board':
           navigate('/developers/sprint-board');

@@ -4,3 +4,6 @@ export { default as SprintBoard } from './SprintBoard.jsx';
 export { default as TimeTracking } from './TimeTracking.jsx';
 export { default as CodeRepositories } from './CodeRepositories.jsx';
 export { default as BugReportModal } from './BugReportModal.jsx';
+export { default as Projects } from './Projects.jsx';
+export { default as AssignTaskModal } from './AssignTaskModal.jsx';
+export { default as ProjectFilters } from './ProjectFilters.jsx';

@@ -8,6 +8,105 @@ class ApiService {
     };
   }
 
+  // Obtener token de autenticación (compatible con Clerk)
+  getAuthToken() {
+    // Intentar obtener de localStorage primero (para casos donde se guarda manualmente)
+    return localStorage.getItem('authToken') || localStorage.getItem('clerk-token');
+  }
+
+  // Obtener headers con autenticación (para métodos que no usan getToken de Clerk)
+  getHeaders() {
+    const token = this.getAuthToken();
+    const headers = { ...this.defaultHeaders };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return headers;
+  }
+
+  // Método genérico para hacer peticiones CON token de Clerk
+  async request(endpoint, options = {}) {
+    const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
+    
+    // Verificar si hay un token en las headers, si no hay, lanzar error específico
+    if (!options.headers || !options.headers['Authorization']) {
+      throw new Error('Token no proporcionado');
+    }
+    
+    const config = {
+      headers: this.defaultHeaders,
+      credentials: 'include',
+      ...options
+    };
+
+    try {
+      const response = await fetch(url, config);
+      
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP Error: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`API Request Error for ${endpoint}:`, error);
+      throw error;
+    }
+  }
+
+  // Métodos HTTP genéricos que trabajan con tokens de Clerk
+  async get(endpoint, token = null) {
+    const headers = { ...this.defaultHeaders };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.request(endpoint, { 
+      method: 'GET',
+      headers 
+    });
+  }
+
+  async post(endpoint, data, token = null) {
+    const headers = { ...this.defaultHeaders };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.request(endpoint, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(data)
+    });
+  }
+
+  async put(endpoint, data, token = null) {
+    const headers = { ...this.defaultHeaders };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.request(endpoint, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(data)
+    });
+  }
+
+  async delete(endpoint, token = null) {
+    const headers = { ...this.defaultHeaders };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+    
+    return this.request(endpoint, { 
+      method: 'DELETE',
+      headers 
+    });
+  }
+
   // Obtener miembros del equipo (requiere autenticación)
   async getTeamMembers(getToken) {
     try {

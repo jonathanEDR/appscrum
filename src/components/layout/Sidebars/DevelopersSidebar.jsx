@@ -9,7 +9,8 @@ import {
   LogOut, 
   Shield,
   Menu,
-  X
+  X,
+  FolderOpen
 } from 'lucide-react';
 
 function DevelopersSidebar({ currentView, onViewChange, onLogout, userRole, isOpen, onToggle }) {
@@ -17,6 +18,7 @@ function DevelopersSidebar({ currentView, onViewChange, onLogout, userRole, isOp
     { id: 'dashboard', icon: Home, label: 'Dashboard' },
     { id: 'profile', icon: User, label: 'Mi Perfil' },
     { id: 'tasks', icon: Target, label: 'Mis Tareas' },
+    { id: 'projects', icon: FolderOpen, label: 'Proyectos' },
     { id: 'sprint-board', icon: Calendar, label: 'Sprint Board' },
     { id: 'time-tracking', icon: Clock, label: 'Time Tracking' },
     { id: 'code', icon: Code, label: 'Código' }

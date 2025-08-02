@@ -5,7 +5,7 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // URLs y endpoints de la API
 export const API_CONFIG = {
-  BASE_URL: '',
+  BASE_URL: API_URL,
   ENDPOINTS: {
     AUTH: {
       REGISTER: '/auth/register',
