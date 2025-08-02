@@ -7,14 +7,27 @@ import {
   TrendingUp, 
   Plus, 
   Edit, 
-  Trash2, 
+  Trash2,
   PlayCircle, 
   CheckCircle,
   AlertCircle,
   Users,
   GitBranch,
-  MoreVertical
+  MoreVertical,
+  History,
+  Tag,
+  Hash
 } from 'lucide-react';
+import ReleaseModal from './modalsPO/ReleaseModal';
+import SprintModal from './modalsPO/SprintModal';
+import AlertSystem from './components/AlertSystem';
+import AdvancedFilters from './components/AdvancedFilters';
+import AdvancedMetrics from './components/AdvancedMetrics';
+import DependencyView from './components/DependencyView';
+import ReleaseHistoryModal from './components/ReleaseHistoryModal';
+import VersionManager from './components/VersionManager';
+import TimelineWithMilestones from './TimelineWithMilestones';
+import SprintMetrics from './SprintMetrics';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
@@ -30,7 +43,106 @@ const Roadmap = () => {
   const [showSprintModal, setShowSprintModal] = useState(false);
   const [editingRelease, setEditingRelease] = useState(null);
   const [editingSprint, setEditingSprint] = useState(null);
-  const [viewMode, setViewMode] = useState('timeline'); // timeline, kanban
+  const [viewMode, setViewMode] = useState('timeline'); // timeline, kanban, dependencies
+  const [showHistory, setShowHistory] = useState(null); // Release para mostrar historial
+  const [showVersionManager, setShowVersionManager] = useState(null); // Release para gestionar versión
+  const [filters, setFilters] = useState({
+    search: '',
+    estado: '',
+    prioridad: '',
+    fechaDesde: '',
+    fechaHasta: '',
+    responsable: ''
+  });
+  const [alerts, setAlerts] = useState([]);
+
+  // Función para agregar alertas
+  const addAlert = (message, type = 'info') => {
+    const id = Date.now();
+    const newAlert = { id, message, type };
+    setAlerts(prev => [...prev, newAlert]);
+    
+    // Auto-remover después de 5 segundos
+    setTimeout(() => {
+      setAlerts(prev => prev.filter(alert => alert.id !== id));
+    }, 5000);
+  };
+
+  // Función para calcular el progreso real del release
+  // Función para normalizar estados basándose en fechas y contexto
+  const normalizarEstadoRelease = (release) => {
+    const ahora = new Date();
+    const fechaObjetivo = release.fecha_objetivo ? new Date(release.fecha_objetivo) : null;
+    const fechaLanzamiento = release.fecha_lanzamiento ? new Date(release.fecha_lanzamiento) : null;
+    
+    // Si tiene fecha de lanzamiento, debería estar lanzado
+    if (fechaLanzamiento) {
+      return { ...release, estado: 'lanzado', progreso: 100 };
+    }
+    
+    // Si pasó la fecha objetivo sin lanzarse, marcar como retrasado
+    if (fechaObjetivo && ahora > fechaObjetivo && release.estado !== 'lanzado') {
+      return { ...release, estado: 'retrasado' };
+    }
+    
+    // Si está cerca de la fecha objetivo, marcar como en desarrollo
+    if (fechaObjetivo && release.estado === 'planificado') {
+      const diasHastaObjetivo = Math.ceil((fechaObjetivo - ahora) / (1000 * 60 * 60 * 24));
+      if (diasHastaObjetivo <= 30) {
+        return { ...release, estado: 'en_desarrollo' };
+      }
+    }
+    
+    return release;
+  };
+
+  const calcularProgresoReal = (release) => {
+    // Si está lanzado, completado o released, progreso es 100%
+    if (release.estado === 'lanzado' || release.estado === 'completado' || release.estado === 'released') {
+      return 100;
+    }
+    
+    // Si tiene progreso definido y es mayor a 0, usarlo
+    if (release.progreso && release.progreso > 0) {
+      return release.progreso;
+    }
+    
+    // Si no tiene progreso definido, calcularlo basado en tiempo transcurrido
+    if (release.fecha_objetivo) {
+      const ahora = new Date();
+      const fechaObjetivo = new Date(release.fecha_objetivo);
+      const fechaInicio = new Date(release.created_at || release.fecha_inicio);
+      
+      if (fechaInicio < ahora && ahora < fechaObjetivo) {
+        // Calcular progreso basado en tiempo transcurrido
+        const tiempoTotal = fechaObjetivo - fechaInicio;
+        const tiempoTranscurrido = ahora - fechaInicio;
+        const progresoEstimado = Math.min(Math.round((tiempoTranscurrido / tiempoTotal) * 100), 95);
+        
+        // Asignar progreso mínimo según el estado
+        if (release.estado === 'en_desarrollo') {
+          return Math.max(progresoEstimado, 25); // Mínimo 25% si está en desarrollo
+        } else if (release.estado === 'planificado') {
+          return Math.max(progresoEstimado, 10); // Mínimo 10% si está planificado
+        }
+        
+        return progresoEstimado;
+      } else if (ahora >= fechaObjetivo) {
+        // Si ya pasó la fecha objetivo pero no está lanzado, 95%
+        return 95;
+      }
+    }
+    
+    // Fallback: progreso mínimo según estado
+    switch (release.estado) {
+      case 'en_desarrollo':
+        return 25;
+      case 'planificado':
+        return 10;
+      default:
+        return 0;
+    }
+  };
 
   useEffect(() => {
     cargarDatos();
@@ -160,6 +272,52 @@ const Roadmap = () => {
     }
   };
 
+  const actualizarSprint = async (id, formData) => {
+    try {
+      console.log('=== Updating Sprint ===');
+      console.log('Sprint ID:', id);
+      console.log('Form data:', formData);
+
+      // Validar release_id si está presente
+      if (formData.release_id && !releases.find(r => r._id === formData.release_id)) {
+        throw new Error('Release seleccionado no es válido');
+      }
+
+      const dataToSend = { 
+        ...formData,
+        // Asegurar que los campos numéricos sean números
+        velocidad_planificada: parseInt(formData.velocidad_planificada) || 0,
+        capacidad_equipo: parseInt(formData.capacidad_equipo) || 0,
+        progreso: parseInt(formData.progreso) || 0
+      };
+
+      const token = await getToken();
+      const response = await fetch(`${API_BASE_URL}/api/sprints/${id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(dataToSend)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al actualizar sprint');
+      }
+
+      const result = await response.json();
+      console.log('Sprint updated successfully:', result);
+      
+      await cargarDatos();
+      setEditingSprint(null);
+      addAlert('Sprint actualizado exitosamente', 'success');
+    } catch (error) {
+      console.error('Error updating sprint:', error);
+      addAlert(error.message || 'Error al actualizar sprint', 'error');
+    }
+  };
+
   const eliminarRelease = async (id) => {
     if (!confirm('¿Está seguro de eliminar este release?')) return;
 
@@ -181,6 +339,49 @@ const Roadmap = () => {
     }
   };
 
+  const manejarCambioVersion = async (datosVersion) => {
+    try {
+      const token = await getToken();
+      
+      // Crear nuevo release con la nueva versión
+      const nuevoRelease = {
+        ...showVersionManager,
+        version: datosVersion.version,
+        estado: 'planificado',
+        progreso: 0,
+        notas_version: datosVersion.notas,
+        release_padre: showVersionManager._id,
+        nombre: `${showVersionManager.nombre} v${datosVersion.version}`,
+        fecha_objetivo: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000).toISOString() // +30 días por defecto
+      };
+
+      const response = await fetch(`${API_BASE_URL}/api/releases`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(nuevoRelease)
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al crear nueva versión');
+      }
+
+      addAlert(
+        `Nueva versión ${datosVersion.version} creada exitosamente`, 
+        'success'
+      );
+      
+      setShowVersionManager(null);
+      await cargarDatos();
+    } catch (error) {
+      console.error('Error al crear versión:', error);
+      addAlert(error.message || 'Error al crear nueva versión', 'error');
+    }
+  };
+
   const crearSprint = async (formData) => {
     try {
       console.log('=== Creating Sprint ===');
@@ -192,7 +393,19 @@ const Roadmap = () => {
         throw new Error('Debe seleccionar un producto antes de crear un sprint');
       }
       
-      const dataToSend = { ...formData, producto: selectedProduct };
+      // Validar release_id si está presente
+      if (formData.release_id && !releases.find(r => r._id === formData.release_id)) {
+        throw new Error('Release seleccionado no es válido');
+      }
+      
+      const dataToSend = { 
+        ...formData, 
+        producto: selectedProduct,
+        // Asegurar que los campos numéricos sean números
+        velocidad_planificada: parseInt(formData.velocidad_planificada) || 0,
+        capacidad_equipo: parseInt(formData.capacidad_equipo) || 0,
+        progreso: parseInt(formData.progreso) || 0
+      };
       console.log('Data to send:', dataToSend);
       
       const token = await getToken();
@@ -250,6 +463,45 @@ const Roadmap = () => {
     }
   };
 
+  const cambiarEstadoRelease = async (releaseId, nuevoEstado) => {
+    try {
+      const token = await getToken();
+      
+      console.log('Cambiando estado:', { releaseId, nuevoEstado });
+      
+      const response = await fetch(`${API_BASE_URL}/api/releases/${releaseId}/estado`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          estado: nuevoEstado,
+          notas: `Estado cambiado a ${nuevoEstado} desde Kanban`
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al cambiar estado');
+      }
+
+      const data = await response.json();
+      console.log('Estado actualizado:', data);
+
+      // Mostrar alerta de éxito
+      addAlert(`Release actualizado a ${nuevoEstado}`, 'success');
+      
+      // Recargar datos para obtener el progreso actualizado
+      await cargarDatos();
+      
+    } catch (error) {
+      console.error('Error al cambiar estado:', error);
+      addAlert(error.message || 'Error al cambiar estado del release', 'error');
+      setError(error.message);
+    }
+  };
+
   const getEstadoColor = (estado) => {
     const colores = {
       planificado: 'bg-blue-100 text-blue-800',
@@ -257,6 +509,7 @@ const Roadmap = () => {
       activo: 'bg-green-100 text-green-800',
       lanzado: 'bg-purple-100 text-purple-800',
       completado: 'bg-green-100 text-green-800',
+      retrasado: 'bg-red-100 text-red-800',
       cancelado: 'bg-red-100 text-red-800'
     };
     return colores[estado] || 'bg-gray-100 text-gray-800';
@@ -269,6 +522,30 @@ const Roadmap = () => {
       year: 'numeric'
     });
   };
+
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters);
+  };
+
+  // Normalizar estados antes del filtrado
+  const releasesNormalizados = releases.map(normalizarEstadoRelease);
+
+  const filteredReleases = releasesNormalizados.filter(release => {
+    if (filters.search && !release.nombre.toLowerCase().includes(filters.search.toLowerCase())) return false;
+    if (filters.estado && release.estado !== filters.estado) return false;
+    if (filters.prioridad && release.prioridad !== filters.prioridad) return false;
+    if (filters.fechaDesde && new Date(release.fecha_objetivo) < new Date(filters.fechaDesde)) return false;
+    if (filters.fechaHasta && new Date(release.fecha_objetivo) > new Date(filters.fechaHasta)) return false;
+    return true;
+  });
+
+  const filteredSprints = sprints.filter(sprint => {
+    if (filters.search && !sprint.nombre.toLowerCase().includes(filters.search.toLowerCase())) return false;
+    if (filters.estado && sprint.estado !== filters.estado) return false;
+    if (filters.fechaDesde && new Date(sprint.fecha_inicio) < new Date(filters.fechaDesde)) return false;
+    if (filters.fechaHasta && new Date(sprint.fecha_fin) > new Date(filters.fechaHasta)) return false;
+    return true;
+  });
 
   if (loading) {
     return (
@@ -308,13 +585,23 @@ const Roadmap = () => {
               </button>
               <button
                 onClick={() => setViewMode('kanban')}
-                className={`px-3 py-2 text-sm font-medium rounded-r-lg ${
+                className={`px-3 py-2 text-sm font-medium ${
                   viewMode === 'kanban' 
                     ? 'bg-purple-600 text-white' 
                     : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 Kanban
+              </button>
+              <button
+                onClick={() => setViewMode('dependencies')}
+                className={`px-3 py-2 text-sm font-medium rounded-r-lg ${
+                  viewMode === 'dependencies' 
+                    ? 'bg-purple-600 text-white' 
+                    : 'text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                Dependencias
               </button>
             </div>
 
@@ -374,77 +661,48 @@ const Roadmap = () => {
 
       {selectedProduct ? (
         <>
-          {/* Resumen */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <Target className="h-5 w-5 text-purple-600" />
-                <span className="text-sm font-medium text-gray-700">Releases</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900">{releases.length}</div>
-              <div className="text-sm text-gray-500">
-                {releases.filter(r => r.estado === 'lanzado').length} lanzados
-              </div>
-            </div>
+          {/* Sistema de Alertas */}
+          <AlertSystem releases={releases} sprints={sprints} alerts={alerts} />
+          
+          {/* Filtros Avanzados */}
+          <AdvancedFilters onFilterChange={handleFilterChange} />
 
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <GitBranch className="h-5 w-5 text-blue-600" />
-                <span className="text-sm font-medium text-gray-700">Sprints</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900">{sprints.length}</div>
-              <div className="text-sm text-gray-500">
-                {sprints.filter(s => s.estado === 'activo').length} activo
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <Clock className="h-5 w-5 text-yellow-600" />
-                <span className="text-sm font-medium text-gray-700">En Desarrollo</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {releases.filter(r => r.estado === 'en_desarrollo').length}
-              </div>
-              <div className="text-sm text-gray-500">releases activos</div>
-            </div>
-
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex items-center gap-3 mb-2">
-                <TrendingUp className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-medium text-gray-700">Progreso</span>
-              </div>
-              <div className="text-2xl font-bold text-gray-900">
-                {releases.length > 0 
-                  ? Math.round(releases.reduce((sum, r) => sum + r.progreso, 0) / releases.length)
-                  : 0}%
-              </div>
-              <div className="text-sm text-gray-500">promedio</div>
-            </div>
-          </div>
+          {/* Métricas Avanzadas */}
+          <AdvancedMetrics releases={filteredReleases} sprints={filteredSprints} />
 
           {/* Vista de roadmap */}
           {viewMode === 'timeline' ? (
-            <TimelineView 
-              releases={releases} 
-              sprints={sprints}
+            <TimelineWithMilestones 
+              releases={filteredReleases} 
+              sprints={filteredSprints}
               onEditRelease={setEditingRelease}
               onDeleteRelease={eliminarRelease}
               onEditSprint={setEditingSprint}
               onSprintAction={cambiarEstadoSprint}
+              onReleaseAction={cambiarEstadoRelease}
               getEstadoColor={getEstadoColor}
               formatearFecha={formatearFecha}
+              calcularProgresoReal={calcularProgresoReal}
+            />
+          ) : viewMode === 'kanban' ? (
+            <KanbanView 
+              releases={filteredReleases}
+              sprints={filteredSprints}
+              onEditRelease={setEditingRelease}
+              onDeleteRelease={eliminarRelease}
+              onEditSprint={setEditingSprint}
+              onSprintAction={cambiarEstadoSprint}
+              onReleaseAction={cambiarEstadoRelease}
+              onShowHistory={setShowHistory}
+              onShowVersionManager={setShowVersionManager}
+              getEstadoColor={getEstadoColor}
+              formatearFecha={formatearFecha}
+              calcularProgresoReal={calcularProgresoReal}
             />
           ) : (
-            <KanbanView 
-              releases={releases}
-              sprints={sprints}
-              onEditRelease={setEditingRelease}
-              onDeleteRelease={eliminarRelease}
-              onEditSprint={setEditingSprint}
-              onSprintAction={cambiarEstadoSprint}
-              getEstadoColor={getEstadoColor}
-              formatearFecha={formatearFecha}
+            <DependencyView 
+              releases={filteredReleases}
+              sprints={filteredSprints}
             />
           )}
         </>
@@ -478,11 +736,37 @@ const Roadmap = () => {
         />
       )}
 
+      {editingSprint && (
+        <SprintModal
+          sprint={editingSprint}
+          onClose={() => setEditingSprint(null)}
+          onSave={(data) => actualizarSprint(editingSprint._id, data)}
+          releases={releases}
+        />
+      )}
+
       {editingRelease && (
         <ReleaseModal
           release={editingRelease}
           onClose={() => setEditingRelease(null)}
           onSave={(data) => actualizarRelease(editingRelease._id, data)}
+        />
+      )}
+
+      {/* Modal de Historial */}
+      {showHistory && (
+        <ReleaseHistoryModal
+          release={showHistory}
+          onClose={() => setShowHistory(null)}
+        />
+      )}
+
+      {/* Modal de Gestión de Versiones */}
+      {showVersionManager && (
+        <VersionManager
+          release={showVersionManager}
+          onVersionChange={manejarCambioVersion}
+          onClose={() => setShowVersionManager(null)}
         />
       )}
     </div>
@@ -498,7 +782,8 @@ const TimelineView = ({
   onEditSprint,
   onSprintAction,
   getEstadoColor, 
-  formatearFecha 
+  formatearFecha,
+  calcularProgresoReal
 }) => {
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -556,12 +841,12 @@ const TimelineView = ({
               <div className="mb-4">
                 <div className="flex justify-between text-sm text-gray-600 mb-1">
                   <span>Progreso</span>
-                  <span>{release.progreso}%</span>
+                  <span>{calcularProgresoReal(release)}%</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
                     className="bg-purple-600 h-2 rounded-full transition-all duration-300"
-                    style={{ width: `${release.progreso}%` }}
+                    style={{ width: `${calcularProgresoReal(release)}%` }}
                   ></div>
                 </div>
               </div>
@@ -651,10 +936,40 @@ const KanbanView = ({
   onDeleteRelease,
   onEditSprint,
   onSprintAction,
+  onReleaseAction,
+  onShowHistory,
+  onShowVersionManager,
   getEstadoColor, 
-  formatearFecha 
+  formatearFecha,
+  calcularProgresoReal
 }) => {
   const estados = ['planificado', 'en_desarrollo', 'lanzado'];
+  
+  const getProximoEstado = (estadoActual) => {
+    const index = estados.indexOf(estadoActual);
+    return index < estados.length - 1 ? estados[index + 1] : null;
+  };
+
+  const getEstadoAnterior = (estadoActual) => {
+    const index = estados.indexOf(estadoActual);
+    return index > 0 ? estados[index - 1] : null;
+  };
+
+  const getAccionTexto = (estado) => {
+    switch(estado) {
+      case 'en_desarrollo': return 'Iniciar Desarrollo';
+      case 'lanzado': return 'Lanzar';
+      default: return 'Avanzar';
+    }
+  };
+
+  const getAccionTextoAnterior = (estado) => {
+    switch(estado) {
+      case 'planificado': return 'Volver a Planificado';
+      case 'en_desarrollo': return 'Volver a Desarrollo';
+      default: return 'Retroceder';
+    }
+  };
   
   return (
     <div className="bg-white rounded-lg shadow-sm p-6">
@@ -676,14 +991,32 @@ const KanbanView = ({
                       <h5 className="font-semibold text-gray-900">{release.nombre}</h5>
                       <div className="flex items-center gap-1">
                         <button
+                          onClick={() => onShowHistory && onShowHistory(release)}
+                          className="p-1 text-gray-600 hover:text-purple-600"
+                          title="Ver historial"
+                        >
+                          <History size={14} />
+                        </button>
+                        {onShowVersionManager && (
+                          <button
+                            onClick={() => onShowVersionManager(release)}
+                            className="p-1 text-gray-600 hover:text-green-600"
+                            title="Gestionar versión"
+                          >
+                            {Tag ? <Tag size={14} /> : <Hash size={14} />}
+                          </button>
+                        )}
+                        <button
                           onClick={() => onEditRelease(release)}
                           className="p-1 text-gray-600 hover:text-blue-600"
+                          title="Editar release"
                         >
                           <Edit size={14} />
                         </button>
                         <button
                           onClick={() => onDeleteRelease(release._id)}
                           className="p-1 text-gray-600 hover:text-red-600"
+                          title="Eliminar release"
                         >
                           <Trash2 size={14} />
                         </button>
@@ -693,16 +1026,45 @@ const KanbanView = ({
                     <p className="text-sm text-gray-600 mb-2">v{release.version}</p>
                     <p className="text-xs text-gray-500 mb-3">{release.descripcion}</p>
                     
-                    <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
                       <span>{formatearFecha(release.fecha_objetivo)}</span>
-                      <span>{release.progreso}%</span>
+                      <span>{calcularProgresoReal(release)}%</span>
                     </div>
                     
-                    <div className="w-full bg-gray-200 rounded-full h-1 mt-2">
+                    <div className="w-full bg-gray-200 rounded-full h-1 mb-3">
                       <div 
                         className="bg-purple-600 h-1 rounded-full"
-                        style={{ width: `${release.progreso}%` }}
+                        style={{ width: `${calcularProgresoReal(release)}%` }}
                       ></div>
+                    </div>
+
+                    {/* Botones de Transición */}
+                    <div className="flex gap-2 mt-3">
+                      {getEstadoAnterior(release.estado) && (
+                        <button
+                          onClick={() => onReleaseAction(release._id, getEstadoAnterior(release.estado))}
+                          className="flex-1 px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                          title={getAccionTextoAnterior(getEstadoAnterior(release.estado))}
+                        >
+                          ← {getEstadoAnterior(release.estado).replace('_', ' ')}
+                        </button>
+                      )}
+                      
+                      {getProximoEstado(release.estado) && (
+                        <button
+                          onClick={() => onReleaseAction(release._id, getProximoEstado(release.estado))}
+                          className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
+                            getProximoEstado(release.estado) === 'en_desarrollo' 
+                              ? 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
+                              : getProximoEstado(release.estado) === 'lanzado'
+                              ? 'bg-green-100 text-green-700 hover:bg-green-200'
+                              : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                          }`}
+                          title={getAccionTexto(getProximoEstado(release.estado))}
+                        >
+                          {getProximoEstado(release.estado).replace('_', ' ')} →
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
@@ -773,229 +1135,6 @@ const SprintCard = ({
       <div className="flex items-center justify-between text-xs text-gray-500">
         <span>{formatearFecha(sprint.fecha_inicio)} - {formatearFecha(sprint.fecha_fin)}</span>
         <span>Velocidad: {sprint.velocidad_planificada}</span>
-      </div>
-    </div>
-  );
-};
-
-// Modal de Release
-const ReleaseModal = ({ release, onClose, onSave }) => {
-  const [formData, setFormData] = useState({
-    nombre: release?.nombre || '',
-    version: release?.version || '',
-    descripcion: release?.descripcion || '',
-    fecha_objetivo: release?.fecha_objetivo ? release.fecha_objetivo.split('T')[0] : '',
-    prioridad: release?.prioridad || 'media',
-    notas: release?.notas || ''
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {release ? 'Editar Release' : 'Nuevo Release'}
-        </h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre
-            </label>
-            <input
-              type="text"
-              value={formData.nombre}
-              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Versión
-            </label>
-            <input
-              type="text"
-              value={formData.version}
-              onChange={(e) => setFormData({ ...formData, version: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Descripción
-            </label>
-            <textarea
-              value={formData.descripcion}
-              onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              rows="3"
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Fecha Objetivo
-            </label>
-            <input
-              type="date"
-              value={formData.fecha_objetivo}
-              onChange={(e) => setFormData({ ...formData, fecha_objetivo: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Prioridad
-            </label>
-            <select
-              value={formData.prioridad}
-              onChange={(e) => setFormData({ ...formData, prioridad: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
-            >
-              <option value="baja">Baja</option>
-              <option value="media">Media</option>
-              <option value="alta">Alta</option>
-              <option value="critica">Crítica</option>
-            </select>
-          </div>
-          
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700"
-            >
-              {release ? 'Actualizar' : 'Crear'}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-};
-
-// Modal de Sprint
-const SprintModal = ({ sprint, releases, onClose, onSave }) => {
-  const [formData, setFormData] = useState({
-    nombre: sprint?.nombre || '',
-    objetivo: sprint?.objetivo || '',
-    fecha_inicio: sprint?.fecha_inicio ? sprint.fecha_inicio.split('T')[0] : '',
-    fecha_fin: sprint?.fecha_fin ? sprint.fecha_fin.split('T')[0] : '',
-    velocidad_planificada: sprint?.velocidad_planificada || 0
-  });
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSave(formData);
-  };
-
-  return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          {sprint ? 'Editar Sprint' : 'Nuevo Sprint'}
-        </h3>
-        
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Nombre
-            </label>
-            <input
-              type="text"
-              value={formData.nombre}
-              onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              required
-            />
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Objetivo
-            </label>
-            <textarea
-              value={formData.objetivo}
-              onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              rows="3"
-              required
-            />
-          </div>
-          
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Fecha Inicio
-              </label>
-              <input
-                type="date"
-                value={formData.fecha_inicio}
-                onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Fecha Fin
-              </label>
-              <input
-                type="date"
-                value={formData.fecha_fin}
-                onChange={(e) => setFormData({ ...formData, fecha_fin: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-          </div>
-          
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Velocidad Planificada
-            </label>
-            <input
-              type="number"
-              value={formData.velocidad_planificada}
-              onChange={(e) => setFormData({ ...formData, velocidad_planificada: parseInt(e.target.value) || 0 })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              min="0"
-            />
-          </div>
-          
-          <div className="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
-            >
-              {sprint ? 'Actualizar' : 'Crear'}
-            </button>
-          </div>
-        </form>
       </div>
     </div>
   );

@@ -23,6 +23,8 @@ const Productos = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showForm, setShowForm] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+  const [showDetails, setShowDetails] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
   const [formData, setFormData] = useState({
     nombre: '',
     descripcion: '',
@@ -33,7 +35,7 @@ const Productos = () => {
     estado: 'activo'
   });
 
-  const API_URL = import.meta.env.VITE_API_URL;
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   const estadoColors = {
     activo: 'bg-green-100 text-green-800',
@@ -45,16 +47,22 @@ const Productos = () => {
     try {
       setLoading(true);
       
-      // Usar ruta temporal sin autenticación para testing
-      const response = await fetch(`${API_URL}/productos-demo`);
+      // Usar la ruta correcta con autenticación
+      const token = await getToken();
+      const response = await fetch(`${API_URL}/products`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (response.ok) {
         const data = await response.json();
-        setProductos(data.products || []);
+        setProductos(data.products || data || []);
         setError('');
       } else {
         const errorData = await response.json();
-        throw new Error(errorData.message || 'Error al cargar productos');
+        throw new Error(errorData.error || errorData.message || 'Error al cargar productos');
       }
     } catch (error) {
       console.error('Error fetching productos:', error);
@@ -64,39 +72,25 @@ const Productos = () => {
     }
   };
 
-  // Usar datos simulados para testing
+  // Cargar usuarios reales desde la API
   const fetchUsuarios = async () => {
     try {
-      // Usuarios simulados para testing
-      const usuariosDemo = [
-        {
-          _id: '507f1f77bcf86cd799439012',
-          nombre_negocio: 'Juan Pérez',
-          email: 'juan.perez@empresa.com',
-          role: 'product_owner'
-        },
-        {
-          _id: '507f1f77bcf86cd799439014', 
-          nombre_negocio: 'María García',
-          email: 'maria.garcia@empresa.com',
-          role: 'scrum_master'
-        },
-        {
-          _id: '507f1f77bcf86cd799439016',
-          nombre_negocio: 'Carlos López',
-          email: 'carlos.lopez@empresa.com',
-          role: 'developer'
-        },
-        {
-          _id: '507f1f77bcf86cd799439018',
-          nombre_negocio: 'Ana Martínez',
-          email: 'ana.martinez@empresa.com',
-          role: 'product_owner'
+      const token = await getToken();
+      const response = await fetch(`${API_URL}/users`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
         }
-      ];
+      });
       
-      setUsuarios(usuariosDemo);
-      setError('');
+      if (response.ok) {
+        const data = await response.json();
+        setUsuarios(data.users || data || []);
+        setError('');
+      } else {
+        const errorData = await response.json();
+        throw new Error(errorData.error || errorData.message || 'Error al cargar usuarios');
+      }
     } catch (error) {
       setError('Error al cargar colaboradores: ' + error.message);
       setUsuarios([]);
@@ -110,8 +104,8 @@ const Productos = () => {
     try {
       const token = await getToken();
       const url = editingProduct 
-        ? `${API_URL}/productos/${editingProduct._id}`
-        : `${API_URL}/productos`;
+        ? `${API_URL}/products/${editingProduct._id}`
+        : `${API_URL}/products`;
       
       const method = editingProduct ? 'PUT' : 'POST';
       
@@ -136,32 +130,50 @@ const Productos = () => {
         throw new Error(errorData.message || 'Error al guardar producto');
       }
     } catch (error) {
+      console.error('Error en handleSubmit:', error);
       setError('Error: ' + error.message);
     }
   };
 
   const handleEdit = (producto) => {
-    setEditingProduct(producto);
-    setFormData({
-      nombre: producto.nombre,
-      descripcion: producto.descripcion,
-      responsable: producto.responsable._id,
-      fecha_inicio: producto.fecha_inicio ? producto.fecha_inicio.split('T')[0] : new Date().toISOString().split('T')[0],
-      fecha_fin: producto.fecha_fin ? producto.fecha_fin.split('T')[0] : '',
-      prioridad: producto.prioridad || 'media',
-      estado: producto.estado
-    });
-    setShowForm(true);
+    if (!producto || !producto._id) {
+      console.error('Producto no válido para editar:', producto);
+      setError('Error: Producto no válido para editar');
+      return;
+    }
+
+    try {
+      setEditingProduct(producto);
+      setFormData({
+        nombre: producto.nombre || '',
+        descripcion: producto.descripcion || '',
+        responsable: producto.responsable?._id || producto.responsable || '',
+        fecha_inicio: producto.fecha_inicio ? producto.fecha_inicio.split('T')[0] : new Date().toISOString().split('T')[0],
+        fecha_fin: producto.fecha_fin ? producto.fecha_fin.split('T')[0] : '',
+        prioridad: producto.prioridad || 'media',
+        estado: producto.estado || 'activo'
+      });
+      setShowForm(true);
+    } catch (error) {
+      console.error('Error al configurar edición:', error);
+      setError('Error al abrir formulario de edición');
+    }
   };
 
   const handleDelete = async (producto) => {
+    if (!producto || !producto._id) {
+      console.error('Producto no válido para eliminar:', producto);
+      setError('Error: Producto no válido para eliminar');
+      return;
+    }
+
     if (!window.confirm(`¿Estás seguro de eliminar el producto "${producto.nombre}"?`)) {
       return;
     }
     
     try {
       const token = await getToken();
-      const response = await fetch(`${API_URL}/productos/${producto._id}`, {
+      const response = await fetch(`${API_URL}/products/${producto._id}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -177,8 +189,20 @@ const Productos = () => {
         throw new Error(errorData.message || 'Error al eliminar producto');
       }
     } catch (error) {
+      console.error('Error al eliminar producto:', error);
       setError('Error: ' + error.message);
     }
+  };
+
+  const handleViewDetails = (producto) => {
+    if (!producto || !producto._id) {
+      console.error('Producto no válido para ver detalles:', producto);
+      setError('Error: Producto no válido para ver detalles');
+      return;
+    }
+
+    setSelectedProduct(producto);
+    setShowDetails(true);
   };
 
   const resetForm = () => {
@@ -197,6 +221,11 @@ const Productos = () => {
     setShowForm(false);
     setEditingProduct(null);
     resetForm();
+  };
+
+  const handleCloseDetails = () => {
+    setShowDetails(false);
+    setSelectedProduct(null);
   };
 
   useEffect(() => {
@@ -313,37 +342,28 @@ const Productos = () => {
                       <span className={`px-2 py-1 text-xs font-medium rounded-full ${estadoColors[producto.estado]}`}>
                         {producto.estado}
                       </span>
-                      {producto.prioridad && (
-                        <span className={`px-2 py-1 text-xs font-medium rounded-full ${
-                          producto.prioridad === 'alta' ? 'bg-red-100 text-red-800' :
-                          producto.prioridad === 'media' ? 'bg-yellow-100 text-yellow-800' :
-                          'bg-green-100 text-green-800'
-                        }`}>
-                          {producto.prioridad}
-                        </span>
-                      )}
                     </div>
                     <p className="text-gray-600 mb-3">{producto.descripcion}</p>
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-500">
                       <div className="flex items-center gap-1">
                         <User size={14} />
-                        <span>{producto.responsable?.nombre_negocio || producto.responsable?.email}</span>
+                        <span>{producto.responsable?.nombre_negocio || producto.responsable?.email || 'No asignado'}</span>
                       </div>
                       {producto.fecha_inicio && (
                         <div className="flex items-center gap-1">
                           <Calendar size={14} />
-                          <span>Inicio: {new Date(producto.fecha_inicio).toLocaleDateString()}</span>
+                          <span>Inicio: {new Date(producto.fecha_inicio).toLocaleDateString('es-ES')}</span>
                         </div>
                       )}
                       {producto.fecha_fin && (
                         <div className="flex items-center gap-1">
                           <Calendar size={14} />
-                          <span>Fin: {new Date(producto.fecha_fin).toLocaleDateString()}</span>
+                          <span>Fin: {new Date(producto.fecha_fin).toLocaleDateString('es-ES')}</span>
                         </div>
                       )}
                       <div className="flex items-center gap-1">
                         <Calendar size={14} />
-                        <span>Creado: {new Date(producto.createdAt).toLocaleDateString()}</span>
+                        <span>Creado: {new Date(producto.createdAt).toLocaleDateString('es-ES')}</span>
                       </div>
                     </div>
                   </div>
@@ -363,6 +383,7 @@ const Productos = () => {
                       <Trash2 size={16} />
                     </button>
                     <button
+                      onClick={() => handleViewDetails(producto)}
                       className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
                       title="Ver detalles"
                     >
@@ -375,6 +396,136 @@ const Productos = () => {
           </div>
         )}
       </div>
+
+      {/* Modal de detalles */}
+      {showDetails && selectedProduct && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold text-gray-900">Detalles del Producto</h3>
+              <button
+                onClick={handleCloseDetails}
+                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+            
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
+                  <p className="text-lg font-semibold text-gray-900">{selectedProduct.nombre}</p>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${estadoColors[selectedProduct.estado] || 'bg-gray-100 text-gray-800'}`}>
+                    {selectedProduct.estado?.charAt(0).toUpperCase() + selectedProduct.estado?.slice(1)}
+                  </span>
+                </div>
+              </div>
+              
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+                <p className="text-gray-900 bg-gray-50 p-3 rounded-lg leading-relaxed">{selectedProduct.descripcion || 'Sin descripción disponible'}</p>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Responsable</label>
+                  <div className="flex items-center gap-2">
+                    <User size={16} className="text-gray-500" />
+                    <span className="text-gray-900">
+                      {selectedProduct.responsable?.nombre_negocio || 
+                       selectedProduct.responsable?.email || 
+                       'No asignado'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Creado Por</label>
+                  <div className="flex items-center gap-2">
+                    <User size={16} className="text-blue-500" />
+                    <span className="text-gray-900">
+                      {selectedProduct.created_by?.nombre_negocio || 
+                       selectedProduct.created_by?.email || 
+                       'Sistema'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Inicio</label>
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} className="text-gray-500" />
+                    <span className="text-gray-900">
+                      {selectedProduct.fecha_inicio ? 
+                        new Date(selectedProduct.fecha_inicio).toLocaleDateString('es-ES') : 
+                        'No definida'}
+                    </span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Fin</label>
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} className="text-gray-500" />
+                    <span className="text-gray-900">
+                      {selectedProduct.fecha_fin ? 
+                        new Date(selectedProduct.fecha_fin).toLocaleDateString('es-ES') : 
+                        'No definida'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Creación</label>
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} className="text-gray-500" />
+                    <span className="text-gray-900">
+                      {new Date(selectedProduct.createdAt).toLocaleDateString('es-ES')}
+                    </span>
+                  </div>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Última Actualización</label>
+                  <div className="flex items-center gap-2">
+                    <Calendar size={16} className="text-gray-500" />
+                    <span className="text-gray-900">
+                      {new Date(selectedProduct.updatedAt).toLocaleDateString('es-ES')}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+              <button
+                onClick={() => {
+                  handleCloseDetails();
+                  handleEdit(selectedProduct);
+                }}
+                className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                Editar Producto
+              </button>
+              <button
+                onClick={handleCloseDetails}
+                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cerrar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

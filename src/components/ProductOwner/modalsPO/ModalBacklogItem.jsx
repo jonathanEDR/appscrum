@@ -6,7 +6,6 @@ import {
   Plus, 
   Minus,
   Package,
-  User,
   Calendar,
   Target,
   Tag,
@@ -32,7 +31,6 @@ const ModalBacklogItem = ({
     prioridad: 'media',
     producto: '',
     puntos_historia: '',
-    asignado_a: '',
     sprint: '',
     criterios_aceptacion: [{ descripcion: '', completado: false }],
     etiquetas: []
@@ -63,7 +61,6 @@ const ModalBacklogItem = ({
         prioridad: editingItem.prioridad || 'media',
         producto: editingItem.producto?._id || '',
         puntos_historia: editingItem.puntos_historia?.toString() || '',
-        asignado_a: editingItem.asignado_a?._id || '',
         sprint: editingItem.sprint?._id || '',
         criterios_aceptacion: editingItem.criterios_aceptacion?.length > 0 
           ? editingItem.criterios_aceptacion 
@@ -73,7 +70,7 @@ const ModalBacklogItem = ({
     } else {
       resetForm();
     }
-  }, [editingItem]);
+  }, [editingItem, productos, usuarios, sprints]); // Agregar productos a las dependencias
 
   // Resetear formulario
   const resetForm = () => {
@@ -84,7 +81,6 @@ const ModalBacklogItem = ({
       prioridad: 'media',
       producto: '',
       puntos_historia: '',
-      asignado_a: '',
       sprint: '',
       criterios_aceptacion: [{ descripcion: '', completado: false }],
       etiquetas: []
@@ -127,7 +123,6 @@ const ModalBacklogItem = ({
       const submitData = {
         ...formData,
         puntos_historia: formData.puntos_historia ? parseInt(formData.puntos_historia) : undefined,
-        asignado_a: formData.asignado_a && formData.asignado_a.trim() !== '' ? formData.asignado_a : undefined,
         sprint: formData.sprint && formData.sprint.trim() !== '' ? formData.sprint : undefined,
         criterios_aceptacion: formData.criterios_aceptacion.filter(c => c.descripcion.trim() !== ''),
         etiquetas: formData.etiquetas.filter(tag => tag.trim() !== '')
@@ -318,7 +313,7 @@ const ModalBacklogItem = ({
             </div>
           </div>
 
-          {/* Producto, Asignado y Sprint */}
+          {/* Producto y Sprint */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -332,31 +327,17 @@ const ModalBacklogItem = ({
                 required
               >
                 <option value="">Seleccionar producto</option>
-                {productos.map(producto => (
+                {(productos || []).map(producto => (
                   <option key={producto._id} value={producto._id}>
                     {producto.nombre}
                   </option>
                 ))}
               </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                <User className="h-4 w-4 inline mr-1" />
-                Asignado a
-              </label>
-              <select
-                value={formData.asignado_a}
-                onChange={(e) => setFormData({ ...formData, asignado_a: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              >
-                <option value="">Sin asignar</option>
-                {usuarios.map(usuario => (
-                  <option key={usuario._id} value={usuario._id}>
-                    {usuario.nombre_negocio || usuario.firstName + ' ' + usuario.lastName}
-                  </option>
-                ))}
-              </select>
+              {(!productos || productos.length === 0) && (
+                <p className="text-xs text-amber-600 mt-1">
+                  ⚠️ No se han cargado productos. Recargando...
+                </p>
+              )}
             </div>
 
             <div>
@@ -370,7 +351,7 @@ const ModalBacklogItem = ({
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               >
                 <option value="">Sin asignar</option>
-                {sprints.map(sprint => (
+                {(sprints || []).map(sprint => (
                   <option key={sprint._id} value={sprint._id}>
                     {sprint.nombre} ({sprint.estado})
                   </option>

@@ -32,6 +32,7 @@ const ProductBacklog = () => {
   const [filtroPrioridad, setFiltroPrioridad] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  const [isFiltering, setIsFiltering] = useState(false);
 
   const tipoColors = {
     historia: 'bg-blue-100 text-blue-800',
@@ -72,7 +73,7 @@ const ProductBacklog = () => {
 
   const fetchItems = async () => {
     try {
-      setLoading(true);
+      setIsFiltering(true);
       const token = await getToken();
       
       const params = new URLSearchParams();
@@ -82,6 +83,7 @@ const ProductBacklog = () => {
       if (filtroPrioridad) params.append('prioridad', filtroPrioridad);
       
       const url = `${config.API_URL}/backlog?${params.toString()}`;
+      console.log('Fetching with filters:', { searchTerm, filtroProducto, filtroEstado, filtroPrioridad });
       
       const response = await fetch(url, {
         headers: {
@@ -94,6 +96,7 @@ const ProductBacklog = () => {
         const data = await response.json();
         setItems(data.items || []);
         setError('');
+        console.log('Filtered items received:', data.items?.length || 0);
       } else {
         const errorText = await response.text();
         throw new Error(errorText || 'Error al cargar backlog');
@@ -103,13 +106,14 @@ const ProductBacklog = () => {
       setError('Error al cargar backlog: ' + error.message);
     } finally {
       setLoading(false);
+      setIsFiltering(false);
     }
   };
 
   const fetchProductos = async () => {
     try {
       const token = await getToken();
-      const response = await fetch(`${config.API_URL}/productos`, {
+      const response = await fetch(`${config.API_URL}/products`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -118,10 +122,15 @@ const ProductBacklog = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setProductos(data.productos || []);
+        console.log('Productos recibidos:', data); // Debug log
+        setProductos(data.products || data.productos || []); // Manejar ambos formatos
+      } else {
+        console.error('❌ Error response from productos API:', response.status, response.statusText);
+        const errorText = await response.text();
+        console.error('❌ Error details:', errorText);
       }
     } catch (error) {
-      console.error('Error fetching productos:', error);
+      console.error('❌ Error fetching productos:', error);
     }
   };
 
@@ -214,6 +223,7 @@ const ProductBacklog = () => {
     }
   };
 
+  // Efecto para cargar datos iniciales
   useEffect(() => {
     const cargarDatos = async () => {
       try {
@@ -225,11 +235,13 @@ const ProductBacklog = () => {
         }
         
         await Promise.all([
-          fetchItems(),
           fetchProductos(),
           fetchUsuarios(),
           fetchSprints()
         ]);
+        
+        // Cargar items después de tener los datos de referencia
+        await fetchItems();
       } catch (error) {
         console.error('Error cargando datos:', error);
         setError('Error al cargar datos iniciales');
@@ -240,6 +252,19 @@ const ProductBacklog = () => {
 
     cargarDatos();
   }, []);
+
+  // Efecto para aplicar filtros automáticamente
+  useEffect(() => {
+    // Solo ejecutar si ya se han cargado los datos iniciales y no estamos en loading
+    if (productos.length > 0 && !loading) {
+      console.log('Aplicando filtros:', { searchTerm, filtroProducto, filtroEstado, filtroPrioridad });
+      const timeoutId = setTimeout(() => {
+        fetchItems();
+      }, 300); // Debounce de 300ms
+
+      return () => clearTimeout(timeoutId);
+    }
+  }, [searchTerm, filtroProducto, filtroEstado, filtroPrioridad, productos.length]);
 
   if (loading) {
     return (
@@ -267,6 +292,11 @@ const ProductBacklog = () => {
                 <span className="ml-2 inline-flex items-center gap-1 text-green-600">
                   <CheckCircle2 className="h-4 w-4" />
                   {readyForSprintCount} listos para sprint
+                </span>
+              )}
+              {items.length > 0 && (
+                <span className="ml-2 text-gray-500">
+                  • {items.length} elementos total
                 </span>
               )}
             </p>
@@ -314,6 +344,14 @@ const ProductBacklog = () => {
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
               />
+              {searchTerm && (
+                <button
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              )}
             </div>
           </div>
           
@@ -361,13 +399,67 @@ const ProductBacklog = () => {
           </div>
         </div>
         
-        <div className="mt-4 flex justify-end">
+        {/* Indicadores de filtros activos */}
+        {(searchTerm || filtroProducto || filtroEstado || filtroPrioridad) && (
+          <div className="mt-4 flex items-center gap-2">
+            <span className="text-sm text-gray-600">Filtros activos:</span>
+            <div className="flex flex-wrap gap-2">
+              {searchTerm && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                  Búsqueda: "{searchTerm}"
+                  <button onClick={() => setSearchTerm('')} className="hover:text-blue-600">✕</button>
+                </span>
+              )}
+              {filtroProducto && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
+                  Producto: {productos.find(p => p._id === filtroProducto)?.nombre}
+                  <button onClick={() => setFiltroProducto('')} className="hover:text-green-600">✕</button>
+                </span>
+              )}
+              {filtroEstado && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs rounded-full">
+                  Estado: {filtroEstado.replace('_', ' ')}
+                  <button onClick={() => setFiltroEstado('')} className="hover:text-yellow-600">✕</button>
+                </span>
+              )}
+              {filtroPrioridad && (
+                <span className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-800 text-xs rounded-full">
+                  Prioridad: {filtroPrioridad.replace('_', ' ')}
+                  <button onClick={() => setFiltroPrioridad('')} className="hover:text-purple-600">✕</button>
+                </span>
+              )}
+              <button
+                onClick={() => {
+                  setSearchTerm('');
+                  setFiltroProducto('');
+                  setFiltroEstado('');
+                  setFiltroPrioridad('');
+                }}
+                className="text-xs text-red-600 hover:text-red-800 underline"
+              >
+                Limpiar todos
+              </button>
+            </div>
+          </div>
+        )}
+        
+        <div className="mt-4 flex justify-between items-center">
+          <div className="text-sm text-gray-500 flex items-center gap-2">
+            {items.length > 0 && `Mostrando ${items.length} elementos`}
+            {isFiltering && (
+              <>
+                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
+                <span>Filtrando...</span>
+              </>
+            )}
+          </div>
           <button
             onClick={fetchItems}
-            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+            disabled={isFiltering}
+            className="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            <Filter className="h-4 w-4" />
-            Aplicar Filtros
+            <RefreshCw className={`h-3 w-3 ${isFiltering ? 'animate-spin' : ''}`} />
+            Actualizar
           </button>
         </div>
       </div>
