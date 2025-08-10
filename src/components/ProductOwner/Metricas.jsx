@@ -55,8 +55,8 @@ const Metricas = () => {
       console.log('Iniciando carga de productos...');
       setLoading(true);
       
-      // Usar ruta temporal sin autenticación para testing
-      const response = await fetch(`${API_BASE_URL}/api/productos-demo`);
+      // Usar la ruta de métricas que no requiere autenticación por ahora
+      const response = await fetch(`${API_BASE_URL}/api/metricas/productos`);
       
       console.log('Respuesta productos:', response.status, response.ok);
       if (!response.ok) throw new Error('Error al cargar productos');

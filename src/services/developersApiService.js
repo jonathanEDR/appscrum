@@ -76,16 +76,44 @@ class DevelopersApiService {
   }
 
   /**
-   * Sprint Board - Obtiene datos del sprint board
+   * Sprint Board - Obtiene datos del sprint board con filtros
    */
-  async getSprintBoardData(sprintId = null) {
+  async getSprintBoardData(sprintId = null, filterMode = 'all') {
     try {
       const token = await this._getTokenFromContext();
-      const params = sprintId ? `?sprintId=${sprintId}` : '';
-      const response = await apiService.get(`${this.baseURL}/sprint-board${params}`, token);
+      const params = new URLSearchParams();
+      
+      if (sprintId) {
+        params.append('sprintId', sprintId);
+      }
+      
+      if (filterMode) {
+        params.append('filterMode', filterMode);
+      }
+      
+      const queryString = params.toString();
+      const url = `${this.baseURL}/sprint-board${queryString ? '?' + queryString : ''}`;
+      
+      console.log('📡 API Request:', { url, sprintId, filterMode });
+      
+      const response = await apiService.get(url, token);
       return response;
     } catch (error) {
       console.error('Error al obtener datos del sprint board:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Sprints - Obtiene lista de sprints disponibles
+   */
+  async getAvailableSprints() {
+    try {
+      const token = await this._getTokenFromContext();
+      const response = await apiService.get(`${this.baseURL}/sprints`, token);
+      return response;
+    } catch (error) {
+      console.error('Error al obtener sprints disponibles:', error);
       throw this.handleError(error);
     }
   }

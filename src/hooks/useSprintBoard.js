@@ -5,12 +5,13 @@ import { developersApiService } from '../services/developersApiService';
 /**
  * Hook para manejar el sprint board del developer
  */
-export const useSprintBoard = (initialSprintId = null) => {
+export const useSprintBoard = (initialSprintId = null, initialFilterMode = 'all') => {
   const { getToken } = useAuth();
   const [sprintData, setSprintData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedSprintId, setSelectedSprintId] = useState(initialSprintId);
+  const [filterMode, setFilterMode] = useState(initialFilterMode); // 'all' o 'sprint'
   const [updatingTask, setUpdatingTask] = useState(null);
 
   // Configurar el token provider en el servicio
@@ -19,25 +20,41 @@ export const useSprintBoard = (initialSprintId = null) => {
   }, [getToken]);
 
   // Función para cargar datos del sprint board
-  const loadSprintBoard = useCallback(async (sprintId = selectedSprintId) => {
+  const loadSprintBoard = useCallback(async (sprintId = selectedSprintId, mode = filterMode) => {
     try {
       setLoading(true);
       setError(null);
       
-      const response = await developersApiService.getSprintBoardData(sprintId);
+      console.log('🔄 Cargando Sprint Board:', { sprintId, mode });
+      
+      const response = await developersApiService.getSprintBoardData(sprintId, mode);
       
       if (response.success) {
         setSprintData(response.data);
+        console.log('✅ Sprint Board cargado:', {
+          sprint: response.data.sprint.name,
+          tasksCount: response.data.tasks.length,
+          filterMode: response.data.filterMode
+        });
       } else {
         setError('Error al cargar datos del sprint board');
       }
     } catch (err) {
+      console.error('❌ Error al cargar Sprint Board:', err);
       setError(err.message || 'Error al cargar datos del sprint board');
       setSprintData(null);
     } finally {
       setLoading(false);
     }
-  }, [selectedSprintId]);
+  }, [selectedSprintId, filterMode]);
+
+  // Función para cambiar sprint
+  const changeSprintFilter = useCallback((sprintId, mode) => {
+    console.log('🔄 Cambiando filtro de sprint:', { sprintId, mode });
+    setSelectedSprintId(sprintId);
+    setFilterMode(mode);
+    loadSprintBoard(sprintId, mode);
+  }, [loadSprintBoard]);
 
   // Función para actualizar estado de tarea con optimistic update
   const updateTaskStatus = useCallback(async (taskId, newStatus) => {
@@ -120,7 +137,10 @@ export const useSprintBoard = (initialSprintId = null) => {
 
   // Función para obtener tareas por estado
   const getTasksByStatus = useCallback((status) => {
-    if (!sprintData) return [];
+    if (!sprintData || !sprintData.tasks) {
+      return [];
+    }
+    
     return sprintData.tasks.filter(task => task.status === status);
   }, [sprintData]);
 
@@ -199,11 +219,12 @@ export const useSprintBoard = (initialSprintId = null) => {
     loading,
     error,
     selectedSprintId,
+    filterMode,
     updatingTask,
     
     // Funciones
     updateTaskStatus,
-    changeSprint,
+    changeSprintFilter,
     refresh,
     setError,
     

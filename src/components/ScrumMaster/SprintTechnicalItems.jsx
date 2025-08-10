@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import StoryWithTechnicalItems from './StoryWithTechnicalItems';
 import AssignTechnicalItemModal from './AssignTechnicalItemModal';
+import ModalBacklogItemSM from './modalsSM/ModalBacklogItemSM';
 
 // Componente para mostrar items técnicos sin asignar
 const UnassignedTechnicalItems = ({ items, onAssignToStory, onViewDetails }) => {
@@ -181,6 +182,16 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
     isOpen: false,
     technicalItem: null
   });
+  
+  // Estados para modal de creación de items técnicos
+  const [createModal, setCreateModal] = useState({
+    isOpen: false,
+    editingItem: null
+  });
+  
+  // Estados para datos necesarios en el modal
+  const [usuarios, setUsuarios] = useState([]);
+  const [sprints, setSprints] = useState([]);
 
   useEffect(() => {
     if (sprintData?._id) {
@@ -225,11 +236,66 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
       setHierarchicalData(hierarchicalData);
       setProducts(productsData.products || []);
       
+      // Cargar usuarios y sprints para el modal de creación
+      await Promise.all([fetchUsuarios(), fetchSprints()]);
+      
     } catch (error) {
       console.error('Error fetching hierarchical data:', error);
       setError('Error al cargar datos del sprint');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Función para cargar usuarios del equipo
+  const fetchUsuarios = async () => {
+    try {
+      const token = await getToken();
+      const API_URL = import.meta.env.VITE_API_URL;
+      
+      const response = await fetch(`${API_URL}/team/members`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const usuariosFormateados = (data.members || []).map(member => ({
+          _id: member.user?._id || member._id,
+          nombre_negocio: member.user?.nombre_negocio 
+            ? member.user.nombre_negocio 
+            : member.user?.email || 'Usuario',
+          email: member.user?.email || '',
+          role: member.role || 'developer'
+        }));
+        setUsuarios(usuariosFormateados);
+      }
+    } catch (error) {
+      console.error('Error fetching usuarios:', error);
+    }
+  };
+
+  // Función para cargar sprints
+  const fetchSprints = async () => {
+    try {
+      const token = await getToken();
+      const API_URL = import.meta.env.VITE_API_URL;
+      
+      const response = await fetch(`${API_URL}/sprints`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setSprints(data.sprints || data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching sprints:', error);
     }
   };
 
@@ -282,6 +348,29 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
     // Refrescar datos
     fetchHierarchicalData();
     if (onRefresh) onRefresh();
+  };
+
+  // Funciones para el modal de creación de items técnicos
+  const handleCreateTechnicalItem = () => {
+    setCreateModal({
+      isOpen: true,
+      editingItem: null
+    });
+  };
+
+  const handleCreateModalClose = () => {
+    setCreateModal({
+      isOpen: false,
+      editingItem: null
+    });
+  };
+
+  const handleCreateModalSuccess = (message) => {
+    console.log('Item técnico creado exitosamente:', message);
+    // Refrescar datos
+    fetchHierarchicalData();
+    if (onRefresh) onRefresh();
+    handleCreateModalClose();
   };
 
   const getSummaryStats = () => {
@@ -350,6 +439,15 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
           </button>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={handleCreateTechnicalItem}
+              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              title="Crear nuevo item técnico para este sprint"
+            >
+              <Plus className="h-4 w-4" />
+              Nuevo Item Técnico
+            </button>
+            
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
@@ -516,6 +614,18 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
         technicalItem={assignModal.technicalItem}
         availableStories={getAvailableStories()}
         onAssignSuccess={handleAssignSuccess}
+      />
+
+      {/* Modal de creación de items técnicos */}
+      <ModalBacklogItemSM
+        isOpen={createModal.isOpen}
+        onClose={handleCreateModalClose}
+        editingItem={createModal.editingItem}
+        productos={products}
+        usuarios={usuarios}
+        sprints={sprints}
+        onSuccess={handleCreateModalSuccess}
+        currentSprint={sprintData} // Pasar sprint actual para pre-selección
       />
     </div>
   );

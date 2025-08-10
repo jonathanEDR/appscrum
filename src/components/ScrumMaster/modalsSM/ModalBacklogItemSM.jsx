@@ -23,7 +23,8 @@ const ModalBacklogItemSM = ({
   productos, 
   usuarios, 
   sprints, 
-  onSuccess 
+  onSuccess,
+  currentSprint = null // Nuevo prop para pre-seleccionar sprint actual
 }) => {
   const { getToken } = useAuth();
   const [loading, setLoading] = useState(false);
@@ -87,7 +88,7 @@ const ModalBacklogItemSM = ({
       producto: '',
       puntos_historia: '',
       asignado_a: '',
-      sprint: '',
+      sprint: currentSprint?._id || '', // Pre-seleccionar sprint actual si existe
       criterios_aceptacion: [{ descripcion: '', completado: false }],
       etiquetas: []
     });

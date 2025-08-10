@@ -14,13 +14,17 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { useSprintBoard } from '../../hooks/useSprintBoard';
+import SprintSelector from './SprintSelector';
 
 const SprintBoard = () => {
   const {
     sprintData,
     loading,
     error,
+    selectedSprintId,
+    filterMode,
     updateTaskStatus,
+    changeSprintFilter,
     getTasksByStatus,
     getPriorityColor,
     getStatusColor,
@@ -163,7 +167,9 @@ const SprintBoard = () => {
               </div>
               <div>
                 <h1 className="text-2xl font-bold text-primary-900">{sprint.name}</h1>
-                <p className="text-primary-600">{sprint.goal || 'Sprint en progreso'}</p>
+                <p className="text-primary-600">
+                  {filterMode === 'all' ? 'Todas mis tareas asignadas' : (sprint.goal || 'Sprint en progreso')}
+                </p>
                 <div className="flex items-center gap-4 mt-2 text-sm text-primary-500">
                   <span className="bg-primary-50 px-3 py-1 rounded-full font-medium">
                     {new Date(sprint.startDate).toLocaleDateString()} - {new Date(sprint.endDate).toLocaleDateString()}
@@ -173,15 +179,32 @@ const SprintBoard = () => {
                       Activo
                     </span>
                   )}
+                  <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-medium">
+                    {tasks.length} tarea{tasks.length !== 1 ? 's' : ''} 
+                    {filterMode === 'all' ? ' asignada' : ' del sprint'}{tasks.length !== 1 ? 's' : ''}
+                  </span>
                 </div>
+              </div>
             </div>
-            <button 
-              onClick={refresh}
-              className="bg-primary-100 text-primary-600 p-2 rounded-lg hover:bg-primary-200 transition-colors"
-              title="Actualizar datos"
-            >
-              <RefreshCw className="h-5 w-5" />
-            </button>
+            
+            {/* Sprint Selector */}
+            <div className="flex items-center gap-3">
+              <SprintSelector
+                selectedSprintId={selectedSprintId}
+                onSprintChange={(sprintId) => changeSprintFilter(sprintId, 'sprint')}
+                filterMode={filterMode}
+                onFilterModeChange={(mode) => changeSprintFilter(selectedSprintId, mode)}
+                className="flex-shrink-0"
+              />
+              <button
+                onClick={refresh}
+                className="flex items-center gap-2 px-4 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg transition-colors"
+                title="Actualizar datos"
+              >
+                <RefreshCw className="h-4 w-4" />
+                <span className="hidden sm:inline">Actualizar</span>
+              </button>
+            </div>
           </div>
           
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 text-center mt-6">
@@ -222,7 +245,6 @@ const SprintBoard = () => {
               <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
             </div>
           </div>
-        </div>
         </div>
       </div>
 

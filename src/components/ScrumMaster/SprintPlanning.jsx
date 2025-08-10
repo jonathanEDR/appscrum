@@ -209,10 +209,13 @@ const SprintPlanning = () => {
   const fetchSprints = async (token) => {
     try {
       const params = new URLSearchParams();
-      params.append('estado', 'planificado');
+      // Mostrar sprints activos y planificados para planning
+      params.append('estado', 'activo'); // Solo sprints activos para planeación
       if (selectedProduct) {
         params.append('producto', selectedProduct);
       }
+      
+      console.log('🔍 Solicitando sprints con parámetros:', params.toString());
       
       const response = await fetch(`${config.API_URL}/sprints?${params.toString()}`, {
         headers: {
@@ -221,13 +224,23 @@ const SprintPlanning = () => {
         }
       });
 
+      console.log('📡 Respuesta del servidor:', response.status, response.statusText);
+
       if (response.ok) {
         const data = await response.json();
+        console.log('📊 Datos recibidos:', data);
         const sprintsDisponibles = data.sprints || [];
         setSprints(sprintsDisponibles);
-        console.log('Sprints cargados:', sprintsDisponibles.length);
+        console.log('✅ Sprints cargados:', sprintsDisponibles.length);
+        
+        // Mostrar los estados de los sprints para debug
+        sprintsDisponibles.forEach(sprint => {
+          console.log(`📝 Sprint: ${sprint.nombre} - Estado: ${sprint.estado}`);
+        });
       } else {
-        throw new Error('Error al obtener sprints');
+        const errorText = await response.text();
+        console.error('❌ Error del servidor:', errorText);
+        throw new Error(`Error al obtener sprints: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
       console.error('Error fetching sprints:', error);
@@ -239,7 +252,7 @@ const SprintPlanning = () => {
   // Obtener productos
   const fetchProductos = async (token) => {
     try {
-      const response = await fetch(`${config.API_URL}/productos`, {
+      const response = await fetch(`${config.API_URL}/products`, { // CORREGIDO: /productos -> /products
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -248,7 +261,7 @@ const SprintPlanning = () => {
       
       if (response.ok) {
         const data = await response.json();
-        setProductos(data.productos || []);
+        setProductos(data.products || []); // CORREGIDO: productos -> products
       } else {
         throw new Error('Error al obtener productos');
       }
