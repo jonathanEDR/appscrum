@@ -15,7 +15,7 @@ function Home() {
     return (
       <div>
         <h1>Welcome to Home Page!</h1>
-        <p>If you are not logged in, you can <Link to="/login">Log In</Link> or <Link to="/signup">Sign Up</Link>.</p>
+        <p>If you are not logged in, you can <Link to="/sign-in">Log In</Link> or <Link to="/sign-up">Sign Up</Link>.</p>
       </div>
     );
   }
