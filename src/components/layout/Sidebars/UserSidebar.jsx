@@ -1,4 +1,6 @@
 import React from 'react';
+import { useClerk } from '@clerk/clerk-react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Home, 
   FileText, 
@@ -9,7 +11,18 @@ import {
   X
 } from 'lucide-react';
 
-function UserSidebar({ currentView, onViewChange, onLogout, userRole, isOpen, onToggle }) {
+function UserSidebar({ currentView, onViewChange, userRole, isOpen, onToggle }) {
+  const { signOut } = useClerk();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      navigate('/sign-in');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
   const menuItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard' },
     { id: 'profile', icon: UserCog, label: 'Mi Perfil' },
@@ -129,7 +142,7 @@ function UserSidebar({ currentView, onViewChange, onLogout, userRole, isOpen, on
         {/* Footer premium */}
         <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-blue-300/30">
           <button
-            onClick={onLogout}
+            onClick={handleLogout}
             className="sidebar-button w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 group"
             style={{ color: '#dc2626' }}
             onMouseEnter={(e) => {

@@ -8,7 +8,7 @@ function LogoutButton() {
 
   const handleLogout = () => {
     signOut();  // Llama al método signOut de Clerk para cerrar la sesión
-    navigate('/login');  // Redirige al usuario a la página de login después de cerrar sesión
+    navigate('/sign-in');  // Redirige al usuario a la página de login después de cerrar sesión
   };
 
   return (
