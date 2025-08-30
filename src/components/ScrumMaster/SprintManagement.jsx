@@ -271,8 +271,22 @@ const TeamMemberCard = ({ member }) => {
 };
 
 const BurndownChart = ({ data }) => {
-  const maxValue = Math.max(...data.map(d => Math.max(d.planned, d.actual)));
+  const safeData = Array.isArray(data) ? data : [];
   const chartHeight = 200;
+
+  if (safeData.length === 0) {
+    return (
+      <div className="bg-white rounded-lg border border-gray-200 p-6">
+        <h3 className="text-lg font-semibold text-gray-900 mb-4">Burndown Chart</h3>
+        <div className="text-center text-sm text-gray-500 py-8">No hay datos de burndown para este sprint.</div>
+      </div>
+    );
+  }
+
+  const maxValue = safeData.reduce((max, d) => Math.max(max, (d.planned || 0), (d.actual || 0)), 0) || 1;
+  const steps = Math.max(safeData.length - 1, 1);
+
+  const pointsFor = (value, i) => `${(i * 100) / steps},${((maxValue - (value || 0)) / maxValue) * chartHeight}`;
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-6">
@@ -300,7 +314,7 @@ const BurndownChart = ({ data }) => {
                   fill="#6b7280"
                   textAnchor="end"
                 >
-                  {maxValue - (maxValue * percent) / 100}
+                  {Math.round(maxValue - (maxValue * percent) / 100)}
                 </text>
               </g>
             );
@@ -312,9 +326,7 @@ const BurndownChart = ({ data }) => {
             stroke="#3b82f6"
             strokeWidth="2"
             strokeDasharray="5,5"
-            points={data.map((d, i) => 
-              `${(i * 100) / (data.length - 1)},${((maxValue - d.planned) / maxValue) * chartHeight}`
-            ).join(' ')}
+            points={safeData.map((d, i) => pointsFor(d.planned, i)).join(' ')}
           />
 
           {/* Actual line */}
@@ -322,17 +334,15 @@ const BurndownChart = ({ data }) => {
             fill="none"
             stroke="#f59e0b"
             strokeWidth="3"
-            points={data.map((d, i) => 
-              `${(i * 100) / (data.length - 1)},${((maxValue - d.actual) / maxValue) * chartHeight}`
-            ).join(' ')}
+            points={safeData.map((d, i) => pointsFor(d.actual, i)).join(' ')}
           />
 
           {/* Data points */}
-          {data.map((d, i) => (
+          {safeData.map((d, i) => (
             <circle
               key={i}
-              cx={`${(i * 100) / (data.length - 1)}%`}
-              cy={((maxValue - d.actual) / maxValue) * chartHeight}
+              cx={`${(i * 100) / steps}%`}
+              cy={((maxValue - (d.actual || 0)) / maxValue) * chartHeight}
               r="4"
               fill="#f59e0b"
             />
@@ -354,7 +364,7 @@ const BurndownChart = ({ data }) => {
 
       {/* X-axis labels */}
       <div className="flex justify-between mt-2 text-xs text-gray-500">
-        {data.map((d, i) => (
+        {safeData.map((d, i) => (
           <span key={i}>Día {d.day}</span>
         ))}
       </div>
