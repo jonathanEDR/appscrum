@@ -728,7 +728,19 @@ const SprintManagement = () => {
       setSprints(dashboardData.sprints || []);
       if (dashboardData.activeSprint && !activeSprint) {
         setActiveSprint(dashboardData.activeSprint);
-        fetchSprintDetails(dashboardData.activeSprint._id);
+        // Evitar llamar a fetchSprintDetails si no tenemos un _id válido
+        if (dashboardData.activeSprint._id) {
+          fetchSprintDetails(dashboardData.activeSprint._id);
+        } else {
+          console.warn('SprintManagement: dashboardData.activeSprint has no _id, skipping fetchSprintDetails');
+          // Configurar sprintData con fallback desde dashboard
+          setSprintData({
+            ...dashboardData.activeSprint,
+            backlogItems: dashboardData.activeSprintItems || [],
+            technicalItems: dashboardData.technicalItems || [],
+            teamMembers: dashboardData.teamMembers || []
+          });
+        }
       }
     }
   }, [dashboardData, dashboardLoading]);
@@ -786,12 +798,27 @@ const SprintManagement = () => {
       
       if (active) {
         setActiveSprint(active);
-        await fetchSprintDetails(active._id);
+        if (active._id) {
+          await fetchSprintDetails(active._id);
+        } else {
+          console.warn('SprintManagement: active sprint from API has no _id, skipping fetchSprintDetails');
+          setSprintData({
+            ...active,
+            backlogItems: [],
+            technicalItems: [],
+            teamMembers: []
+          });
+        }
       } else if (sprints.length > 0) {
         // Si no hay sprint activo, tomar el más reciente
         const latest = sprints[0];
         setActiveSprint(latest);
-        await fetchSprintDetails(latest._id);
+        if (latest._id) {
+          await fetchSprintDetails(latest._id);
+        } else {
+          console.warn('SprintManagement: latest sprint has no _id, skipping fetchSprintDetails');
+          setSprintData({ ...latest, backlogItems: [], technicalItems: [], teamMembers: [] });
+        }
       } else {
         setError('No hay sprints disponibles. Los sprints se crean desde el módulo Product Owner.');
       }
@@ -804,9 +831,29 @@ const SprintManagement = () => {
   };
 
   const fetchSprintDetails = async (sprintId) => {
+    // Si sprintId no está definido, no intentar llamar al backend
+    if (!sprintId) {
+      console.warn('fetchSprintDetails called with falsy sprintId, returning fallback data');
+      if (dashboardData?.activeSprint) {
+        setSprintData({
+          ...dashboardData.activeSprint,
+          _id: sprintId,
+          backlogItems: dashboardData.activeSprintItems || [],
+          technicalItems: dashboardData.technicalItems || [],
+          teamMembers: dashboardData.teamMembers || []
+        });
+      } else {
+        setSprintData({
+          ...mockSprintData,
+          _id: sprintId
+        });
+      }
+      return;
+    }
+
     try {
       const token = await getToken();
-      
+
       // Obtener métricas del sprint, items del backlog, items técnicos y datos del equipo en paralelo
       const [metrics, backlogItems, technicalItemsData, teamMembers] = await Promise.all([
         sprintService.getSprintMetrics(token, sprintId),
@@ -814,7 +861,7 @@ const SprintManagement = () => {
         fetchTechnicalItemsForSprint(token, sprintId),
         fetchTeamMembersWithSprintData(token, sprintId)
       ]);
-      
+
       // Agregar las historias, miembros reales y items técnicos al objeto de métricas
       const enhancedMetrics = {
         ...metrics,
@@ -830,7 +877,7 @@ const SprintManagement = () => {
           item.estado === 'completado' || item.status === 'completed'
         ).length || 0)
       };
-      
+
       setSprintData(enhancedMetrics);
     } catch (error) {
       console.error('Error fetching sprint details:', error);
