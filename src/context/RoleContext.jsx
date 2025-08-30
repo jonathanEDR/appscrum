@@ -19,9 +19,10 @@ export function RoleProvider({ children }) {
     try {
       // Primero intentar obtener el perfil del servidor
       const token = await getToken();
-      console.log('Token obtenido correctamente');
+      console.log('Token obtenido correctamente:', token ? 'Token presente' : 'Token ausente');
       
       const profileData = await apiService.getUserProfile(user.id, () => Promise.resolve(token));
+      console.log('URL de la API:', apiService.baseURL);
       console.log('Profile data received:', profileData);
       
       if (profileData?.role) {

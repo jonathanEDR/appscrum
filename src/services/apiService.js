@@ -1,7 +1,9 @@
 // Servicio centralizado para manejar todas las llamadas a la API
 class ApiService {
   constructor() {
-    this.baseURL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+    this.baseURL = import.meta.env.PROD 
+      ? 'https://appscrum-backend.onrender.com/api'  // URL de producción
+      : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api');
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
