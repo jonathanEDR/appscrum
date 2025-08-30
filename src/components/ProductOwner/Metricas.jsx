@@ -56,25 +56,32 @@ const Metricas = () => {
       console.log('Iniciando carga de productos...');
       setLoading(true);
       
-  // Usar la ruta de métricas en el backend
-  const response = await fetch(`${API_BASE_URL}/metricas/productos`);
-      
+      // Obtener productos desde el endpoint de products (requiere auth)
+      const token = await getToken();
+      const response = await fetch(`${API_BASE_URL}/products`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+
       console.log('Respuesta productos:', response.status, response.ok);
-      const contentType = response.headers.get('content-type') || '';
       if (!response.ok) {
         const text = await response.text();
-        throw new Error(text || 'Error al cargar productos');
+        console.error('Error al cargar productos (no ok):', text.substring(0,300));
+        throw new Error('Error al cargar productos');
       }
 
-      if (!contentType.includes('application/json')) {
+      const ct = response.headers.get('content-type') || '';
+      if (!ct.includes('application/json')) {
         const text = await response.text();
-        console.error('Metricas: se recibió respuesta no JSON al cargar productos:', text.substring(0, 300));
+        console.error('Metricas: se recibió respuesta no JSON al cargar productos:', text.substring(0,300));
         throw new Error('Respuesta del servidor no es JSON');
       }
 
       const data = await response.json();
       console.log('Datos productos recibidos:', data);
-      setProductos(data.products || []);
+      setProductos(data.products || data.productos || []);
     } catch (error) {
       console.error('Error al cargar productos:', error);
       setError('Error al cargar productos');

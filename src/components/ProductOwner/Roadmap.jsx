@@ -29,7 +29,7 @@ import VersionManager from './components/VersionManager';
 import TimelineWithMilestones from './TimelineWithMilestones';
 import SprintMetrics from './SprintMetrics';
 
-import config from '../config/config';
+import config from '../../config/config';
 
 const API_BASE_URL = config.API_URL || import.meta.env.VITE_API_BASE_URL || '';
 
