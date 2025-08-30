@@ -8,26 +8,42 @@ class ApiService {
     };
   }
 
-  // Obtener token de autenticación (compatible con Clerk)
-  getAuthToken() {
-    // Intentar obtener de localStorage primero (para casos donde se guarda manualmente)
-    return localStorage.getItem('authToken') || localStorage.getItem('clerk-token');
-  }
-
-  // Obtener headers con autenticación (para métodos que no usan getToken de Clerk)
-  getHeaders() {
-    const token = this.getAuthToken();
+  async getHeaders(getToken) {
     const headers = { ...this.defaultHeaders };
     
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
+    if (getToken) {
+      try {
+        const token = await getToken();
+        headers['Authorization'] = `Bearer ${token}`;
+      } catch (error) {
+        console.error('Error al obtener el token:', error);
+      }
     }
     
     return headers;
   }
 
   // Método genérico para hacer peticiones CON token de Clerk
-  async request(endpoint, options = {}) {
+  async request(endpoint, options = {}, getToken = null) {
+    try {
+      const headers = await this.getHeaders(getToken);
+      const response = await fetch(`${this.baseURL}${endpoint}`, {
+        ...options,
+        headers: {
+          ...headers,
+          ...options.headers
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('API request failed:', error);
+      throw error;
+    }
     const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
     
     // Verificar si hay un token en las headers, si no hay, lanzar error específico
