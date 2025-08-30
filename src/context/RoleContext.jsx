@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { apiService } from "../services/apiService";
-import { userService } from "../services/userService";
 
 export const RoleContext = createContext();
 export const useRole = () => useContext(RoleContext);
@@ -20,52 +19,57 @@ export function RoleProvider({ children }) {
     try {
       const token = await getToken();
       console.log('Token obtenido correctamente:', token ? 'Token presente' : 'Token ausente');
-      
-      // Usar el nuevo userService
-      const userData = await userService.getCurrentUser(token);
-      console.log('User data received:', userData);
-      
-      if (profileData?.role) {
-        setServerRole(profileData.role);
-        setRole(profileData.role);
+
+      // PRIMERO: Intentar obtener el usuario desde NUESTRA base de datos
+      const userData = await apiService.request(`/auth/user/${user.id}`, {
+        method: 'GET'
+      }, () => Promise.resolve(token));
+
+      console.log('User data from database:', userData);
+
+      if (userData?.role) {
+        setServerRole(userData.role);
+        setRole(userData.role);
         setIsRoleLoaded(true);
         return;
       }
     } catch (error) {
-      console.error('Error completo al obtener el rol:', error);
-      console.warn('Could not fetch server role, using Clerk metadata:', error.message);
+      console.error('Error al obtener el rol de la base de datos:', error);
+      console.warn('Intentando crear usuario en la base de datos...');
+
+      // Si el usuario no existe, intentar el endpoint de perfil que lo crea automáticamente
+      try {
+        const profileResponse = await apiService.request('/auth/user-profile', {
+          method: 'GET'
+        }, () => Promise.resolve(token));
+
+        console.log('Profile response:', profileResponse);
+
+        if (profileResponse?.user?.role) {
+          setServerRole(profileResponse.user.role);
+          setRole(profileResponse.user.role);
+          setIsRoleLoaded(true);
+          return;
+        }
+      } catch (createError) {
+        console.error('Error al crear usuario:', createError);
+      }
     }
 
-    // Si no se puede obtener del servidor, usar metadata de Clerk
-    const clerkRole = user?.publicMetadata?.role || 
-                     user?.unsafeMetadata?.role || 
-                     user?.role;
-    
-    if (!clerkRole) {
-      console.warn('No se encontró rol en Clerk, verificando en el servidor...');
-      try {
-        // Intenta obtener el rol del servidor nuevamente
-        const userData = await apiService.getUserByClerkId(user.id);
-        if (userData?.role) {
-          console.log('Rol encontrado en el servidor:', userData.role);
-          setRole(userData.role);
-        } else {
-          console.warn('No se encontró rol en el servidor, usando rol por defecto');
-          setRole('user');
-        }
-      } catch (error) {
-        console.error('Error al obtener rol del servidor:', error);
-        setRole('user');
-      }
-    } else {
-      setRole(clerkRole);
-    }
+    // ÚLTIMO RECURSO: Usar metadata de Clerk como fallback
+    const clerkRole = user?.publicMetadata?.role ||
+                     user?.unsafeMetadata?.role ||
+                     user?.role ||
+                     'user';
+
+    console.warn('Using Clerk role as fallback:', clerkRole);
+    setRole(clerkRole);
     setIsRoleLoaded(true);
   }, [user, isLoaded, getToken]);
 
   useEffect(() => {
     if (!isLoaded) return;
-    
+
     if (!user) {
       setRole(undefined);
       setServerRole(null);

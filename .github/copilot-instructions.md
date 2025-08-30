@@ -209,3 +209,23 @@ Set these environment variables in Render dashboard:
 - `CORS_ORIGINS`: `https://your-vercel-app.vercel.app`
 
 Remember to check `.env` files and run `npm run setup:complete` for full development environment setup.
+
+## Testing & Verification
+
+### User Integration Test
+```bash
+# Backend directory
+npm run test-users
+```
+
+### Manual Verification
+1. **Register/Login** with Clerk in the frontend
+2. **Check backend logs** - should show "Usuario creado:" 
+3. **Verify database** - user should exist in MongoDB
+4. **Check role loading** - no more "Failed to fetch" errors
+
+### Common Issues Fixed
+- ✅ Users now auto-create in database on first login
+- ✅ Role loading prioritizes database over Clerk metadata
+- ✅ Proper error handling for missing users
+- ✅ CORS configured for production URLs
