@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { apiService } from "../services/apiService";
+import { userService } from "../services/userService";
 
 export const RoleContext = createContext();
 export const useRole = () => useContext(RoleContext);
@@ -17,13 +18,12 @@ export function RoleProvider({ children }) {
     if (!user || !isLoaded) return;
 
     try {
-      // Primero intentar obtener el perfil del servidor
       const token = await getToken();
       console.log('Token obtenido correctamente:', token ? 'Token presente' : 'Token ausente');
       
-      const profileData = await apiService.getUserProfile(user.id, () => Promise.resolve(token));
-      console.log('URL de la API:', apiService.baseURL);
-      console.log('Profile data received:', profileData);
+      // Usar el nuevo userService
+      const userData = await userService.getCurrentUser(token);
+      console.log('User data received:', userData);
       
       if (profileData?.role) {
         setServerRole(profileData.role);

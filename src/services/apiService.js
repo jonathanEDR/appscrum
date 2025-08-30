@@ -28,6 +28,8 @@ class ApiService {
   // Método genérico para hacer peticiones CON token de Clerk
   async request(endpoint, options = {}, getToken = null) {
     try {
+      console.log('Making request to:', endpoint);
+      console.log('Base URL:', this.baseURL);
       const headers = await this.getHeaders(getToken);
       const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
       
