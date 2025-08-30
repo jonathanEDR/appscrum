@@ -27,7 +27,12 @@ class ApiService {
   async request(endpoint, options = {}, getToken = null) {
     try {
       const headers = await this.getHeaders(getToken);
-      const response = await fetch(`${this.baseURL}${endpoint}`, {
+      const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
+      
+      console.log('Haciendo petición a:', url);
+      console.log('Headers:', headers);
+      
+      const response = await fetch(url, {
         ...options,
         headers: {
           ...headers,
@@ -36,7 +41,9 @@ class ApiService {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
       }
 
       return await response.json();
@@ -44,7 +51,6 @@ class ApiService {
       console.error('API request failed:', error);
       throw error;
     }
-    const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
     
     // Verificar si hay un token en las headers, si no hay, lanzar error específico
     if (!options.headers || !options.headers['Authorization']) {

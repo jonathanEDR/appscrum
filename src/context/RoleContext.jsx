@@ -18,8 +18,12 @@ export function RoleProvider({ children }) {
 
     try {
       // Primero intentar obtener el perfil del servidor
-      const profileData = await apiService.getUserProfile(user.id, getToken);
+      const token = await getToken();
+      console.log('Token obtenido correctamente');
+      
+      const profileData = await apiService.getUserProfile(user.id, () => Promise.resolve(token));
       console.log('Profile data received:', profileData);
+      
       if (profileData?.role) {
         setServerRole(profileData.role);
         setRole(profileData.role);
@@ -27,7 +31,8 @@ export function RoleProvider({ children }) {
         return;
       }
     } catch (error) {
-      console.warn('Could not fetch server role, using Clerk metadata:', error);
+      console.error('Error completo al obtener el rol:', error);
+      console.warn('Could not fetch server role, using Clerk metadata:', error.message);
     }
 
     // Si no se puede obtener del servidor, usar metadata de Clerk
