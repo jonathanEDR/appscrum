@@ -16,9 +16,5 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: true,
-  },
-  define: {
-    'process.env.VITE_CLERK_PUBLISHABLE_KEY': JSON.stringify(process.env.VITE_CLERK_PUBLISHABLE_KEY),
-    'process.env.VITE_API_URL': JSON.stringify(process.env.VITE_API_URL),
   }
 });

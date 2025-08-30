@@ -32,17 +32,20 @@ class ApiService {
       console.log('Base URL:', this.baseURL);
       const headers = await this.getHeaders(getToken);
       const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
-      
+
       console.log('Haciendo petición a:', url);
       console.log('Headers:', headers);
-      
-      const response = await fetch(url, {
+
+      const config = {
         ...options,
         headers: {
           ...headers,
           ...options.headers
-        }
-      });
+        },
+        credentials: 'include'
+      };
+
+      const response = await fetch(url, config);
 
       if (!response.ok) {
         const errorText = await response.text();
@@ -55,82 +58,29 @@ class ApiService {
       console.error('API request failed:', error);
       throw error;
     }
-    
-    // Verificar si hay un token en las headers, si no hay, lanzar error específico
-    if (!options.headers || !options.headers['Authorization']) {
-      throw new Error('Token no proporcionado');
-    }
-    
-    const config = {
-      headers: this.defaultHeaders,
-      credentials: 'include',
-      ...options
-    };
-
-    try {
-      const response = await fetch(url, config);
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.message || `HTTP Error: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error(`API Request Error for ${endpoint}:`, error);
-      throw error;
-    }
   }
 
   // Métodos HTTP genéricos que trabajan con tokens de Clerk
-  async get(endpoint, token = null) {
-    const headers = { ...this.defaultHeaders };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    return this.request(endpoint, { 
-      method: 'GET',
-      headers 
-    });
+  async get(endpoint, getToken = null) {
+    return this.request(endpoint, { method: 'GET' }, getToken);
   }
 
-  async post(endpoint, data, token = null) {
-    const headers = { ...this.defaultHeaders };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
+  async post(endpoint, data, getToken = null) {
     return this.request(endpoint, {
       method: 'POST',
-      headers,
       body: JSON.stringify(data)
-    });
+    }, getToken);
   }
 
-  async put(endpoint, data, token = null) {
-    const headers = { ...this.defaultHeaders };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
+  async put(endpoint, data, getToken = null) {
     return this.request(endpoint, {
       method: 'PUT',
-      headers,
       body: JSON.stringify(data)
-    });
+    }, getToken);
   }
 
-  async delete(endpoint, token = null) {
-    const headers = { ...this.defaultHeaders };
-    if (token) {
-      headers['Authorization'] = `Bearer ${token}`;
-    }
-    
-    return this.request(endpoint, { 
-      method: 'DELETE',
-      headers 
-    });
+  async delete(endpoint, getToken = null) {
+    return this.request(endpoint, { method: 'DELETE' }, getToken);
   }
 
   // Obtener miembros del equipo (requiere autenticación)
