@@ -1,9 +1,11 @@
 // Servicio centralizado para manejar todas las llamadas a la API
 class ApiService {
   constructor() {
+    // En desarrollo, usar URL relativa para aprovechar el proxy de Vite
+    // En producción, usar la URL completa
     this.baseURL = import.meta.env.PROD 
-      ? 'https://appscrum-backend.onrender.com/api'  // URL de producción
-      : (import.meta.env.VITE_API_URL || 'http://localhost:5000/api');
+      ? (import.meta.env.VITE_API_URL || 'https://appscrum-backend.onrender.com/api')
+      : ''; // URL relativa para desarrollo (usará el proxy de Vite)
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
@@ -31,7 +33,14 @@ class ApiService {
       console.log('Making request to:', endpoint);
       console.log('Base URL:', this.baseURL);
       const headers = await this.getHeaders(getToken);
-      const url = endpoint.startsWith('http') ? endpoint : `${this.baseURL}${endpoint}`;
+      
+      // Si estamos en desarrollo y baseURL está vacío, agregar /api al endpoint
+      let finalEndpoint = endpoint;
+      if (!this.baseURL && !endpoint.startsWith('/api') && !endpoint.startsWith('http')) {
+        finalEndpoint = `/api${endpoint}`;
+      }
+      
+      const url = finalEndpoint.startsWith('http') ? finalEndpoint : `${this.baseURL}${finalEndpoint}`;
 
       console.log('Haciendo petición a:', url);
       console.log('Headers:', headers);
@@ -85,23 +94,7 @@ class ApiService {
 
   // Obtener miembros del equipo (requiere autenticación)
   async getTeamMembers(getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/team/members`, {
-        method: 'GET',
-        headers,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch team members: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching team members:', error);
-      throw error;
-    }
+    return this.get('/team/members', getToken);
   }
 
   // Método para obtener headers con token
@@ -115,175 +108,40 @@ class ApiService {
 
   // Verificar conexión con el servidor
   async checkServerHealth() {
-    try {
-      const response = await fetch(`${this.baseURL}/health`, {
-        method: 'GET',
-        headers: this.defaultHeaders,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Server responded with status: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error connecting to server:', error);
-      throw error;
-    }
+    return this.request('/health');
   }
 
   // Autenticación y usuario
   async registerUser(userData, getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/auth/register`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(userData),
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error en el registro');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error registering user:', error);
-      throw error;
-    }
+    return this.post('/auth/register', userData, getToken);
   }
 
   async getUserProfile(getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/auth/user-profile`, {
-        method: 'GET',
-        headers,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch profile: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      throw error;
-    }
+    return this.get('/auth/user-profile', getToken);
   }
 
   // Eliminados métodos de gestión de notas
 
   // Gestión de usuarios (para admins)
   async getAllUsers(getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/admin/users`, {
-        method: 'GET',
-        headers,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch users: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching users:', error);
-      throw error;
-    }
+    return this.get('/admin/users', getToken);
   }
 
   async updateUserRole(userId, newRole, getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/admin/users/${userId}/role`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({ role: newRole }),
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error updating user role');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error updating user role:', error);
-      throw error;
-    }
+    return this.put(`/admin/users/${userId}/role`, { role: newRole }, getToken);
   }
 
   // Gestión de ceremonias
   async getCeremonies(getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/ceremonies`, {
-        method: 'GET',
-        headers,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch ceremonies: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching ceremonies:', error);
-      throw error;
-    }
+    return this.get('/ceremonies', getToken);
   }
 
   async createCeremony(ceremonyData, getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/ceremonies`, {
-        method: 'POST',
-        headers,
-        body: JSON.stringify(ceremonyData),
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error creating ceremony');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error creating ceremony:', error);
-      throw error;
-    }
+    return this.post('/ceremonies', ceremonyData, getToken);
   }
 
   async updateCeremony(ceremonyId, ceremonyData, getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/ceremonies/${ceremonyId}`, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify(ceremonyData),
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Error updating ceremony');
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error updating ceremony:', error);
-      throw error;
-    }
+    return this.put(`/ceremonies/${ceremonyId}`, ceremonyData, getToken);
   }
 
   // Método para obtener miembros del equipo con fallback a datos mock
@@ -345,108 +203,27 @@ class ApiService {
   
   // Obtener dashboard del usuario
   async getUserDashboard(userId, getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/users/dashboard/${userId}`, {
-        method: 'GET',
-        headers,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch user dashboard: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching user dashboard:', error);
-      throw error;
-    }
+    return this.get(`/users/dashboard/${userId}`, getToken);
   }
 
   // Obtener proyectos del usuario
   async getUserProjects(userId, getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/users/projects/${userId}`, {
-        method: 'GET',
-        headers,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch user projects: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching user projects:', error);
-      throw error;
-    }
+    return this.get(`/users/projects/${userId}`, getToken);
   }
 
   // Obtener actividades del usuario
   async getUserActivities(userId, getToken, page = 1, limit = 10) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/users/activities/${userId}?page=${page}&limit=${limit}`, {
-        method: 'GET',
-        headers,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch user activities: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching user activities:', error);
-      throw error;
-    }
+    return this.request(`/users/activities/${userId}?page=${page}&limit=${limit}`, {}, getToken);
   }
 
   // Obtener perfil del usuario
   async getUserProfile(userId, getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/users/profile/${userId}`, {
-        method: 'GET',
-        headers,
-        credentials: 'include'
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch user profile: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error fetching user profile:', error);
-      throw error;
-    }
+    return this.get(`/users/profile/${userId}`, getToken);
   }
 
   // Actualizar perfil del usuario
   async updateUserProfile(userId, profileData, getToken) {
-    try {
-      const headers = await this.getAuthHeaders(getToken);
-      const response = await fetch(`${this.baseURL}/users/profile/${userId}`, {
-        method: 'PUT',
-        headers,
-        credentials: 'include',
-        body: JSON.stringify(profileData)
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to update user profile: ${response.status}`);
-      }
-
-      return await response.json();
-    } catch (error) {
-      console.error('Error updating user profile:', error);
-      throw error;
-    }
+    return this.put(`/users/profile/${userId}`, profileData, getToken);
   }
 }
 
