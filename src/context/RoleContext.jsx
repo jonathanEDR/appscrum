@@ -32,10 +32,27 @@ export function RoleProvider({ children }) {
     // Si no se puede obtener del servidor, usar metadata de Clerk
     const clerkRole = user?.publicMetadata?.role || 
                      user?.unsafeMetadata?.role || 
-                     user?.role || 
-                     'user'; // rol por defecto
-
-    setRole(clerkRole);
+                     user?.role;
+    
+    if (!clerkRole) {
+      console.warn('No se encontró rol en Clerk, verificando en el servidor...');
+      try {
+        // Intenta obtener el rol del servidor nuevamente
+        const userData = await apiService.getUserByClerkId(user.id);
+        if (userData?.role) {
+          console.log('Rol encontrado en el servidor:', userData.role);
+          setRole(userData.role);
+        } else {
+          console.warn('No se encontró rol en el servidor, usando rol por defecto');
+          setRole('user');
+        }
+      } catch (error) {
+        console.error('Error al obtener rol del servidor:', error);
+        setRole('user');
+      }
+    } else {
+      setRole(clerkRole);
+    }
     setIsRoleLoaded(true);
   }, [user, isLoaded, getToken]);
 

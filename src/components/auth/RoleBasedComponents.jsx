@@ -12,6 +12,18 @@ const ROLE_DASHBOARD_ROUTES = {
   user: '/user'
 };
 
+// Función para validar y obtener la ruta correcta del dashboard
+const getValidDashboardRoute = (role) => {
+  console.log('Current role:', role);
+  const route = ROLE_DASHBOARD_ROUTES[role];
+  if (!route) {
+    console.warn(`No se encontró ruta para el rol: ${role}, usando ruta por defecto`);
+    return '/user';
+  }
+  console.log('Redirigiendo a:', route);
+  return route;
+};
+
 // Componente para proteger rutas basado en roles
 export function RoleProtectedRoute({ allowedRoles, children, redirectTo = null }) {
   const { role, isLoaded } = useRole();
