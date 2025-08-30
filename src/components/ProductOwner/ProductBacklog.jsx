@@ -113,7 +113,7 @@ const ProductBacklog = () => {
   const fetchProductos = async () => {
     try {
       const token = await getToken();
-      const response = await fetch(`${config.API_URL}/products`, {
+  const response = await fetch(`${config.API_URL}/products`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -121,9 +121,16 @@ const ProductBacklog = () => {
       });
       
       if (response.ok) {
-        const data = await response.json();
-        console.log('Productos recibidos:', data); // Debug log
-        setProductos(data.products || data.productos || []); // Manejar ambos formatos
+        const ct = response.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          const text = await response.text();
+          console.error('Productos API devolvió no-JSON:', text.substring(0,300));
+          setProductos([]);
+        } else {
+          const data = await response.json();
+          console.log('Productos recibidos:', data); // Debug log
+          setProductos(data.products || data.productos || []); // Manejar ambos formatos
+        }
       } else {
         console.error('❌ Error response from productos API:', response.status, response.statusText);
         const errorText = await response.text();
@@ -137,7 +144,7 @@ const ProductBacklog = () => {
   const fetchUsuarios = async () => {
     try {
       const token = await getToken();
-      const response = await fetch(`${config.API_URL}/users-for-assignment`, {
+  const response = await fetch(`${config.API_URL}/users-for-assignment`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -145,8 +152,15 @@ const ProductBacklog = () => {
       });
 
       if (response.ok) {
-        const data = await response.json();
-        setUsuarios(data.users || []);
+        const ct = response.headers.get('content-type') || '';
+        if (!ct.includes('application/json')) {
+          const t = await response.text();
+          console.error('users-for-assignment returned non-JSON:', t.substring(0,300));
+          setUsuarios([]);
+        } else {
+          const data = await response.json();
+          setUsuarios(data.users || []);
+        }
       }
     } catch (error) {
       console.error('Error al cargar usuarios:', error);

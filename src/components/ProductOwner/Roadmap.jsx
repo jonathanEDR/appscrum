@@ -29,7 +29,9 @@ import VersionManager from './components/VersionManager';
 import TimelineWithMilestones from './TimelineWithMilestones';
 import SprintMetrics from './SprintMetrics';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+import config from '../config/config';
+
+const API_BASE_URL = config.API_URL || import.meta.env.VITE_API_BASE_URL || '';
 
 const Roadmap = () => {
   const { getToken } = useAuth();
@@ -156,7 +158,7 @@ const Roadmap = () => {
       const token = await getToken();
 
       // Cargar productos primero
-      const productosRes = await fetch(`${API_BASE_URL}/api/products`, {
+  const productosRes = await fetch(`${API_BASE_URL}/products`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -169,10 +171,10 @@ const Roadmap = () => {
         console.log('Loading data for product:', selectedProduct);
         
         const [releasesRes, sprintsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/releases/roadmap/${selectedProduct}`, {
+          fetch(`${API_BASE_URL}/releases/roadmap/${selectedProduct}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           }),
-          fetch(`${API_BASE_URL}/api/sprints?producto=${selectedProduct}`, {
+          fetch(`${API_BASE_URL}/sprints?producto=${selectedProduct}`, {
             headers: { 'Authorization': `Bearer ${token}` }
           })
         ]);
@@ -180,11 +182,35 @@ const Roadmap = () => {
         console.log('Releases response:', releasesRes.status, releasesRes.ok);
         console.log('Sprints response:', sprintsRes.status, sprintsRes.ok);
 
-        if (!releasesRes.ok) throw new Error('Error al cargar releases');
-        if (!sprintsRes.ok) throw new Error('Error al cargar sprints');
+          if (!releasesRes.ok) {
+            const t = await releasesRes.text();
+            console.error('Releases load error (non-ok):', t.substring(0,300));
+            throw new Error('Error al cargar releases');
+          }
 
-        const releasesData = await releasesRes.json();
-        const sprintsData = await sprintsRes.json();
+          if (!sprintsRes.ok) {
+            const t = await sprintsRes.text();
+            console.error('Sprints load error (non-ok):', t.substring(0,300));
+            throw new Error('Error al cargar sprints');
+          }
+
+          const releasesContentType = releasesRes.headers.get('content-type') || '';
+          const sprintsContentType = sprintsRes.headers.get('content-type') || '';
+
+          if (!releasesContentType.includes('application/json')) {
+            const t = await releasesRes.text();
+            console.error('Releases returned non-JSON:', t.substring(0,300));
+            throw new Error('Releases: respuesta no JSON');
+          }
+
+          if (!sprintsContentType.includes('application/json')) {
+            const t = await sprintsRes.text();
+            console.error('Sprints returned non-JSON:', t.substring(0,300));
+            throw new Error('Sprints: respuesta no JSON');
+          }
+
+          const releasesData = await releasesRes.json();
+          const sprintsData = await sprintsRes.json();
 
         console.log('Releases data received:', releasesData);
         console.log('Sprints data received:', sprintsData);

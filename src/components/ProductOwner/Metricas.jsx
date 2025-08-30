@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import config from '../../config/config';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -16,8 +17,8 @@ import {
   Users
 } from 'lucide-react';
 
-// Usar el proxy de Vite que redirige /api a http://localhost:5000
-const API_BASE_URL = '';
+// Base API URL (usar config central)
+const API_BASE_URL = config.API_URL || '';
 
 const Metricas = () => {
   const { getToken } = useAuth();
@@ -55,12 +56,22 @@ const Metricas = () => {
       console.log('Iniciando carga de productos...');
       setLoading(true);
       
-      // Usar la ruta de métricas que no requiere autenticación por ahora
-      const response = await fetch(`${API_BASE_URL}/api/metricas/productos`);
+  // Usar la ruta de métricas en el backend
+  const response = await fetch(`${API_BASE_URL}/metricas/productos`);
       
       console.log('Respuesta productos:', response.status, response.ok);
-      if (!response.ok) throw new Error('Error al cargar productos');
-      
+      const contentType = response.headers.get('content-type') || '';
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || 'Error al cargar productos');
+      }
+
+      if (!contentType.includes('application/json')) {
+        const text = await response.text();
+        console.error('Metricas: se recibió respuesta no JSON al cargar productos:', text.substring(0, 300));
+        throw new Error('Respuesta del servidor no es JSON');
+      }
+
       const data = await response.json();
       console.log('Datos productos recibidos:', data);
       setProductos(data.products || []);
@@ -76,7 +87,7 @@ const Metricas = () => {
   const cargarSprints = async () => {
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/sprints?producto=${selectedProduct}`, {
+  const response = await fetch(`${API_BASE_URL}/sprints?producto=${selectedProduct}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -96,8 +107,8 @@ const Metricas = () => {
 
       // Usar rutas sin autenticación para testing
       const [dashboardRes, velocityRes] = await Promise.all([
-        fetch(`${API_BASE_URL}/api/metricas/dashboard/${selectedProduct}?periodo=${periodo}`),
-        fetch(`${API_BASE_URL}/api/metricas/velocity/${selectedProduct}`)
+  fetch(`${API_BASE_URL}/metricas/dashboard/${selectedProduct}?periodo=${periodo}`),
+  fetch(`${API_BASE_URL}/metricas/velocity/${selectedProduct}`)
       ]);
 
       console.log('Respuesta dashboard:', dashboardRes.status, dashboardRes.ok);
@@ -128,7 +139,7 @@ const Metricas = () => {
   const cargarBurndown = async () => {
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/metricas/burndown/${selectedSprint}`, {
+  const response = await fetch(`${API_BASE_URL}/metricas/burndown/${selectedSprint}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       
@@ -143,7 +154,7 @@ const Metricas = () => {
   const exportarMetricas = async (formato) => {
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/metricas/export/${selectedProduct}?formato=${formato}&periodo=${periodo}`, {
+  const response = await fetch(`${API_BASE_URL}/metricas/export/${selectedProduct}?formato=${formato}&periodo=${periodo}`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
 
