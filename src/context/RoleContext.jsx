@@ -16,8 +16,9 @@ export function RoleProvider({ children }) {
   const syncRoleWithServer = useCallback(async () => {
     if (!user || !isLoaded) return;
 
+    let token;
     try {
-      const token = await getToken();
+      token = await getToken();
       console.log('Token obtenido correctamente:', token ? 'Token presente' : 'Token ausente');
 
       // PRIMERO: Intentar obtener el usuario desde NUESTRA base de datos
@@ -39,6 +40,10 @@ export function RoleProvider({ children }) {
 
       // Si el usuario no existe, intentar el endpoint de perfil que lo crea automáticamente
       try {
+        if (!token) {
+          token = await getToken(); // Re-obtener token si no existe
+        }
+
         const profileResponse = await apiService.request('/auth/user-profile', {
           method: 'GET'
         }, () => Promise.resolve(token));
