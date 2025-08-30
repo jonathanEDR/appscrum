@@ -148,8 +148,8 @@ const Productos = () => {
         nombre: producto.nombre || '',
         descripcion: producto.descripcion || '',
         responsable: producto.responsable?._id || producto.responsable || '',
-        fecha_inicio: producto.fecha_inicio ? producto.fecha_inicio.split('T')[0] : new Date().toISOString().split('T')[0],
-        fecha_fin: producto.fecha_fin ? producto.fecha_fin.split('T')[0] : '',
+  fecha_inicio: producto.fecha_inicio ? (typeof producto.fecha_inicio === 'string' ? producto.fecha_inicio.split('T')[0] : new Date(producto.fecha_inicio).toISOString().split('T')[0]) : new Date().toISOString().split('T')[0],
+  fecha_fin: producto.fecha_fin ? (typeof producto.fecha_fin === 'string' ? producto.fecha_fin.split('T')[0] : new Date(producto.fecha_fin).toISOString().split('T')[0]) : '',
         prioridad: producto.prioridad || 'media',
         estado: producto.estado || 'activo'
       });

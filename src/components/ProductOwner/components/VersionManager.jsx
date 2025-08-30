@@ -8,8 +8,8 @@ const VersionManager = ({ release, onVersionChange, onClose }) => {
 
   // Función para sugerir próxima versión
   const sugerirProximaVersion = () => {
-    const versionActual = release.version || '1.0.0';
-    const partes = versionActual.split('.').map(Number);
+  const versionActual = release && release.version ? String(release.version) : '1.0.0';
+  const partes = (versionActual && versionActual.split) ? versionActual.split('.').map(num => Number(num) || 0) : [1,0,0];
     
     switch (tipoVersion) {
       case 'major':

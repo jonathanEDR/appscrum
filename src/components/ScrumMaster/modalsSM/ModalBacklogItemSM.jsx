@@ -193,7 +193,8 @@ const ModalBacklogItemSM = ({
 
   // Manejar cambio de etiquetas
   const handleEtiquetaChange = (value) => {
-    const etiquetas = value.split(',').map(tag => tag.trim()).filter(tag => tag);
+    const raw = (typeof value === 'string') ? value : '';
+    const etiquetas = raw.split(',').map(tag => tag.trim()).filter(tag => tag);
     setFormData({ ...formData, etiquetas });
   };
 

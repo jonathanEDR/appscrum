@@ -243,8 +243,8 @@ const TeamOverview = () => {
         const mapped = (teamData.members || teamData || []).map(member => ({
           _id: member._id || Math.random().toString(36),
           user: {
-            firstName: member.user?.firstName || member.user?.nombre_negocio?.split(' ')[0] || 'Usuario',
-            lastName: member.user?.lastName || member.user?.nombre_negocio?.split(' ').slice(1).join(' ') || '',
+            firstName: member.user?.firstName || ((member.user && member.user.nombre_negocio && typeof member.user.nombre_negocio === 'string') ? member.user.nombre_negocio.split(' ')[0] : 'Usuario'),
+            lastName: member.user?.lastName || ((member.user && member.user.nombre_negocio && typeof member.user.nombre_negocio === 'string') ? member.user.nombre_negocio.split(' ').slice(1).join(' ') : ''),
             email: member.user?.email || 'usuario@email.com',
             phone: member.user?.phone || ''
           },

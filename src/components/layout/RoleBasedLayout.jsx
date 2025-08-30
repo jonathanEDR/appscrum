@@ -629,7 +629,7 @@ const DashboardHeader = ({ onMenuClick, title }) => {
 
 // Mapeo de rutas a títulos
 const getPageTitle = (pathname, role) => {
-  const pathSegments = pathname.split('/');
+  const pathSegments = (pathname && typeof pathname === 'string') ? pathname.split('/') : [];
   const lastSegment = pathSegments[pathSegments.length - 1];
   
   const titles = {

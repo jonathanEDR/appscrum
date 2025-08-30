@@ -4,8 +4,8 @@ const SprintModal = ({ sprint, releases, onClose, onSave }) => {
   const [formData, setFormData] = useState({
     nombre: sprint?.nombre || '',
     objetivo: sprint?.objetivo || '',
-    fecha_inicio: sprint?.fecha_inicio ? sprint.fecha_inicio.split('T')[0] : '',
-    fecha_fin: sprint?.fecha_fin ? sprint.fecha_fin.split('T')[0] : '',
+  fecha_inicio: sprint?.fecha_inicio ? (typeof sprint.fecha_inicio === 'string' ? sprint.fecha_inicio.split('T')[0] : new Date(sprint.fecha_inicio).toISOString().split('T')[0]) : '',
+  fecha_fin: sprint?.fecha_fin ? (typeof sprint.fecha_fin === 'string' ? sprint.fecha_fin.split('T')[0] : new Date(sprint.fecha_fin).toISOString().split('T')[0]) : '',
     velocidad_planificada: sprint?.velocidad_planificada || 0,
     // NUEVOS CAMPOS - Mejoras Implementadas
     release_id: sprint?.release_id || '',

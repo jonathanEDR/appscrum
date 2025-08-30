@@ -233,18 +233,23 @@ const TeamMemberCard = ({ member }) => {
     return texts[availability] || availability;
   };
 
-  const completionPercentage = member.planned > 0 ? (member.completed / member.planned) * 100 : 0;
+  const plannedPoints = Number(member && member.planned) || 0;
+  const completedPoints = Number(member && member.completed) || 0;
+  const completionPercentage = plannedPoints > 0 ? (completedPoints / plannedPoints) * 100 : 0;
+
+  const displayName = (member && (member.name || `${member.firstName || ''} ${member.lastName || ''}`.trim())) || 'Sin nombre';
+  const initials = displayName.split(' ').map(n => (n ? n[0] : '')).join('').slice(0, 2) || 'NA';
 
   return (
     <div className="bg-white rounded-lg border border-gray-200 p-4">
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">
-            {member.name.split(' ').map(n => n[0]).join('')}
+            {initials}
           </div>
           <div>
-            <p className="font-medium text-gray-900">{member.name}</p>
-            <p className="text-sm text-gray-600">{member.role}</p>
+            <p className="font-medium text-gray-900">{displayName}</p>
+            <p className="text-sm text-gray-600">{member && (member.role || 'Desconocido')}</p>
           </div>
         </div>
         <div className="flex items-center gap-2">

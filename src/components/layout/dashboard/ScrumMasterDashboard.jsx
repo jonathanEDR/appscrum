@@ -100,7 +100,7 @@ const TeamOverview = ({ teamMembers = [], loading = false }) => {
             <div key={member._id || index} className="flex items-center justify-between p-4 rounded-xl bg-gradient-to-r from-primary-50/50 to-transparent hover:from-primary-100/50 transition-all duration-300">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-gradient-to-br from-primary-500 to-primary-600 rounded-full flex items-center justify-center text-sm font-bold text-white shadow-medium">
-                  {member.name ? member.name.split(' ').map(n => n[0]).join('') : '??'}
+                  {member && (member.name || member.user?.nombre_negocio) ? ((member.name || member.user?.nombre_negocio).split ? (member.name || member.user?.nombre_negocio).split(' ').map(n => n[0]).join('') : '??') : '??'}
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-semibold text-primary-800">{member.name || 'Usuario'}</p>
