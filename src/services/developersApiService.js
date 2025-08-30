@@ -17,7 +17,22 @@ class DevelopersApiService {
 
   // Método para establecer el proveedor de token (llamado desde el hook)
   setTokenProvider(getTokenFn) {
-    this._getTokenFromContext = getTokenFn;
+    // Aceptar un proveedor de token (función) o un token/promise directo y envolverlo
+    if (typeof getTokenFn === 'function') {
+      this._getTokenFromContext = getTokenFn;
+      return;
+    }
+
+    if (getTokenFn && (typeof getTokenFn === 'string' || typeof getTokenFn.then === 'function')) {
+      // Si recibimos un token (string) o una promesa, envolver en una función que lo devuelva
+      this._getTokenFromContext = () => Promise.resolve(getTokenFn);
+      console.warn('developersApiService: setTokenProvider received a token/promise instead of a function — wrapping it.');
+      return;
+    }
+
+    // Caso por defecto: no válido
+    console.warn('developersApiService: setTokenProvider called with invalid value, token requests will be unauthenticated.', getTokenFn);
+    this._getTokenFromContext = async () => undefined;
   }
 
   /**

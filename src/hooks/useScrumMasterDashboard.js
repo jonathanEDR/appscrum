@@ -60,6 +60,11 @@ export const useScrumMasterDashboard = () => {
       // Encontrar sprint activo
       const activeSprint = sprints.find(s => s.estado === 'activo') || sprints[0] || null;
 
+      if (!activeSprint) {
+        // En producción a veces no hay sprint activo; loggear para detectar la causa
+        console.warn('useScrumMasterDashboard: no active sprint found. Using fallback defaults.');
+      }
+
       // Obtener items del sprint activo si existe
       let activeSprintItems = [];
       if (activeSprint) {
@@ -101,21 +106,25 @@ export const useScrumMasterDashboard = () => {
       // Calcular velocidad del equipo (story points completados en sprints recientes)
       const teamVelocity = completedStoryPoints; // Simplificado por ahora
 
+      // Valores por defecto seguros
+      const safeActiveSprint = activeSprint || { name: 'Sin sprint activo', progress: 0, daysRemaining: 0, _id: null };
+      const safeMetrics = {
+        totalStoryPoints,
+        completedStoryPoints,
+        pendingTasks,
+        criticalBugs,
+        activeImpediments: 2, // Placeholder - necesitaría endpoint de impedimentos
+        teamVelocity
+      };
+
       setData({
         sprints,
-        activeSprint,
+        activeSprint: safeActiveSprint,
         backlogItems,
         technicalItems,
         teamMembers,
         activeSprintItems,
-        metrics: {
-          totalStoryPoints,
-          completedStoryPoints,
-          pendingTasks,
-          criticalBugs,
-          activeImpediments: 2, // Placeholder - necesitaría endpoint de impedimentos
-          teamVelocity
-        }
+        metrics: safeMetrics
       });
 
     } catch (error) {

@@ -291,7 +291,13 @@ const ScrumMasterDashboard = () => {
     ]
   };
 
-  const { metrics, activeSprint, teamMembers, technicalItems } = data || defaultData;
+  const { metrics, activeSprint, teamMembers, technicalItems } = data || {};
+
+  // Usar valores por defecto si alguna propiedad viene como null/undefined en producción
+  const safeMetrics = metrics || defaultData.metrics;
+  const safeActiveSprint = activeSprint || defaultData.activeSprint;
+  const safeTeamMembers = teamMembers || defaultData.teamMembers;
+  const safeTechnicalItems = technicalItems || defaultData.technicalItems;
 
   return (
     <PageContainer>
@@ -331,10 +337,10 @@ const ScrumMasterDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-primary-600">Sprint Progress</p>
-                  <p className="text-3xl font-bold text-primary-800">{activeSprint.progress}%</p>
+                  <p className="text-3xl font-bold text-primary-800">{safeActiveSprint.progress}%</p>
                   <p className="text-xs text-success-600 flex items-center mt-1 font-medium">
                     <TrendingUp className="h-3 w-3 mr-1" />
-                    {activeSprint.name}
+                    {safeActiveSprint.name}
                   </p>
                 </div>
               </div>
@@ -349,7 +355,7 @@ const ScrumMasterDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-primary-600">Team Velocity</p>
-                  <p className="text-3xl font-bold text-primary-800">{metrics.teamVelocity}</p>
+                  <p className="text-3xl font-bold text-primary-800">{safeMetrics.teamVelocity}</p>
                   <p className="text-xs text-success-600 flex items-center mt-1 font-medium">
                     <TrendingUp className="h-3 w-3 mr-1" />
                     +12% vs anterior
@@ -367,7 +373,7 @@ const ScrumMasterDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-primary-600">Critical Issues</p>
-                  <p className="text-3xl font-bold text-primary-800">{metrics.criticalBugs + metrics.activeImpediments}</p>
+                  <p className="text-3xl font-bold text-primary-800">{(safeMetrics.criticalBugs || 0) + (safeMetrics.activeImpediments || 0)}</p>
                   <p className="text-xs text-error-600 flex items-center mt-1 font-medium">
                     <AlertTriangle className="h-3 w-3 mr-1" />
                     Requiere atención
@@ -385,7 +391,7 @@ const ScrumMasterDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-primary-600">Items Técnicos</p>
-                  <p className="text-3xl font-bold text-primary-800">{metrics.technicalItemsPending}</p>
+                  <p className="text-3xl font-bold text-primary-800">{safeMetrics.technicalItemsPending}</p>
                   <p className="text-xs text-primary-500 font-medium">Pendientes</p>
                 </div>
               </div>
@@ -396,13 +402,13 @@ const ScrumMasterDashboard = () => {
         <TwoColumnLayout
           leftContent={
             <TeamOverview 
-              teamMembers={teamMembers} 
+                teamMembers={safeTeamMembers} 
               loading={loading} 
             />
           }
           rightContent={
-            <TechnicalItemsOverview 
-              technicalItems={technicalItems}
+              <TechnicalItemsOverview 
+                technicalItems={safeTechnicalItems}
               loading={loading}
               onClick={handleNavigateToBacklog}
             />

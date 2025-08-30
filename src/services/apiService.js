@@ -1,11 +1,21 @@
 // Servicio centralizado para manejar todas las llamadas a la API
 class ApiService {
   constructor() {
+    // Debug: Verificar variables de entorno
+    console.log('🔍 Environment Debug:');
+    console.log('   - import.meta.env.PROD:', import.meta.env.PROD);
+    console.log('   - import.meta.env.DEV:', import.meta.env.DEV);
+    console.log('   - import.meta.env.MODE:', import.meta.env.MODE);
+    console.log('   - VITE_API_URL:', import.meta.env.VITE_API_URL);
+    
     // En desarrollo, usar URL relativa para aprovechar el proxy de Vite
     // En producción, usar la URL completa
     this.baseURL = import.meta.env.PROD 
       ? (import.meta.env.VITE_API_URL || 'https://appscrum-backend.onrender.com/api')
       : ''; // URL relativa para desarrollo (usará el proxy de Vite)
+      
+    console.log('📡 Final baseURL:', this.baseURL);
+    
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
@@ -17,8 +27,21 @@ class ApiService {
     
     if (getToken) {
       try {
-        const token = await getToken();
-        headers['Authorization'] = `Bearer ${token}`;
+        let token;
+
+        if (typeof getToken === 'function') {
+          token = await getToken();
+        } else if (typeof getToken === 'string') {
+          token = getToken;
+        } else if (getToken && typeof getToken.then === 'function') {
+          token = await getToken;
+        } else {
+          console.warn('apiService.getHeaders: getToken provided is not a function, string, or promise:', getToken);
+        }
+
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
       } catch (error) {
         console.error('Error al obtener el token:', error);
       }
