@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -33,12 +33,46 @@ if (!process.env.VERCEL) {
 // Verificar dependencias críticas
 try {
   const packageJsonPath = join(__dirname, '..', 'package.json');
-  const packageJsonContent = readFileSync(packageJsonPath, 'utf8');
-  const pkg = JSON.parse(packageJsonContent);
+  const packageLockPath = join(__dirname, '..', 'package-lock.json');
   
-  console.log(`📦 React version: ${pkg.dependencies.react}`);
-  console.log(`📦 React-DOM version: ${pkg.dependencies['react-dom']}`);
-  console.log(`📦 Clerk version: ${pkg.dependencies['@clerk/clerk-react']}`);
+  if (!existsSync(packageJsonPath)) {
+    console.error('❌ package.json no encontrado');
+    process.exit(1);
+  }
+
+  if (!existsSync(packageLockPath)) {
+    console.error('❌ package-lock.json no encontrado - dependencias no bloqueadas');
+    process.exit(1);
+  }
+
+  const packageJsonContent = readFileSync(packageJsonPath, 'utf8');
+  const packageLockContent = readFileSync(packageLockPath, 'utf8');
+  const pkg = JSON.parse(packageJsonContent);
+  const lock = JSON.parse(packageLockContent);
+  
+  // Verificar versiones exactas críticas
+  const criticalDeps = {
+    'react': '18.3.1',
+    'react-dom': '18.3.1',
+    '@clerk/clerk-react': '5.32.4',
+    'react-router-dom': '6.28.0'
+  };
+
+  for (const [dep, expectedVersion] of Object.entries(criticalDeps)) {
+    const lockVersion = lock.packages?.[`node_modules/${dep}`]?.version;
+    console.log(`📦 ${dep} version: ${lockVersion || 'not found'}`);
+    
+    if (!lockVersion) {
+      console.error(`❌ ${dep} no encontrado en package-lock.json`);
+      process.exit(1);
+    }
+
+    if (lockVersion !== expectedVersion) {
+      console.error(`❌ ${dep} version mismatch: expected ${expectedVersion}, got ${lockVersion}`);
+      console.error('💡 Ejecutar: rm -rf node_modules package-lock.json && npm install');
+      process.exit(1);
+    }
+  }
   
   console.log('✅ Dependencias verificadas');
   
