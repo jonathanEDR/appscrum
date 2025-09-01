@@ -30,6 +30,7 @@ import TimelineWithMilestones from './TimelineWithMilestones';
 import SprintMetrics from './SprintMetrics';
 
 import config from '../../config/config';
+import { apiService } from '../../services/apiService';
 
 const API_BASE_URL = config.API_URL || import.meta.env.VITE_API_URL || '';
 
