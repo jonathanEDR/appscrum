@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import config from '../../config/config';
-import ApiService from '../../services/apiService';
+import { apiService } from '../../services/apiService';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -20,7 +20,6 @@ import {
 
 // Base API URL (usar config central)
 const API_BASE_URL = config.API_URL || '';
-const apiService = new ApiService();
 
 const Metricas = () => {
   const { getToken } = useAuth();
