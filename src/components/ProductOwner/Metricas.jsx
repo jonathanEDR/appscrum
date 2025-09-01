@@ -73,13 +73,7 @@ const Metricas = () => {
 
   const cargarSprints = async () => {
     try {
-      const token = await getToken();
-  const response = await fetch(`${API_BASE_URL}/sprints?producto=${selectedProduct}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (!response.ok) throw new Error('Error al cargar sprints');
-      const data = await response.json();
+      const data = await apiService.get(`/sprints?producto=${selectedProduct}`, getToken);
       setSprints(data.sprints || []);
     } catch (error) {
       console.error('Error al cargar sprints:', error);
@@ -93,20 +87,9 @@ const Metricas = () => {
       setError(null);
 
       // Usar rutas sin autenticación para testing
-      const [dashboardRes, velocityRes] = await Promise.all([
-  fetch(`${API_BASE_URL}/metricas/dashboard/${selectedProduct}?periodo=${periodo}`),
-  fetch(`${API_BASE_URL}/metricas/velocity/${selectedProduct}`)
-      ]);
-
-      console.log('Respuesta dashboard:', dashboardRes.status, dashboardRes.ok);
-      console.log('Respuesta velocity:', velocityRes.status, velocityRes.ok);
-
-      if (!dashboardRes.ok) throw new Error('Error al cargar métricas del dashboard');
-      if (!velocityRes.ok) throw new Error('Error al cargar datos de velocidad');
-
       const [dashboardData, velocityDataRes] = await Promise.all([
-        dashboardRes.json(),
-        velocityRes.json()
+        apiService.get(`/metricas/dashboard/${selectedProduct}?periodo=${periodo}`, getToken),
+        apiService.get(`/metricas/velocity/${selectedProduct}`, getToken)
       ]);
 
       console.log('Datos dashboard recibidos:', dashboardData);
@@ -125,13 +108,7 @@ const Metricas = () => {
 
   const cargarBurndown = async () => {
     try {
-      const token = await getToken();
-  const response = await fetch(`${API_BASE_URL}/metricas/burndown/${selectedSprint}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (!response.ok) throw new Error('Error al cargar burndown');
-      const data = await response.json();
+      const data = await apiService.get(`/metricas/burndown/${selectedSprint}`, getToken);
       setBurndownData(data);
     } catch (error) {
       console.error('Error al cargar burndown:', error);
@@ -140,9 +117,12 @@ const Metricas = () => {
 
   const exportarMetricas = async (formato) => {
     try {
+      // Para exportación de archivos, necesitamos usar fetch directo pero con apiService para headers
       const token = await getToken();
-  const response = await fetch(`${API_BASE_URL}/metricas/export/${selectedProduct}?formato=${formato}&periodo=${periodo}`, {
-        headers: { 'Authorization': `Bearer ${token}` }
+      const headers = await apiService.getAuthHeaders(() => Promise.resolve(token));
+      
+      const response = await fetch(`${apiService.baseURL}/metricas/export/${selectedProduct}?formato=${formato}&periodo=${periodo}`, {
+        headers
       });
 
       if (!response.ok) throw new Error('Error al exportar métricas');

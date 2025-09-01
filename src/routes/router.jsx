@@ -1,17 +1,17 @@
-import React from 'react';
+import React, { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 
-// Páginas principales
+// Páginas principales - inmediata
 import Home from '../Pages/Home.jsx';
 
-// Componentes de autenticación
+// Componentes de autenticación - inmediata
 import { SignIn, SignUp } from '@clerk/clerk-react';
 import { RoleProtectedRoute, RoleBasedRedirect } from '../components/auth/RoleBasedComponents.jsx';
 
-// Layout principal para dashboards
+// Layout principal para dashboards - inmediata
 import RoleBasedLayout from '../components/layout/RoleBasedLayout.jsx';
 
-// Dashboards específicos por rol
+// Dashboards específicos por rol - inmediata
 import SuperAdminDashboard from '../components/layout/dashboard/SuperAdminDashboard.jsx';
 import ProfileManagement from '../components/auth/ProfileManagement.jsx';
 import ProductOwnerDashboard from '../components/layout/dashboard/ProductOwnerDashboard.jsx';
@@ -19,32 +19,36 @@ import ScrumMasterDashboard from '../components/layout/dashboard/ScrumMasterDash
 import DevelopersDashboard from '../components/layout/dashboard/DevelopersDashboard.jsx';
 import UserDashboard from '../components/layout/dashboard/UserDashboard.jsx';
 
-// Componentes de submódulos
+// Componentes de submódulos - inmediata
 import MyProfile from '../components/auth/MyProfile.jsx';
 
-// Páginas de gestión
+// Páginas de gestión - inmediata
 import CollaboratorsManagement from '../Pages/CollaboratorsManagement.jsx';
 
-// Componentes de Product Owner
-import Productos from '../components/ProductOwner/Productos.jsx';
-import ProductBacklog from '../components/ProductOwner/ProductBacklog.jsx';
-import Roadmap from '../components/ProductOwner/Roadmap.jsx';
-import Metricas from '../components/ProductOwner/Metricas.jsx';
+// Componentes de Product Owner - lazy loading
+const Productos = lazy(() => import('../components/ProductOwner/Productos.jsx'));
+const ProductBacklog = lazy(() => import('../components/ProductOwner/ProductBacklog.jsx'));
+const Roadmap = lazy(() => import('../components/ProductOwner/Roadmap.jsx'));
+const Metricas = lazy(() => import('../components/ProductOwner/Metricas.jsx'));
 
-// Componentes de Scrum Master
-import Impediments from '../components/ScrumMaster/Impediments.jsx';
-import Ceremonies from '../components/ScrumMaster/Ceremonies.jsx';
-import SprintManagement from '../components/ScrumMaster/SprintManagement.jsx';
-import SprintPlanning from '../components/ScrumMaster/SprintPlanning.jsx';
-import TeamOverview from '../components/ScrumMaster/TeamOverview.jsx';
-import Metrics from '../components/ScrumMaster/Metrics.jsx';
-import ScrumMasterBacklog from '../components/ScrumMaster/ScrumMasterBacklog.jsx';
+// Componentes de Scrum Master - lazy loading
+const Impediments = lazy(() => import('../components/ScrumMaster/Impediments.jsx'));
+const Ceremonies = lazy(() => import('../components/ScrumMaster/Ceremonies.jsx'));
+const SprintManagement = lazy(() => import('../components/ScrumMaster/SprintManagement.jsx'));
+const SprintPlanning = lazy(() => import('../components/ScrumMaster/SprintPlanning.jsx'));
+const TeamOverview = lazy(() => import('../components/ScrumMaster/TeamOverview.jsx'));
+const Metrics = lazy(() => import('../components/ScrumMaster/Metrics.jsx'));
+const ScrumMasterBacklog = lazy(() => import('../components/ScrumMaster/ScrumMasterBacklog.jsx'));
 
-// Componentes de Developers
-import { MyTasks, SprintBoard, TimeTracking, CodeRepositories, Projects } from '../components/developers/index.js';
+// Componentes de Developers - lazy loading
+const MyTasks = lazy(() => import('../components/developers/MyTasks.jsx'));
+const SprintBoard = lazy(() => import('../components/developers/SprintBoard.jsx'));
+const TimeTracking = lazy(() => import('../components/developers/TimeTracking.jsx'));
+const CodeRepositories = lazy(() => import('../components/developers/CodeRepositories.jsx'));
+const Projects = lazy(() => import('../components/developers/Projects.jsx'));
 
-// Componentes de User
-import { MyActivities } from '../components/users/index.js';
+// Componentes de User - lazy loading
+const MyActivities = lazy(() => import('../components/users/MyActivities.jsx'));
 
 
 // Layout wrapper para páginas de autenticación
@@ -65,6 +69,23 @@ const UnderConstruction = ({ module }) => (
       <p className="text-primary-600 opacity-80">El módulo "{module}" estará disponible pronto.</p>
     </div>
   </div>
+);
+
+// Componente de Loading para lazy components
+const LazyLoadingSpinner = () => (
+  <div className="flex items-center justify-center h-64">
+    <div className="glass-card p-8 text-center shadow-galaxy-enhanced">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
+      <p className="text-primary-600 opacity-80">Cargando módulo...</p>
+    </div>
+  </div>
+);
+
+// Wrapper para componentes lazy con suspense
+const LazyWrapper = ({ children }) => (
+  <Suspense fallback={<LazyLoadingSpinner />}>
+    {children}
+  </Suspense>
 );
 
 // Configuración de rutas
@@ -158,19 +179,19 @@ export const router = createBrowserRouter([
       },
       {
         path: 'productos',
-        element: <Productos />,
+        element: <LazyWrapper><Productos /></LazyWrapper>,
       },
       {
         path: 'backlog',
-        element: <ProductBacklog />,
+        element: <LazyWrapper><ProductBacklog /></LazyWrapper>,
       },
       {
         path: 'roadmap',
-        element: <Roadmap />,
+        element: <LazyWrapper><Roadmap /></LazyWrapper>,
       },
       {
         path: 'metricas',
-        element: <Metricas />,
+        element: <LazyWrapper><Metricas /></LazyWrapper>,
       },
       {
         path: 'colaboradores',
@@ -197,31 +218,31 @@ export const router = createBrowserRouter([
       },
       {
         path: 'sprints',
-        element: <SprintManagement />,
+        element: <LazyWrapper><SprintManagement /></LazyWrapper>,
       },
       {
         path: 'sprint-planning',
-        element: <SprintPlanning />,
+        element: <LazyWrapper><SprintPlanning /></LazyWrapper>,
       },
       {
         path: 'impedimentos',
-        element: <Impediments />,
+        element: <LazyWrapper><Impediments /></LazyWrapper>,
       },
       {
         path: 'ceremonias',
-        element: <Ceremonies />,
+        element: <LazyWrapper><Ceremonies /></LazyWrapper>,
       },
       {
         path: 'equipo',
-        element: <TeamOverview />,
+        element: <LazyWrapper><TeamOverview /></LazyWrapper>,
       },
       {
         path: 'metricas',
-        element: <Metrics />,
+        element: <LazyWrapper><Metrics /></LazyWrapper>,
       },
       {
         path: 'backlog-tecnico',
-        element: <ScrumMasterBacklog />,
+        element: <LazyWrapper><ScrumMasterBacklog /></LazyWrapper>,
       },
     ],
   },
@@ -244,23 +265,23 @@ export const router = createBrowserRouter([
       },
       {
         path: 'tareas',
-        element: <MyTasks />,
+        element: <LazyWrapper><MyTasks /></LazyWrapper>,
       },
       {
         path: 'proyectos',
-        element: <Projects />,
+        element: <LazyWrapper><Projects /></LazyWrapper>,
       },
       {
         path: 'sprint-board',
-        element: <SprintBoard />,
+        element: <LazyWrapper><SprintBoard /></LazyWrapper>,
       },
       {
         path: 'time-tracking',
-        element: <TimeTracking />,
+        element: <LazyWrapper><TimeTracking /></LazyWrapper>,
       },
       {
         path: 'codigo',
-        element: <CodeRepositories />,
+        element: <LazyWrapper><CodeRepositories /></LazyWrapper>,
       },
     ],
   },
@@ -283,7 +304,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'actividades',
-        element: <MyActivities />,
+        element: <LazyWrapper><MyActivities /></LazyWrapper>,
       },
     ],
   },

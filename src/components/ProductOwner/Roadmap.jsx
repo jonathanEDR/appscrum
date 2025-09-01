@@ -155,63 +155,18 @@ const Roadmap = () => {
       setLoading(true);
       setError(null);
 
-      const token = await getToken();
-
       // Cargar productos primero
-  const productosRes = await fetch(`${API_BASE_URL}/products`, {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
-      
-      if (!productosRes.ok) throw new Error('Error al cargar productos');
-      const productosData = await productosRes.json();
+      const productosData = await apiService.get('/products', getToken);
       setProductos(productosData.products || []);
 
       // Si hay un producto seleccionado, cargar sus releases y sprints
       if (selectedProduct) {
         console.log('Loading data for product:', selectedProduct);
         
-        const [releasesRes, sprintsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/releases/roadmap/${selectedProduct}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          }),
-          fetch(`${API_BASE_URL}/sprints?producto=${selectedProduct}`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-          })
+        const [releasesData, sprintsData] = await Promise.all([
+          apiService.get(`/releases/roadmap/${selectedProduct}`, getToken),
+          apiService.get(`/sprints?producto=${selectedProduct}`, getToken)
         ]);
-
-        console.log('Releases response:', releasesRes.status, releasesRes.ok);
-        console.log('Sprints response:', sprintsRes.status, sprintsRes.ok);
-
-          if (!releasesRes.ok) {
-            const t = await releasesRes.text();
-            console.error('Releases load error (non-ok):', t.substring(0,300));
-            throw new Error('Error al cargar releases');
-          }
-
-          if (!sprintsRes.ok) {
-            const t = await sprintsRes.text();
-            console.error('Sprints load error (non-ok):', t.substring(0,300));
-            throw new Error('Error al cargar sprints');
-          }
-
-          const releasesContentType = releasesRes.headers.get('content-type') || '';
-          const sprintsContentType = sprintsRes.headers.get('content-type') || '';
-
-          if (!releasesContentType.includes('application/json')) {
-            const t = await releasesRes.text();
-            console.error('Releases returned non-JSON:', t.substring(0,300));
-            throw new Error('Releases: respuesta no JSON');
-          }
-
-          if (!sprintsContentType.includes('application/json')) {
-            const t = await sprintsRes.text();
-            console.error('Sprints returned non-JSON:', t.substring(0,300));
-            throw new Error('Sprints: respuesta no JSON');
-          }
-
-          const releasesData = await releasesRes.json();
-          const sprintsData = await sprintsRes.json();
-
         console.log('Releases data received:', releasesData);
         console.log('Sprints data received:', sprintsData);
         console.log('Number of releases:', releasesData.releases?.length || 0);
@@ -244,27 +199,10 @@ const Roadmap = () => {
       const dataToSend = { ...formData, producto: selectedProduct };
       console.log('Data to send:', dataToSend);
       
-      const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/releases`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(dataToSend)
-      });
+      const response = await apiService.post('/releases', dataToSend, getToken);
 
-      console.log('Response status:', response.status);
-      console.log('Response ok:', response.ok);
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        console.log('Error response:', errorData);
-        throw new Error(errorData.error || 'Error al crear release');
-      }
-
-      const result = await response.json();
-      console.log('Success response:', result);
+      console.log('Response:', response);
+      console.log('Success response:', response);
       
       await cargarDatos();
       setShowReleaseModal(false);
@@ -276,21 +214,7 @@ const Roadmap = () => {
 
   const actualizarRelease = async (id, formData) => {
     try {
-      const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/releases/${id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Error al actualizar release');
-      }
-
+      await apiService.put(`/releases/${id}`, formData, getToken);
       await cargarDatos();
       setEditingRelease(null);
     } catch (error) {
