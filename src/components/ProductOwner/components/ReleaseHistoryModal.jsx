@@ -7,13 +7,13 @@ const ReleaseHistoryModal = ({ release, onClose }) => {
   const { getToken } = useAuth();
 
   // Definir API_BASE_URL localmente como en Roadmap.jsx
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+  const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
   useEffect(() => {
     const fetchHistorial = async () => {
       try {
         const token = await getToken();
-        const response = await fetch(`${API_BASE_URL}/api/releases/${release._id}/historial`, {
+        const response = await fetch(`${API_BASE_URL}/releases/${release._id}/historial`, {
           headers: {
             'Authorization': `Bearer ${token}`
           }

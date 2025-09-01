@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import config from '../../config/config';
+import ApiService from '../../services/apiService';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -19,6 +20,7 @@ import {
 
 // Base API URL (usar config central)
 const API_BASE_URL = config.API_URL || '';
+const apiService = new ApiService();
 
 const Metricas = () => {
   const { getToken } = useAuth();
@@ -56,30 +58,9 @@ const Metricas = () => {
       console.log('Iniciando carga de productos...');
       setLoading(true);
       
-      // Obtener productos desde el endpoint de products (requiere auth)
-      const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/products`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      console.log('Respuesta productos:', response.status, response.ok);
-      if (!response.ok) {
-        const text = await response.text();
-        console.error('Error al cargar productos (no ok):', text.substring(0,300));
-        throw new Error('Error al cargar productos');
-      }
-
-      const ct = response.headers.get('content-type') || '';
-      if (!ct.includes('application/json')) {
-        const text = await response.text();
-        console.error('Metricas: se recibió respuesta no JSON al cargar productos:', text.substring(0,300));
-        throw new Error('Respuesta del servidor no es JSON');
-      }
-
-      const data = await response.json();
+      // Usar apiService para mejor manejo de errores
+      const data = await apiService.get('/products', getToken);
+      
       console.log('Datos productos recibidos:', data);
       setProductos(data.products || data.productos || []);
     } catch (error) {

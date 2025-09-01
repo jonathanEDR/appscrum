@@ -31,7 +31,7 @@ import SprintMetrics from './SprintMetrics';
 
 import config from '../../config/config';
 
-const API_BASE_URL = config.API_URL || import.meta.env.VITE_API_BASE_URL || '';
+const API_BASE_URL = config.API_URL || import.meta.env.VITE_API_URL || '';
 
 const Roadmap = () => {
   const { getToken } = useAuth();
@@ -245,7 +245,7 @@ const Roadmap = () => {
       console.log('Data to send:', dataToSend);
       
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/releases`, {
+      const response = await fetch(`${API_BASE_URL}/releases`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -277,7 +277,7 @@ const Roadmap = () => {
   const actualizarRelease = async (id, formData) => {
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/releases/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/releases/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -318,7 +318,7 @@ const Roadmap = () => {
       };
 
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/sprints/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/sprints/${id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -349,7 +349,7 @@ const Roadmap = () => {
 
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/releases/${id}`, {
+      const response = await fetch(`${API_BASE_URL}/releases/${id}`, {
         method: 'DELETE',
         headers: { 'Authorization': `Bearer ${token}` }
       });
@@ -381,7 +381,7 @@ const Roadmap = () => {
         fecha_objetivo: new Date(new Date().getTime() + 30 * 24 * 60 * 60 * 1000).toISOString() // +30 días por defecto
       };
 
-      const response = await fetch(`${API_BASE_URL}/api/releases`, {
+      const response = await fetch(`${API_BASE_URL}/releases`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -435,7 +435,7 @@ const Roadmap = () => {
       console.log('Data to send:', dataToSend);
       
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/sprints`, {
+      const response = await fetch(`${API_BASE_URL}/sprints`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -469,7 +469,7 @@ const Roadmap = () => {
   const cambiarEstadoSprint = async (sprintId, accion) => {
     try {
       const token = await getToken();
-      const response = await fetch(`${API_BASE_URL}/api/sprints/${sprintId}/${accion}`, {
+      const response = await fetch(`${API_BASE_URL}/sprints/${sprintId}/${accion}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -495,7 +495,7 @@ const Roadmap = () => {
       
       console.log('Cambiando estado:', { releaseId, nuevoEstado });
       
-      const response = await fetch(`${API_BASE_URL}/api/releases/${releaseId}/estado`, {
+      const response = await fetch(`${API_BASE_URL}/releases/${releaseId}/estado`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
