@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ModalProducto from '../modalproductowner/ModalProducto';
 import { useAuth } from '@clerk/clerk-react';
+import { apiService } from '../../services/apiService';
 import { 
   Package, 
   Plus, 
