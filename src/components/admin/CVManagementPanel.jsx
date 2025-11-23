@@ -28,7 +28,8 @@ import {
   AlertCircle
 } from 'lucide-react';
 import { profileService } from '../../services/profileService';
-import CloudinaryImage from '../common/CloudinaryImage';
+import { apiService } from '../../services/apiService';
+import { CloudinaryImage } from '../common/CloudinaryImage';
 
 const CVManagementPanel = () => {
   const { getToken } = useAuth();
@@ -55,22 +56,14 @@ const CVManagementPanel = () => {
   const fetchUsers = async () => {
     try {
       const token = await getToken();
-      const response = await fetch('http://localhost:5000/api/admin/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const data = await apiService.request('/admin/users', {
+        method: 'GET'
+      }, token);
 
-      if (response.ok) {
-        const data = await response.json();
-        setUsers(data.users || []);
-        setFilteredUsers(data.users || []);
-      } else {
-        throw new Error('Error al cargar usuarios');
-      }
+      setUsers(data.users || []);
+      setFilteredUsers(data.users || []);
     } catch (error) {
-      setError(error.message);
+      setError(error.message || 'Error al cargar usuarios');
     } finally {
       setLoading(false);
     }

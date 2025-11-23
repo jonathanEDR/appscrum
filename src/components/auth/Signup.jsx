@@ -30,22 +30,14 @@ function Register() {
         return;
       }
 
-      const response = await fetch('http://localhost:5000/api/auth/register', {
+      const data = await apiService.request('/auth/register', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        },
         body: JSON.stringify({
           clerk_id: user.id,
           email: user.emailAddresses[0].emailAddress,
           role: 'user' // rol por defecto
         })
-      });
-
-      if (!response.ok) {
-        throw new Error('Error registering user in backend');
-      }
+      }, token);
 
       // Registro exitoso, redirigir al dashboard
       navigate('/dashboard');

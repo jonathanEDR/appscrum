@@ -25,7 +25,8 @@ const CloudinaryTest = () => {
         throw new Error('No se pudo obtener el token de autenticación');
       }
 
-      const response = await fetch('http://localhost:5000/api/cloudinary/test', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/cloudinary/test`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -69,7 +70,8 @@ const CloudinaryTest = () => {
       const formData = new FormData();
       formData.append('testImage', selectedFile);
 
-      const response = await fetch('http://localhost:5000/api/cloudinary/test-upload', {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/cloudinary/test-upload`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -121,7 +123,8 @@ const CloudinaryTest = () => {
       const encodedPublicId = encodeURIComponent(publicId);
       console.log('Eliminando archivo:', publicId);
       
-      const response = await fetch(`http://localhost:5000/api/cloudinary/test-delete/${encodedPublicId}`, {
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+      const response = await fetch(`${API_URL}/cloudinary/test-delete/${encodedPublicId}`, {
         method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${token}`,
