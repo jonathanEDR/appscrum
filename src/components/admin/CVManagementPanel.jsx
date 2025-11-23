@@ -29,7 +29,7 @@ import {
 } from 'lucide-react';
 import { profileService } from '../../services/profileService';
 import { apiService } from '../../services/apiService';
-import { CloudinaryImage } from '../common/CloudinaryImage';
+import CloudinaryImage from '../common/CloudinaryImage';
 
 const CVManagementPanel = () => {
   const { getToken } = useAuth();
