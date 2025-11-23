@@ -19,7 +19,6 @@ import ScrumMasterDashboard from '../components/layout/dashboard/ScrumMasterDash
 import DevelopersDashboard from '../components/layout/dashboard/DevelopersDashboard.jsx';
 import UserDashboard from '../components/layout/dashboard/UserDashboard.jsx';
 import SystemConfigPanel from '../components/admin/SystemConfigPanel.jsx';
-import CloudinaryTest from '../components/admin/CloudinaryTest.jsx';
 import CloudinaryManagement from '../Pages/CloudinaryManagement.jsx';
 import CVManagementPanel from '../components/admin/CVManagementPanel.jsx';
 
@@ -165,10 +164,6 @@ export const router = createBrowserRouter([
       {
         path: 'configuracion',
         element: <SystemConfigPanel />,
-      },
-      {
-        path: 'cloudinary-test',
-        element: <CloudinaryTest />,
       },
       {
         path: 'cloudinary',
