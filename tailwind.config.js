@@ -6,6 +6,7 @@ export default {
     "./src/Pages/**/*.{js,ts,jsx,tsx}",
     "./src/components/**/*.{js,ts,jsx,tsx}",
   ],
+  darkMode: 'class', // Habilitar modo oscuro con clase 'dark'
   theme: {
     extend: {
       // Sistema de colores "Azul Galaxia Luxury" - Premium

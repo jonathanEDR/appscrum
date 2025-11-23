@@ -103,3 +103,111 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/* Super Admin Layout - Tema Claro/Oscuro */
+.super-admin-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: white;
+  transition: background-color 0.3s ease;
+}
+
+.dark .super-admin-layout {
+  background-color: #000000;
+}
+
+.super-admin-main {
+  flex: 1;
+  width: 100%;
+  padding: 2rem;
+  margin-left: 0;
+  background-color: white;
+  transition: margin-left 0.3s ease, background-color 0.3s ease;
+}
+
+.dark .super-admin-main {
+  background-color: #000000;
+}
+
+.super-admin-main.sidebar-open {
+  margin-left: 288px; /* 72 * 4 = 288px (width del sidebar) */
+}
+
+@media (max-width: 1023px) {
+  .super-admin-main.sidebar-open {
+    margin-left: 0;
+  }
+}
+
+/* Product Owner Layout - Tema Claro/Oscuro */
+.product-owner-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: white;
+  transition: background-color 0.3s ease;
+}
+
+.dark .product-owner-layout {
+  background-color: #000000;
+}
+
+.product-owner-main {
+  flex: 1;
+  width: 100%;
+  padding: 2rem;
+  margin-left: 0;
+  background-color: white;
+  transition: margin-left 0.3s ease, background-color 0.3s ease;
+}
+
+.dark .product-owner-main {
+  background-color: #000000;
+}
+
+.product-owner-main.sidebar-open {
+  margin-left: 288px;
+}
+
+@media (max-width: 1023px) {
+  .product-owner-main.sidebar-open {
+    margin-left: 0;
+  }
+}
+
+/* Scrum Master Layout - Tema Claro/Oscuro */
+.scrum-master-layout {
+  display: flex;
+  min-height: 100vh;
+  width: 100%;
+  background-color: white;
+  transition: background-color 0.3s ease;
+}
+
+.dark .scrum-master-layout {
+  background-color: #000000;
+}
+
+.scrum-master-main {
+  flex: 1;
+  width: 100%;
+  padding: 2rem;
+  margin-left: 0;
+  background-color: white;
+  transition: margin-left 0.3s ease, background-color 0.3s ease;
+}
+
+.dark .scrum-master-main {
+  background-color: #000000;
+}
+
+.scrum-master-main.sidebar-open {
+  margin-left: 288px;
+}
+
+@media (max-width: 1023px) {
+  .scrum-master-main.sidebar-open {
+    margin-left: 0;
+  }
+}

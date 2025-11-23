@@ -18,9 +18,13 @@ import ProductOwnerDashboard from '../components/layout/dashboard/ProductOwnerDa
 import ScrumMasterDashboard from '../components/layout/dashboard/ScrumMasterDashboard.jsx';
 import DevelopersDashboard from '../components/layout/dashboard/DevelopersDashboard.jsx';
 import UserDashboard from '../components/layout/dashboard/UserDashboard.jsx';
+import SystemConfigPanel from '../components/admin/SystemConfigPanel.jsx';
+import CloudinaryTest from '../components/admin/CloudinaryTest.jsx';
+import CloudinaryManagement from '../Pages/CloudinaryManagement.jsx';
+import CVManagementPanel from '../components/admin/CVManagementPanel.jsx';
 
 // Componentes de submódulos - inmediata
-import MyProfile from '../components/auth/MyProfile.jsx';
+import ProfileCV from '../components/auth/ProfileCV.jsx';
 
 // Páginas de gestión - inmediata
 import CollaboratorsManagement from '../Pages/CollaboratorsManagement.jsx';
@@ -53,7 +57,7 @@ const MyActivities = lazy(() => import('../components/users/MyActivities.jsx'));
 
 // Layout wrapper para páginas de autenticación
 const AuthLayout = ({ children }) => (
-  <div className="min-h-screen bg-gradient-galaxy flex items-center justify-center">
+  <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center transition-colors duration-300">
     <div className="max-w-md w-full">
       {children}
     </div>
@@ -63,10 +67,10 @@ const AuthLayout = ({ children }) => (
 // Componente para páginas en construcción
 const UnderConstruction = ({ module }) => (
   <div className="flex items-center justify-center h-64">
-    <div className="glass-card p-8 text-center shadow-galaxy-enhanced hover-lift animate-fadeIn">
-      <div className="text-6xl mb-4 animate-galaxy-pulse">🚧</div>
-      <h2 className="text-2xl font-semibold text-gradient-galaxy mb-2 animate-float">En Construcción</h2>
-      <p className="text-primary-600 opacity-80">El módulo "{module}" estará disponible pronto.</p>
+    <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-8 text-center shadow-lg rounded-2xl">
+      <div className="text-6xl mb-4">🚧</div>
+      <h2 className="text-2xl font-semibold text-gray-900 dark:text-white mb-2">En Construcción</h2>
+      <p className="text-gray-600 dark:text-gray-400">El módulo "{module}" estará disponible pronto.</p>
     </div>
   </div>
 );
@@ -74,9 +78,9 @@ const UnderConstruction = ({ module }) => (
 // Componente de Loading para lazy components
 const LazyLoadingSpinner = () => (
   <div className="flex items-center justify-center h-64">
-    <div className="glass-card p-8 text-center shadow-galaxy-enhanced">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-500 mx-auto mb-4"></div>
-      <p className="text-primary-600 opacity-80">Cargando módulo...</p>
+    <div className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 p-8 text-center shadow-lg rounded-2xl">
+      <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-700 border-t-blue-600 dark:border-t-blue-400 mx-auto mb-4"></div>
+      <p className="text-gray-600 dark:text-gray-400">Cargando módulo...</p>
     </div>
   </div>
 );
@@ -143,12 +147,16 @@ export const router = createBrowserRouter([
         element: <ProfileManagement userRole="super_admin" />,
       },
       {
+        path: 'cvs',
+        element: <CVManagementPanel />,
+      },
+      {
         path: 'colaboradores',
         element: <CollaboratorsManagement />,
       },
       {
         path: 'perfil',
-        element: <MyProfile />,
+        element: <ProfileCV />,
       },
       {
         path: 'admin',
@@ -156,7 +164,15 @@ export const router = createBrowserRouter([
       },
       {
         path: 'configuracion',
-        element: <UnderConstruction module="Configuración" />,
+        element: <SystemConfigPanel />,
+      },
+      {
+        path: 'cloudinary-test',
+        element: <CloudinaryTest />,
+      },
+      {
+        path: 'cloudinary',
+        element: <CloudinaryManagement />,
       },
     ],
   },
@@ -175,7 +191,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'perfil',
-        element: <MyProfile />,
+        element: <ProfileCV />,
       },
       {
         path: 'productos',
@@ -214,7 +230,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'perfil',
-        element: <MyProfile />,
+        element: <ProfileCV />,
       },
       {
         path: 'sprints',
@@ -261,7 +277,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'perfil',
-        element: <MyProfile />,
+        element: <ProfileCV />,
       },
       {
         path: 'tareas',
@@ -300,7 +316,7 @@ export const router = createBrowserRouter([
       },
       {
         path: 'perfil',
-        element: <MyProfile />,
+        element: <ProfileCV />,
       },
       {
         path: 'actividades',

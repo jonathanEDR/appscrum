@@ -35,15 +35,15 @@ const StatCard = ({ title, value, icon: Icon, color = 'blue', trend = null }) =>
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6 flex items-center">
-      <div className={`${iconBackgroundColors[color]} rounded-lg p-3 mr-4`}>
+    <div className="bg-white dark:bg-gray-950 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800 p-6 flex items-center hover:shadow-xl transition-all duration-300">
+      <div className={`${iconBackgroundColors[color]} rounded-lg p-3 mr-4 shadow-lg`}>
         <Icon className="h-6 w-6 text-white" />
       </div>
       <div className="flex-1">
-        <p className="text-sm text-gray-600 mb-1">{title}</p>
-        <p className="text-2xl font-bold text-gray-900">{value}</p>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">{title}</p>
+        <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
         {trend && (
-          <p className={`text-xs ${trend.positive ? 'text-green-600' : 'text-red-600'} flex items-center mt-1`}>
+          <p className={`text-xs ${trend.positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} flex items-center mt-1 font-medium`}>
             <TrendingUp className="h-3 w-3 mr-1" />
             {trend.value}
           </p>
@@ -77,17 +77,17 @@ const MyProjects = ({ projects = [], loading = false }) => {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900 flex items-center">
+      <div className="bg-white dark:bg-gray-950 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800">
+        <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+          <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
             <Briefcase className="h-5 w-5 mr-2" />
             Mis Proyectos
           </h3>
         </div>
         <div className="p-6">
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-500">Cargando proyectos...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600 mx-auto"></div>
+            <p className="mt-2 text-gray-500 dark:text-gray-400">Cargando proyectos...</p>
           </div>
         </div>
       </div>
@@ -95,9 +95,9 @@ const MyProjects = ({ projects = [], loading = false }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <h3 className="text-lg font-medium text-gray-900 flex items-center">
+    <div className="bg-white dark:bg-gray-950 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 flex items-center">
           <Briefcase className="h-5 w-5 mr-2" />
           Mis Proyectos
         </h3>
@@ -109,11 +109,11 @@ const MyProjects = ({ projects = [], loading = false }) => {
               const statusInfo = getStatusInfo(project.estado);
               
               return (
-                <div key={project._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow">
+                <div key={project._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-lg transition-shadow bg-gray-50 dark:bg-gray-800">
                   <div className="flex items-start justify-between mb-3">
                     <div className="flex-1">
-                      <h4 className="text-base font-semibold text-gray-900">{project.nombre}</h4>
-                      <p className="text-sm text-gray-500">{project.equipo || 'Equipo Alpha'}</p>
+                      <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100">{project.nombre}</h4>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">{project.equipo || 'Equipo Alpha'}</p>
                     </div>
                     <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusInfo.color}`}>
                       {statusInfo.label}
@@ -121,24 +121,24 @@ const MyProjects = ({ projects = [], loading = false }) => {
                   </div>
                   
                   <div className="mb-3">
-                    <div className="flex justify-between text-sm text-gray-600 mb-2">
+                    <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-2">
                       <span>Progreso</span>
                       <span>{project.progress || 0}%</span>
                     </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                       <div 
-                        className="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                        className="bg-indigo-600 dark:bg-indigo-500 h-2 rounded-full transition-all duration-300" 
                         style={{ width: `${project.progress || 0}%` }}
                       ></div>
                     </div>
                   </div>
                   
                   <div className="flex items-center justify-between text-sm">
-                    <span className="flex items-center text-gray-500">
+                    <span className="flex items-center text-gray-500 dark:text-gray-400">
                       <Calendar className="h-4 w-4 mr-1" />
                       Entrega: {formatDate(project.fecha_fin)}
                     </span>
-                    <button className="text-blue-600 hover:text-blue-800 font-medium flex items-center">
+                    <button className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 font-medium flex items-center">
                       Ver detalles
                       <ChevronRight className="h-4 w-4 ml-1" />
                     </button>
@@ -149,8 +149,8 @@ const MyProjects = ({ projects = [], loading = false }) => {
           </div>
         ) : (
           <div className="text-center py-8">
-            <Briefcase className="h-12 w-12 mx-auto text-gray-400 mb-4" />
-            <p className="text-gray-500">No tienes proyectos asignados</p>
+            <Briefcase className="h-12 w-12 mx-auto text-gray-400 dark:text-gray-600 mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">No tienes proyectos asignados</p>
           </div>
         )}
       </div>
@@ -229,8 +229,8 @@ const UserDashboard = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando panel de usuario...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 dark:border-gray-700 border-t-indigo-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-400">Cargando panel de usuario...</p>
         </div>
       </div>
     );
@@ -238,9 +238,9 @@ const UserDashboard = () => {
 
   if (error && !dashboardData) {
     return (
-      <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-        <h3 className="text-lg font-medium text-red-800 mb-2">Error al cargar datos</h3>
-        <p className="text-red-600">{error}</p>
+      <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-lg p-6">
+        <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">Error al cargar datos</h3>
+        <p className="text-red-600 dark:text-red-500">{error}</p>
         <button 
           onClick={() => window.location.reload()} 
           className="mt-4 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700"
@@ -281,10 +281,10 @@ const UserDashboard = () => {
   return (
     <div className="space-y-6">
       {/* Header del Panel de Usuario */}
-      <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-blue-600 rounded-lg shadow-lg text-white p-8">
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-lg shadow-xl text-white p-8">
         <h1 className="text-3xl font-bold mb-2">Panel de Usuario</h1>
         <p className="text-indigo-100 text-lg">
-          Gestiona tus proyectos y mantente al día con tus tareas
+          Gestiona tus proyectos y mantén al día con tus tareas
         </p>
         {error && (
           <div className="mt-3 bg-yellow-100 text-yellow-800 px-3 py-2 rounded text-sm">
@@ -308,14 +308,14 @@ const UserDashboard = () => {
         </div>
 
         {/* Acciones rápidas */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-100">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h3 className="text-lg font-medium text-gray-900">Acciones Rápidas</h3>
+        <div className="bg-white dark:bg-gray-950 rounded-lg shadow-lg border border-gray-200 dark:border-gray-800">
+          <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100">Acciones Rápidas</h3>
           </div>
           <div className="p-6 space-y-4">
             <button 
               onClick={() => navigate('/user/proyectos')}
-              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-colors"
+              className="w-full flex items-center justify-center px-4 py-3 border border-transparent rounded-lg shadow-lg text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 transition-all hover:shadow-xl"
             >
               <Eye className="h-5 w-5 mr-2" />
               Ver Proyectos
@@ -323,7 +323,7 @@ const UserDashboard = () => {
             
             <button 
               onClick={() => navigate('/user/calendario')}
-              className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all hover:shadow-xl"
             >
               <Calendar className="h-5 w-5 mr-2" />
               Ver Calendario
@@ -331,7 +331,7 @@ const UserDashboard = () => {
 
             <button 
               onClick={() => navigate('/user/perfil')}
-              className="w-full flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+              className="w-full flex items-center justify-center px-4 py-3 border-2 border-gray-300 dark:border-gray-600 rounded-lg shadow-lg text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all hover:shadow-xl"
             >
               <User className="h-5 w-5 mr-2" />
               Mi Perfil

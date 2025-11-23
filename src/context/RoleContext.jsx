@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useUser, useAuth } from "@clerk/clerk-react";
 import { apiService } from "../services/apiService";
+import { ROLES, ROLE_PERMISSIONS } from "../config/constants";
 
 export const RoleContext = createContext();
 export const useRole = () => useContext(RoleContext);
@@ -10,74 +11,95 @@ export function RoleProvider({ children }) {
   const { getToken } = useAuth();
   const [role, setRole] = useState(undefined);
   const [isRoleLoaded, setIsRoleLoaded] = useState(false);
-  const [serverRole, setServerRole] = useState(null);
+  const [permissions, setPermissions] = useState({});
+  const [roleInfo, setRoleInfo] = useState(null);
+  const [syncError, setSyncError] = useState(null);
 
-  // Función para sincronizar rol con el servidor
+  // Función para sincronizar rol con el servidor (ÚNICA FUENTE DE VERDAD)
   const syncRoleWithServer = useCallback(async () => {
-    if (!user || !isLoaded) return;
+    if (!user || !isLoaded) {
+      console.log('RoleContext: Usuario o Clerk no cargado aún');
+      return;
+    }
 
+    setSyncError(null);
     let token;
+
     try {
       token = await getToken();
-      console.log('Token obtenido correctamente:', token ? 'Token presente' : 'Token ausente');
+      if (!token) {
+        throw new Error('No se pudo obtener el token de autenticación');
+      }
 
-      // PRIMERO: Intentar obtener el usuario desde NUESTRA base de datos
-      const userData = await apiService.request(`/auth/user/${user.id}`, {
+      console.log('🔐 RoleContext: Obteniendo perfil de usuario desde servidor...');
+
+      // FUENTE ÚNICA DE VERDAD: Backend con middleware authenticate
+      // Este endpoint garantiza que el usuario existe y tiene un rol válido
+      const response = await apiService.request('/auth/user-profile', {
         method: 'GET'
       }, () => Promise.resolve(token));
 
-      console.log('User data from database:', userData);
+      console.log('✅ RoleContext: Respuesta del servidor:', response);
 
-      if (userData?.role) {
-        setServerRole(userData.role);
-        setRole(userData.role);
+      if (response?.status === 'success' && response?.user) {
+        const userData = response.user;
+        
+        // Validar que el rol sea válido
+        if (!Object.values(ROLES).includes(userData.role)) {
+          console.warn(`⚠️ Rol inválido recibido: ${userData.role}, usando USER por defecto`);
+          setRole(ROLES.USER);
+          setPermissions(ROLE_PERMISSIONS[ROLES.USER]);
+        } else {
+          setRole(userData.role);
+          // Usar permisos del servidor si están disponibles, sino usar los del frontend
+          setPermissions(userData.permissions || ROLE_PERMISSIONS[userData.role] || {});
+          setRoleInfo(userData.roleInfo || null);
+        }
+        
         setIsRoleLoaded(true);
+        console.log('✅ RoleContext: Rol sincronizado correctamente:', userData.role);
         return;
       }
+
+      throw new Error('Respuesta del servidor inválida');
+
     } catch (error) {
-      console.error('Error al obtener el rol de la base de datos:', error);
-      console.warn('Intentando crear usuario en la base de datos...');
+      console.error('❌ RoleContext: Error al sincronizar rol:', error);
+      setSyncError(error.message);
 
-      // Si el usuario no existe, intentar el endpoint de perfil que lo crea automáticamente
+      // FALLBACK: Intentar obtener de metadata de Clerk solo si falla completamente
       try {
-        if (!token) {
-          token = await getToken(); // Re-obtener token si no existe
-        }
-
-        const profileResponse = await apiService.request('/auth/user-profile', {
-          method: 'GET'
-        }, () => Promise.resolve(token));
-
-        console.log('Profile response:', profileResponse);
-
-        if (profileResponse?.user?.role) {
-          setServerRole(profileResponse.user.role);
-          setRole(profileResponse.user.role);
+        const clerkRole = user?.publicMetadata?.role;
+        if (clerkRole && Object.values(ROLES).includes(clerkRole)) {
+          console.warn('⚠️ RoleContext: Usando rol de Clerk como fallback:', clerkRole);
+          setRole(clerkRole);
+          setPermissions(ROLE_PERMISSIONS[clerkRole] || {});
           setIsRoleLoaded(true);
           return;
         }
-      } catch (createError) {
-        console.error('Error al crear usuario:', createError);
+      } catch (clerkError) {
+        console.error('❌ RoleContext: Error al obtener rol de Clerk:', clerkError);
       }
+
+      // ÚLTIMO RECURSO: Rol de usuario por defecto
+      console.warn('⚠️ RoleContext: Usando rol USER por defecto debido a errores');
+      setRole(ROLES.USER);
+      setPermissions(ROLE_PERMISSIONS[ROLES.USER]);
+      setIsRoleLoaded(true);
     }
-
-    // ÚLTIMO RECURSO: Usar metadata de Clerk como fallback
-    const clerkRole = user?.publicMetadata?.role ||
-                     user?.unsafeMetadata?.role ||
-                     user?.role ||
-                     'user';
-
-    console.warn('Using Clerk role as fallback:', clerkRole);
-    setRole(clerkRole);
-    setIsRoleLoaded(true);
   }, [user, isLoaded, getToken]);
 
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded) {
+      console.log('RoleContext: Esperando a que Clerk se cargue...');
+      return;
+    }
 
     if (!user) {
+      console.log('RoleContext: No hay usuario autenticado');
       setRole(undefined);
-      setServerRole(null);
+      setPermissions({});
+      setRoleInfo(null);
       setIsRoleLoaded(true);
       return;
     }
@@ -85,27 +107,54 @@ export function RoleProvider({ children }) {
     syncRoleWithServer();
   }, [user, isLoaded, syncRoleWithServer]);
 
-  // Función para actualizar el rol
+  // Función para actualizar el rol (solo usar cuando el servidor confirme el cambio)
   const updateRole = useCallback((newRole) => {
+    if (!Object.values(ROLES).includes(newRole)) {
+      console.error('❌ RoleContext: Intento de establecer rol inválido:', newRole);
+      return;
+    }
+    
+    console.log('🔄 RoleContext: Actualizando rol a:', newRole);
     setRole(newRole);
-    setServerRole(newRole);
+    setPermissions(ROLE_PERMISSIONS[newRole] || {});
   }, []);
 
   // Función para refrescar el rol desde el servidor
   const refreshRole = useCallback(async () => {
     if (user && isLoaded) {
+      console.log('🔄 RoleContext: Refrescando rol...');
       setIsRoleLoaded(false);
       await syncRoleWithServer();
     }
   }, [user, isLoaded, syncRoleWithServer]);
 
+  // Función helper para verificar permisos
+  const hasPermission = useCallback((permissionName) => {
+    return permissions[permissionName] === true;
+  }, [permissions]);
+
+  // Función helper para verificar si tiene alguno de los roles
+  const hasAnyRole = useCallback((roles) => {
+    return roles.includes(role);
+  }, [role]);
+
+  // Función helper para verificar si es admin
+  const isAdmin = useCallback(() => {
+    return role === ROLES.SUPER_ADMIN;
+  }, [role]);
+
   const contextValue = {
     role,
-    serverRole,
+    permissions,
+    roleInfo,
     isLoaded: isLoaded && isRoleLoaded,
     isRoleLoaded,
+    syncError,
     updateRole,
     refreshRole,
+    hasPermission,
+    hasAnyRole,
+    isAdmin,
     user
   };
 

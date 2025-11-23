@@ -15,7 +15,8 @@ import {
   Calendar,
   Target,
   Code,
-  Briefcase
+  Briefcase,
+  Cloud
 } from 'lucide-react';
 import LogoutButton from '../auth/LogoutButton';
 import ProductOwnerSidebar from './Sidebars/ProductOwnerSidebar';
@@ -51,6 +52,12 @@ const getRoleNavigation = (role) => {
         show: true
       },
       {
+        name: 'Gestión de CVs',
+        path: `/super_admin/cvs`,
+        icon: FileText,
+        show: true
+      },
+      {
         name: 'Colaboradores',
         path: `/super_admin/colaboradores`,
         icon: Users,
@@ -60,6 +67,12 @@ const getRoleNavigation = (role) => {
         name: 'Panel Admin',
         path: `/super_admin/admin`,
         icon: Shield,
+        show: true
+      },
+      {
+        name: 'Gestión de Cloudinary',
+        path: `/super_admin/cloudinary`,
+        icon: Cloud,
         show: true
       },
       {
@@ -442,6 +455,8 @@ const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
       if (path === '/super_admin') return 'dashboard';
       if (path.includes('/usuarios')) return 'dashboard'; // Gestión de usuarios
       if (path.includes('/colaboradores')) return 'dashboard'; // También gestión
+      if (path.includes('/cloudinary')) return 'cloudinary'; // Gestión de Cloudinary
+      if (path.includes('/configuracion')) return 'config'; // Configuración del sistema
       if (path.includes('/historial')) return 'history';
       if (path.includes('/perfil')) return 'profile';
       return 'dashboard';
@@ -453,6 +468,12 @@ const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
       switch(view) {
         case 'dashboard':
           navigate('/super_admin/usuarios'); // Gestión de usuarios como dashboard principal
+          break;
+        case 'cloudinary':
+          navigate('/super_admin/cloudinary'); // Gestión de Cloudinary
+          break;
+        case 'config':
+          navigate('/super_admin/configuracion'); // Configuración del sistema
           break;
         case 'history':
           navigate('/super_admin/historial');
@@ -646,6 +667,8 @@ const getPageTitle = (pathname, role) => {
     colaboradores: 'Gestión de Colaboradores',
     admin: 'Panel de Administración',
     configuracion: 'Configuración',
+    cloudinary: 'Gestión de Cloudinary',
+    'cloudinary-test': 'Test de Cloudinary',
     
     // Product Owner
     productos: 'Gestión de Productos',
@@ -680,12 +703,10 @@ const RoleBasedLayout = () => {
 
   if (!isLoaded) {
     return (
-      <div className="min-h-screen flex items-center justify-center" style={{
-        background: 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 50%, #cbd5e1 75%, #94a3b8 100%)'
-      }}>
+      <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300 flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-slate-600">Cargando dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto"></div>
+          <p className="mt-4 text-gray-600 dark:text-gray-300">Cargando dashboard...</p>
         </div>
       </div>
     );
@@ -694,19 +715,7 @@ const RoleBasedLayout = () => {
   const pageTitle = getPageTitle(location.pathname, role);
 
   return (
-    <div className="min-h-screen" style={{
-      background: role === 'product_owner' 
-        ? '#0f172a' // Fondo sólido oscuro para Product Owner
-        : role === 'scrum_master'
-        ? '#f8fafc' // Fondo claro suave para Scrum Master
-        : role === 'developers'
-        ? '#f0fdf4' // Fondo claro esmeralda para Developers
-        : role === 'user'
-        ? '#f0f9ff' // Fondo claro azul cielo para User
-        : role === 'super_admin'
-        ? '#fffbeb' // Fondo claro dorado para Super Admin
-        : 'linear-gradient(135deg, #f8fafc 0%, #f1f5f9 25%, #e2e8f0 50%, #cbd5e1 75%, #94a3b8 100%)'
-    }}>
+    <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300">
       {/* Botón de toggle flotante - Solo para roles que no tengan sidebar personalizado */}
       {!['product_owner', 'scrum_master', 'developers', 'user', 'super_admin'].includes(role) && (
         <button

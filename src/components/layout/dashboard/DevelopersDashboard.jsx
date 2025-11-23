@@ -30,24 +30,21 @@ const StatCard = ({ title, value, icon: Icon, color = 'primary', trend = null })
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-galaxy border-0 p-6 hover:shadow-large transition-all duration-300 group overflow-hidden relative">
-      <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-primary-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-      <div className="relative z-10">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <div className={`${colorClasses[color]} rounded-xl p-3 shadow-large group-hover:scale-110 transition-transform duration-300`}>
-              <Icon className="h-6 w-6 text-white" />
-            </div>
-            <div className="ml-4">
-              <p className="text-sm font-medium text-primary-600">{title}</p>
-              <p className="text-3xl font-bold text-primary-900 group-hover:text-primary-700 transition-colors">{value}</p>
-              {trend && (
-                <p className={`text-xs ${trend.positive ? 'text-success-600' : 'text-error-600'} flex items-center mt-1`}>
-                  <TrendingUp className="h-3 w-3 mr-1" />
-                  {trend.value}
-                </p>
-              )}
-            </div>
+    <div className="bg-white dark:bg-gray-950 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 p-6 hover:shadow-xl transition-all duration-300 group overflow-hidden relative">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center">
+          <div className={`${colorClasses[color]} rounded-xl p-3 shadow-lg group-hover:scale-110 transition-transform duration-300`}>
+            <Icon className="h-6 w-6 text-white" />
+          </div>
+          <div className="ml-4">
+            <p className="text-sm font-medium text-gray-600 dark:text-gray-400">{title}</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+            {trend && (
+              <p className={`text-xs ${trend.positive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'} flex items-center mt-1 font-medium`}>
+                <TrendingUp className="h-3 w-3 mr-1" />
+                {trend.value}
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -111,10 +108,10 @@ const MyTasks = () => {
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-galaxy border-0 overflow-hidden">
-      <div className="px-6 py-4 bg-gradient-to-r from-primary-500/10 via-transparent to-accent-500/10 border-b border-primary-200/30">
-        <h3 className="text-lg font-semibold text-primary-900 flex items-center">
-          <Target className="h-5 w-5 mr-2 text-primary-600" />
+    <div className="bg-white dark:bg-gray-950 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+      <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+        <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 flex items-center">
+          <Target className="h-5 w-5 mr-2 text-emerald-600 dark:text-emerald-400" />
           Mis Tareas del Sprint
         </h3>
       </div>
@@ -128,29 +125,29 @@ const MyTasks = () => {
             return (
               <div 
                 key={task.id} 
-                className={`border-l-4 ${getPriorityColor(task.priority)} p-4 rounded-r-xl hover:shadow-medium transition-all duration-300 group`}
+                className={`border-l-4 ${getPriorityColor(task.priority)} p-4 rounded-r-xl hover:shadow-lg transition-all duration-300 group bg-gray-50 dark:bg-gray-800`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <h4 className="text-sm font-medium text-primary-900 mb-2 group-hover:text-primary-700 transition-colors">{task.title}</h4>
+                    <h4 className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">{task.title}</h4>
                     <div className="flex items-center space-x-4 mb-3">
                       <span className={`px-3 py-1 rounded-full text-xs font-medium ${statusInfo.color} flex items-center shadow-soft`}>
                         <StatusIcon className="w-3 h-3 mr-1" />
                         {statusInfo.label}
                       </span>
-                      <span className="text-xs text-primary-600 font-medium bg-primary-50 px-2 py-1 rounded-full">
+                      <span className="text-xs text-gray-600 dark:text-gray-400 font-medium bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full">
                         {task.spentHours}h / {task.estimatedHours}h
                       </span>
                     </div>
                     {task.status === 'in_progress' && (
                       <div className="w-full">
-                        <div className="flex justify-between text-xs text-primary-600 mb-2">
+                        <div className="flex justify-between text-xs text-gray-600 dark:text-gray-400 mb-2">
                           <span className="font-medium">Progreso</span>
                           <span className="font-bold">{Math.round(progressPercentage)}%</span>
                         </div>
-                        <div className="w-full bg-primary-100 rounded-full h-2 shadow-inner">
+                        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div 
-                            className="bg-gradient-to-r from-accent-400 to-accent-500 h-2 rounded-full transition-all duration-500 shadow-soft relative overflow-hidden" 
+                            className="bg-gradient-to-r from-emerald-500 to-green-500 h-2 rounded-full transition-all duration-500 relative overflow-hidden" 
                             style={{ width: `${Math.min(progressPercentage, 100)}%` }}
                           >
                             <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-pulse"></div>
@@ -185,11 +182,8 @@ const DevelopersDashboard = () => {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
-          <div className="relative">
-            <div className="animate-spin rounded-full h-16 w-16 border-4 border-primary-200 border-t-primary-600 mx-auto shadow-galaxy"></div>
-            <div className="absolute inset-2 animate-pulse rounded-full bg-gradient-to-br from-primary-500/20 to-transparent"></div>
-          </div>
-          <p className="mt-6 text-primary-700 font-medium">Cargando panel de desarrollador...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-4 border-gray-200 dark:border-gray-700 border-t-emerald-600 mx-auto"></div>
+          <p className="mt-6 text-gray-700 dark:text-gray-300 font-medium">Cargando panel de desarrollador...</p>
         </div>
       </div>
     );
@@ -197,9 +191,9 @@ const DevelopersDashboard = () => {
 
   if (error) {
     return (
-      <div className="bg-error-50/80 border border-error-200 rounded-xl p-6 backdrop-blur-sm">
-        <h3 className="text-lg font-medium text-error-800 mb-2">Error al cargar datos</h3>
-        <p className="text-error-600">{error}</p>
+      <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
+        <h3 className="text-lg font-medium text-red-800 dark:text-red-400 mb-2">Error al cargar datos</h3>
+        <p className="text-red-600 dark:text-red-500">{error}</p>
       </div>
     );
   }
@@ -237,17 +231,18 @@ const DevelopersDashboard = () => {
   return (
     <>
       <div className="space-y-6">
-        {/* Header mejorado con gradiente premium y efectos galaxia */}
-        <div className="bg-gradient-to-r from-primary-600 via-secondary-600 to-accent-500 rounded-xl shadow-galaxy text-white p-8 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-black/10 via-transparent to-black/20"></div>
-          <div className="relative z-10">
-            <h1 className="text-3xl font-bold mb-2">Panel Desarrollador</h1>
-            <p className="text-white/90 text-lg">
-              Gestiona tus tareas y contribuye al éxito del sprint
-            </p>
-          </div>
-          <div className="absolute -right-8 -top-8 opacity-20">
-            <Code className="h-32 w-32 text-white" />
+        {/* Header con tema */}
+        <div className="bg-gradient-to-r from-emerald-600 to-green-600 rounded-xl shadow-xl text-white p-8 relative overflow-hidden">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold mb-2">Panel Desarrollador</h1>
+              <p className="text-white/90 text-lg">
+                Gestiona tus tareas y contribuye al éxito del sprint
+              </p>
+            </div>
+            <div className="w-16 h-16 bg-white/20 backdrop-blur-sm rounded-2xl flex items-center justify-center">
+              <Code className="h-8 w-8 text-white" />
+            </div>
           </div>
         </div>
 
@@ -266,14 +261,14 @@ const DevelopersDashboard = () => {
           </div>
 
           {/* Acciones rápidas */}
-          <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-galaxy border-0 overflow-hidden">
-            <div className="px-6 py-4 bg-gradient-to-r from-primary-500/10 via-transparent to-accent-500/10 border-b border-primary-200/30">
-              <h3 className="text-lg font-semibold text-primary-900">Acciones Rápidas</h3>
+          <div className="bg-white dark:bg-gray-950 rounded-xl shadow-lg border border-gray-200 dark:border-gray-800 overflow-hidden">
+            <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Acciones Rápidas</h3>
             </div>
             <div className="p-6 space-y-3">
               <button 
                 onClick={() => navigate('/developers/tareas')}
-                className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 font-medium shadow-medium hover:shadow-large transform hover:-translate-y-0.5 flex items-center justify-center"
+                className="w-full bg-gradient-to-r from-emerald-600 to-emerald-700 text-white px-6 py-3 rounded-xl hover:from-emerald-700 hover:to-emerald-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center"
               >
                 <Eye className="h-5 w-5 mr-2" />
                 Ver Mis Tareas
@@ -281,7 +276,7 @@ const DevelopersDashboard = () => {
               
               <button 
                 onClick={() => navigate('/developers/sprint-board')}
-                className="w-full bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-6 py-3 rounded-xl hover:from-secondary-600 hover:to-secondary-700 transition-all duration-300 font-medium shadow-medium hover:shadow-large transform hover:-translate-y-0.5 flex items-center justify-center"
+                className="w-full bg-gradient-to-r from-green-600 to-green-700 text-white px-6 py-3 rounded-xl hover:from-green-700 hover:to-green-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center"
               >
                 <Code className="h-5 w-5 mr-2" />
                 Sprint Actual
@@ -289,7 +284,7 @@ const DevelopersDashboard = () => {
 
               <button 
                 onClick={() => navigate('/developers/codigo')}
-                className="w-full bg-gradient-to-r from-accent-400 to-accent-500 text-white px-6 py-3 rounded-xl hover:from-accent-500 hover:to-accent-600 transition-all duration-300 font-medium shadow-medium hover:shadow-large transform hover:-translate-y-0.5 flex items-center justify-center"
+                className="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white px-6 py-3 rounded-xl hover:from-teal-700 hover:to-teal-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center"
               >
                 <GitPullRequest className="h-5 w-5 mr-2" />
                 Pull Requests
@@ -297,7 +292,7 @@ const DevelopersDashboard = () => {
 
               <button 
                 onClick={() => setIsBugModalOpen(true)}
-                className="w-full bg-white border-2 border-primary-200 text-primary-700 px-6 py-3 rounded-xl hover:bg-primary-50 hover:border-primary-300 transition-all duration-300 font-medium shadow-soft hover:shadow-medium transform hover:-translate-y-0.5 flex items-center justify-center"
+                className="w-full bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center"
               >
                 <AlertTriangle className="h-5 w-5 mr-2" />
                 Reportar Bug

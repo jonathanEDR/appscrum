@@ -5,12 +5,10 @@ import './index.css';
 import App from './App.jsx';
 import { ClerkProvider } from '@clerk/clerk-react';
 import { RoleProvider } from './context/RoleContext.jsx';
+import { ThemeProvider } from './context/ThemeContext.jsx';
 
 // Usando clerkPublishableKey consistentemente
 const clerkPublishableKey = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
-console.log('Clerk Publishable Key:', clerkPublishableKey);
-console.log('App is starting...');
 
 if (!clerkPublishableKey) {
   console.error('VITE_CLERK_PUBLISHABLE_KEY is not defined');
@@ -26,9 +24,11 @@ if (!clerkPublishableKey) {
   createRoot(document.getElementById('root')).render(
     <StrictMode>
       <ClerkProvider publishableKey={clerkPublishableKey}>
-        <RoleProvider>
-          <App />
-        </RoleProvider>
+        <ThemeProvider>
+          <RoleProvider>
+            <App />
+          </RoleProvider>
+        </ThemeProvider>
       </ClerkProvider>
     </StrictMode>,
   );

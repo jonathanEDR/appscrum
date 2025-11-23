@@ -1,72 +1,96 @@
 // Configuración de roles de la aplicación
+// IMPORTANTE: Estos roles deben coincidir exactamente con los del backend
 export const ROLES = {
   SUPER_ADMIN: 'super_admin',
-  ADMIN: 'admin',
   PRODUCT_OWNER: 'product_owner',
   SCRUM_MASTER: 'scrum_master',
   DEVELOPERS: 'developers',
   USER: 'user'
 };
 
-// Configuración de rutas por rol
-export const ROLE_ROUTES = {
-  [ROLES.SUPER_ADMIN]: '/dashboard',
-  [ROLES.ADMIN]: '/dashboard',
-  [ROLES.PRODUCT_OWNER]: '/dashboard',
-  [ROLES.SCRUM_MASTER]: '/dashboard',
-  [ROLES.DEVELOPERS]: '/dashboard',
-  [ROLES.USER]: '/dashboard'
+// Mapeo de variaciones de roles (para retrocompatibilidad)
+export const ROLE_ALIASES = {
+  'admin': 'super_admin',
+  'developer': 'developers',
+  'dev': 'developers',
+  'sm': 'scrum_master',
+  'po': 'product_owner'
 };
 
-// Permisos por rol
+// Configuración de rutas por rol
+export const ROLE_ROUTES = {
+  [ROLES.SUPER_ADMIN]: '/super_admin',
+  [ROLES.PRODUCT_OWNER]: '/product_owner',
+  [ROLES.SCRUM_MASTER]: '/scrum_master',
+  [ROLES.DEVELOPERS]: '/developers',
+  [ROLES.USER]: '/user'
+};
+
+// Permisos por rol (sincronizado con backend)
 export const ROLE_PERMISSIONS = {
   [ROLES.SUPER_ADMIN]: {
     canManageUsers: true,
+    canManageRoles: true,
     canDeleteNotes: true,
     canEditNotes: true,
     canCreateNotes: true,
     canViewAllNotes: true,
-    canManageRoles: true
-  },
-  [ROLES.ADMIN]: {
-    canManageUsers: true,
-    canDeleteNotes: true,
-    canEditNotes: true,
-    canCreateNotes: true,
-    canViewAllNotes: true,
-    canManageRoles: false
+    canManageProjects: true,
+    canManageBacklog: true,
+    canManageSprints: true,
+    canAccessAdminPanel: true
   },
   [ROLES.PRODUCT_OWNER]: {
     canManageUsers: false,
+    canManageRoles: false,
     canDeleteNotes: false,
     canEditNotes: true,
     canCreateNotes: true,
     canViewAllNotes: true,
-    canManageRoles: false
+    canManageProjects: true,
+    canManageBacklog: true,
+    canManageSprints: true,
+    canAccessAdminPanel: false
   },
   [ROLES.SCRUM_MASTER]: {
     canManageUsers: false,
+    canManageRoles: false,
     canDeleteNotes: false,
     canEditNotes: true,
     canCreateNotes: true,
     canViewAllNotes: true,
-    canManageRoles: false
+    canManageProjects: false,
+    canManageBacklog: true,
+    canManageSprints: true,
+    canAccessAdminPanel: false
   },
   [ROLES.DEVELOPERS]: {
     canManageUsers: false,
+    canManageRoles: false,
     canDeleteNotes: false,
     canEditNotes: false,
     canCreateNotes: true,
     canViewAllNotes: false,
-    canManageRoles: false
+    canManageProjects: false,
+    canManageBacklog: false,
+    canManageSprints: false,
+    canAccessAdminPanel: false,
+    canViewOwnTasks: true,
+    canEditOwnTasks: true,
+    canTrackTime: true
   },
   [ROLES.USER]: {
     canManageUsers: false,
+    canManageRoles: false,
     canDeleteNotes: false,
     canEditNotes: false,
     canCreateNotes: true,
     canViewAllNotes: false,
-    canManageRoles: false
+    canManageProjects: false,
+    canManageBacklog: false,
+    canManageSprints: false,
+    canAccessAdminPanel: false,
+    canViewOwnDashboard: true
   }
 };
 

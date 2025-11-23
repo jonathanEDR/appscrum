@@ -16,6 +16,7 @@ import {
   Menu,
   X
 } from 'lucide-react';
+import ThemeToggle from '../ThemeToggle';
 
 function ScrumMasterSidebar({ currentView, onViewChange, onLogout, userRole, isOpen, onToggle }) {
   const menuItems = [
@@ -105,39 +106,41 @@ function ScrumMasterSidebar({ currentView, onViewChange, onLogout, userRole, isO
 
       {/* Sidebar principal */}
       <div 
-        className={`fixed left-0 top-0 h-screen w-72 z-50 transform transition-transform duration-300 ease-in-out shadow-galaxy border-r border-white/10 ${
+        className={`fixed left-0 top-0 h-screen w-72 z-50 transform transition-transform duration-300 ease-in-out border-r-2 ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
         style={{
-          background: 'linear-gradient(135deg, #e9d5ff 0%, #ddd6fe 25%, #c4b5fd 50%, #a78bfa 75%, #8b5cf6 100%)'
+          backgroundColor: 'var(--sidebar-bg)',
+          borderColor: 'var(--sidebar-border)',
+          boxShadow: 'var(--sidebar-shadow)'
         }}
       >
-        {/* Header premium con gradiente violeta claro */}
-        <div className="p-8 border-b border-violet-300/30">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-medium"
-                 style={{
-                   background: 'linear-gradient(135deg, #8b5cf6, #a78bfa)'
-                 }}>
-              <Shield className="text-white" size={24} />
+        {/* Header del sidebar con tema */}
+        <div className="p-8 border-b" style={{ borderColor: 'var(--sidebar-border)' }}>
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg bg-gradient-to-br from-purple-600 to-violet-600">
+                <Shield className="text-white" size={24} />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold" style={{ color: 'var(--sidebar-text)' }}>Scrum Master</h2>
+                <p className="text-sm opacity-70" style={{ color: 'var(--sidebar-text)' }}>Panel de control</p>
+              </div>
             </div>
-            <div>
-              <h2 className="text-xl font-bold text-violet-900">Scrum Master</h2>
-              <p className="text-sm text-violet-700">Panel de control</p>
-            </div>
+            <ThemeToggle size="small" showLabel={false} />
           </div>
         </div>
         
         {/* Navegación moderna */}
-        <div className="p-6 space-y-8">
-          <nav className="space-y-6">
+        <div className="p-6 space-y-4 overflow-y-auto" style={{ height: 'calc(100vh - 240px)' }}>
+          <nav className="space-y-4">
             {Object.entries(groupedItems).map(([section, items]) => (
               <div key={section}>
-                <h3 className="text-xs font-semibold uppercase tracking-wider mb-4 px-3" 
-                    style={{ color: '#7c3aed' }}>
+                <h3 className="text-xs font-semibold uppercase tracking-wider mb-2 px-3 opacity-60" 
+                    style={{ color: 'var(--sidebar-text)' }}>
                   {sectionLabels[section]}
                 </h3>
-                <div className="space-y-2">
+                <div className="space-y-1">
                   {items.map((item) => {
                     const Icon = item.icon;
                     const isActive = currentView === item.id;
@@ -145,40 +148,26 @@ function ScrumMasterSidebar({ currentView, onViewChange, onLogout, userRole, isO
                       <button
                         key={item.id}
                         onClick={() => onViewChange(item.id)}
-                        className="sidebar-button w-full group flex items-center justify-between px-4 py-3.5 rounded-xl transition-all duration-300"
+                        className={`sidebar-button w-full group flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                          isActive 
+                            ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg' 
+                            : 'hover:bg-purple-100 dark:hover:bg-gray-800'
+                        }`}
                         style={{
-                          background: isActive 
-                            ? 'linear-gradient(135deg, #8b5cf6, #a78bfa)' 
-                            : 'transparent',
-                          color: isActive ? '#ffffff' : '#581c87',
-                          transform: isActive ? 'scale(1.02)' : 'scale(1)',
-                          boxShadow: isActive ? '0 8px 32px rgba(139, 92, 246, 0.25)' : 'none'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (!isActive) {
-                            e.target.style.background = 'rgba(139, 92, 246, 0.1)';
-                            e.target.style.color = '#6b21a8';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (!isActive) {
-                            e.target.style.background = 'transparent';
-                            e.target.style.color = '#581c87';
-                          }
+                          color: isActive ? '#ffffff' : 'var(--sidebar-text)'
                         }}
                       >
                         <div className="flex items-center gap-4">
                           <div 
-                            className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
-                            style={{
-                              background: isActive 
-                                ? 'rgba(255, 255, 255, 0.2)' 
-                                : 'rgba(139, 92, 246, 0.15)'
-                            }}
+                            className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
+                              isActive 
+                                ? 'bg-white/20' 
+                                : 'bg-purple-100 dark:bg-gray-700'
+                            }`}
                           >
-                            <Icon size={18} className="shrink-0" />
+                            <Icon size={18} className="shrink-0 sidebar-button-text" />
                           </div>
-                          <span className="text-sm font-medium">{item.label}</span>
+                          <span className="text-sm font-medium sidebar-button-text">{item.label}</span>
                         </div>
                         {item.isNew && (
                           <span className="bg-success-100 text-success-800 text-xs font-medium px-2.5 py-1 rounded-full">
@@ -194,25 +183,13 @@ function ScrumMasterSidebar({ currentView, onViewChange, onLogout, userRole, isO
           </nav>
         </div>
         
-        {/* Footer premium */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t border-violet-300/30">
+        {/* Footer */}
+        <div className="absolute bottom-0 left-0 right-0 p-6 border-t" style={{ borderColor: 'var(--sidebar-border)' }}>
           <button
             onClick={onLogout}
-            className="sidebar-button w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 group"
-            style={{ color: '#dc2626' }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(248, 113, 113, 0.15)';
-              e.target.style.color = '#ef4444';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'transparent';
-              e.target.style.color = '#dc2626';
-            }}
+            className="sidebar-button w-full flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-300 group text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
           >
-            <div 
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300"
-              style={{ background: 'rgba(248, 113, 113, 0.15)' }}
-            >
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 bg-red-100 dark:bg-red-950/40">
               <LogOut size={18} />
             </div>
             <span className="text-sm font-medium">Cerrar Sesión</span>
