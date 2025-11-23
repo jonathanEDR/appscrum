@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
+import { useClerk } from '@clerk/clerk-react';
 import { useRole } from '../../context/RoleContext.jsx';
 import { 
   Home, 
@@ -198,7 +199,7 @@ const getRoleTitle = (role) => {
 };
 
 // Componente de navegación lateral
-const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
+const Sidebar = ({ isOpen, onClose, onToggle, role, onLogout }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const navigationItems = getRoleNavigation(role);
@@ -248,19 +249,11 @@ const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
       }
     };
 
-    const handleLogout = () => {
-      // Cerrar sidebar primero
-      onClose();
-      // Aquí deberíamos ejecutar la lógica real de logout
-      // Por ahora, redirigir al usuario para forzar re-autenticación
-      window.location.href = '/sign-in';
-    };
-
     return (
       <ProductOwnerSidebar
         currentView={currentView}
         onViewChange={handleViewChange}
-        onLogout={handleLogout}
+        onLogout={onLogout}
         userRole={role}
         isOpen={isOpen}
         onToggle={onToggle}
@@ -313,19 +306,11 @@ const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
       }
     };
 
-    const handleLogout = () => {
-      // Cerrar sidebar primero
-      onClose();
-      // Aquí deberíamos ejecutar la lógica real de logout
-      // Por ahora, redirigir al usuario para forzar re-autenticación
-      window.location.href = '/sign-in';
-    };
-
     return (
       <ScrumMasterSidebar
         currentView={currentView}
         onViewChange={handleViewChange}
-        onLogout={handleLogout}
+        onLogout={onLogout}
         userRole={role}
         isOpen={isOpen}
         onToggle={onToggle}
@@ -378,19 +363,11 @@ const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
       }
     };
 
-    const handleLogout = () => {
-      // Cerrar sidebar primero
-      onClose();
-      // Aquí deberíamos ejecutar la lógica real de logout
-      // Por ahora, redirigir al usuario para forzar re-autenticación
-      window.location.href = '/sign-in';
-    };
-
     return (
       <DevelopersSidebar
         currentView={currentView}
         onViewChange={handleViewChange}
-        onLogout={handleLogout}
+        onLogout={onLogout}
         userRole={role}
         isOpen={isOpen}
         onToggle={onToggle}
@@ -427,19 +404,11 @@ const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
       }
     };
 
-    const handleLogout = () => {
-      // Cerrar sidebar primero
-      onClose();
-      // Aquí deberíamos ejecutar la lógica real de logout
-      // Por ahora, redirigir al usuario para forzar re-autenticación
-      window.location.href = '/sign-in';
-    };
-
     return (
       <UserSidebar
         currentView={currentView}
         onViewChange={handleViewChange}
-        onLogout={handleLogout}
+        onLogout={onLogout}
         userRole={role}
         isOpen={isOpen}
         onToggle={onToggle}
@@ -486,19 +455,11 @@ const Sidebar = ({ isOpen, onClose, onToggle, role }) => {
       }
     };
 
-    const handleLogout = () => {
-      // Cerrar sidebar primero
-      onClose();
-      // Aquí deberíamos ejecutar la lógica real de logout
-      // Por ahora, redirigir al usuario para forzar re-autenticación
-      window.location.href = '/sign-in';
-    };
-
     return (
       <SuperAdminSidebar
         currentView={currentView}
         onViewChange={handleViewChange}
-        onLogout={handleLogout}
+        onLogout={onLogout}
         userRole={role}
         isOpen={isOpen}
         onToggle={onToggle}
@@ -700,6 +661,22 @@ const RoleBasedLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(true); // Cambiar a true por defecto
   const { role, isLoaded } = useRole();
   const location = useLocation();
+  const navigate = useNavigate();
+  const { signOut } = useClerk();
+
+  // Función de logout centralizada - accesible para todos los sidebars
+  const handleLogout = async () => {
+    try {
+      if (!signOut) {
+        console.error('signOut no está disponible');
+        return;
+      }
+      await signOut();
+      navigate('/sign-in');
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+    }
+  };
 
   if (!isLoaded) {
     return (
@@ -745,6 +722,7 @@ const RoleBasedLayout = () => {
             onClose={() => setSidebarOpen(false)}
             onToggle={() => setSidebarOpen(!sidebarOpen)}
             role={role}
+            onLogout={handleLogout}
           />
           <main className={`product-owner-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
             <Outlet />
@@ -757,6 +735,7 @@ const RoleBasedLayout = () => {
             onClose={() => setSidebarOpen(false)}
             onToggle={() => setSidebarOpen(!sidebarOpen)}
             role={role}
+            onLogout={handleLogout}
           />
           <main className={`scrum-master-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
             <Outlet />
@@ -769,6 +748,7 @@ const RoleBasedLayout = () => {
             onClose={() => setSidebarOpen(false)}
             onToggle={() => setSidebarOpen(!sidebarOpen)}
             role={role}
+            onLogout={handleLogout}
           />
           <main className={`developers-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
             <Outlet />
@@ -781,6 +761,7 @@ const RoleBasedLayout = () => {
             onClose={() => setSidebarOpen(false)}
             onToggle={() => setSidebarOpen(!sidebarOpen)}
             role={role}
+            onLogout={handleLogout}
           />
           <main className={`user-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
             <Outlet />
@@ -793,6 +774,7 @@ const RoleBasedLayout = () => {
             onClose={() => setSidebarOpen(false)}
             onToggle={() => setSidebarOpen(!sidebarOpen)}
             role={role}
+            onLogout={handleLogout}
           />
           <main className={`super-admin-main ${sidebarOpen ? 'sidebar-open' : ''}`}>
             <Outlet />
@@ -806,6 +788,7 @@ const RoleBasedLayout = () => {
             onClose={() => setSidebarOpen(false)}
             onToggle={() => setSidebarOpen(!sidebarOpen)}
             role={role}
+            onLogout={handleLogout}
           />
 
           {/* Contenido principal */}
