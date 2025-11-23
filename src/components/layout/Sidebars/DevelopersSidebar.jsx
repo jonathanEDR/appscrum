@@ -80,7 +80,7 @@ function DevelopersSidebar({ currentView, onViewChange, onLogout, userRole, isOp
         </div>
 
         {/* Navegación moderna */}
-        <div className="p-6 space-y-1 overflow-y-auto" style={{ height: 'calc(100vh - 240px)' }}>
+        <div className="p-4 space-y-1 overflow-y-auto" style={{ height: 'calc(100vh - 240px)' }}>
           <nav className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -89,7 +89,7 @@ function DevelopersSidebar({ currentView, onViewChange, onLogout, userRole, isOp
                 <button
                   key={item.id}
                   onClick={() => onViewChange(item.id)}
-                  className={`sidebar-button w-full group flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                  className={`sidebar-button w-full group flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
                     isActive 
                       ? 'bg-gradient-to-r from-emerald-600 to-green-600 text-white shadow-lg' 
                       : 'hover:bg-emerald-100 dark:hover:bg-gray-800'
@@ -99,13 +99,13 @@ function DevelopersSidebar({ currentView, onViewChange, onLogout, userRole, isOp
                   }}
                 >
                   <div 
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
                       isActive 
                         ? 'bg-white/20' 
                         : 'bg-emerald-100 dark:bg-gray-700'
                     }`}
                   >
-                    <Icon size={18} className="sidebar-button-text" />
+                    <Icon size={16} className="sidebar-button-text" />
                   </div>
                   <span className="font-medium text-sm sidebar-button-text">{item.label}</span>
                 </button>

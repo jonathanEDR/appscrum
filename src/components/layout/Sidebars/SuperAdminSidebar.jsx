@@ -69,34 +69,34 @@ function SuperAdminSidebar({ onLogout, isOpen, onToggle }) {
         }}
       >
         {/* Header premium con colores adaptados */}
-        <div className="p-8 border-b-2" style={{ borderColor: 'var(--sidebar-border)', boxShadow: '0 2px 6px var(--sidebar-shadow, rgba(0, 0, 0, 0.03))' }}>
+        <div className="p-6 border-b-2" style={{ borderColor: 'var(--sidebar-border)', boxShadow: '0 2px 6px var(--sidebar-shadow, rgba(0, 0, 0, 0.03))' }}>
           <div className="mb-2">
             <LogoDisplay 
-              size="medium" 
+              size="small" 
               showText={false}
               iconClassName="bg-gradient-to-br from-purple-600 to-blue-600 dark:from-purple-500 dark:to-blue-500"
             />
-            <div className="mt-3 flex items-center justify-between">
+            <div className="mt-2 flex items-center justify-between">
               <div className="flex-1">
-                <h2 className="text-xl font-bold" style={{ color: 'var(--sidebar-text)' }}>Super Admin</h2>
-                <p className="text-sm" style={{ color: 'var(--sidebar-text-muted)' }}>Control total del sistema</p>
+                <h2 className="text-lg font-bold" style={{ color: 'var(--sidebar-text)' }}>Super Admin</h2>
+                <p className="text-xs" style={{ color: 'var(--sidebar-text-muted)' }}>Control total del sistema</p>
               </div>
               {/* Theme Toggle al lado del título */}
-              <div className="ml-3">
+              <div className="ml-2">
                 <ThemeToggle size="small" showLabel={false} />
               </div>
             </div>
           </div>
-          <div className="mt-3">
-            <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-500 dark:to-blue-500 text-white shadow-lg">
+          <div className="mt-2">
+            <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-500 dark:to-blue-500 text-white shadow-lg">
               Autoridad Máxima
             </span>
           </div>
         </div>
         
         {/* Navegación moderna */}
-        <div className="p-6">
-          <nav className="space-y-3">
+        <div className="p-4">
+          <nav className="space-y-1.5">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const active = isActive(item.path);
@@ -104,7 +104,7 @@ function SuperAdminSidebar({ onLogout, isOpen, onToggle }) {
                 <button
                   key={item.id}
                   onClick={() => navigate(item.path)}
-                  className={`sidebar-button w-full group flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 ${
+                  className={`sidebar-button w-full group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 ${
                     active 
                       ? 'bg-gradient-to-r from-purple-600 to-blue-600 dark:from-purple-500 dark:to-blue-500 shadow-lg scale-105 sidebar-button-text-active border-2 border-purple-400 dark:border-purple-300' 
                       : 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 sidebar-button-text border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
@@ -114,15 +114,15 @@ function SuperAdminSidebar({ onLogout, isOpen, onToggle }) {
                   }}
                 >
                   <div 
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
                       active 
                         ? 'bg-white/20' 
                         : 'bg-gray-200 dark:bg-gray-700'
                     }`}
                   >
-                    <Icon size={20} className={active ? 'sidebar-button-text-active' : 'sidebar-button-text'} />
+                    <Icon size={18} className={active ? 'sidebar-button-text-active' : 'sidebar-button-text'} />
                   </div>
-                  <span className="font-medium">{item.label}</span>
+                  <span className="text-sm font-medium">{item.label}</span>
                 </button>
               );
             })}
@@ -130,15 +130,15 @@ function SuperAdminSidebar({ onLogout, isOpen, onToggle }) {
         </div>
         
         {/* Footer premium */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t-2" style={{ borderColor: 'var(--sidebar-border)', backgroundColor: 'var(--sidebar-bg)', boxShadow: '0 -2px 6px var(--sidebar-shadow, rgba(0, 0, 0, 0.03))' }}>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t-2" style={{ borderColor: 'var(--sidebar-border)', backgroundColor: 'var(--sidebar-bg)', boxShadow: '0 -2px 6px var(--sidebar-shadow, rgba(0, 0, 0, 0.03))' }}>
           <button
             onClick={onLogout}
-            className="sidebar-button w-full flex items-center gap-4 px-4 py-3.5 rounded-xl transition-all duration-300 group text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 border-2 border-transparent hover:border-red-300 dark:hover:border-red-700"
+            className="sidebar-button w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 border-2 border-transparent hover:border-red-300 dark:hover:border-red-700"
           >
             <div 
-              className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 bg-red-100 dark:bg-red-950/50 group-hover:bg-red-200 dark:group-hover:bg-red-900/50"
+              className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 bg-red-100 dark:bg-red-950/50 group-hover:bg-red-200 dark:group-hover:bg-red-900/50"
             >
-              <LogOut size={18} />
+              <LogOut size={16} />
             </div>
             <span className="text-sm font-medium">Cerrar Sesión</span>
           </button>

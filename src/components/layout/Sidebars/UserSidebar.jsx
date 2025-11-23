@@ -1,9 +1,7 @@
 import React from 'react';
-import { useClerk } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   Home, 
-  FileText, 
   UserCog, 
   LogOut, 
   Activity,
@@ -11,19 +9,11 @@ import {
   X
 } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
+import LogoDisplay from '../LogoDisplay';
 
-function UserSidebar({ currentView, onViewChange, userRole, isOpen, onToggle }) {
-  const { signOut } = useClerk();
+function UserSidebar({ currentView, onViewChange, onLogout, userRole, isOpen, onToggle }) {
   const navigate = useNavigate();
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      navigate('/sign-in');
-    } catch (error) {
-      console.error('Error al cerrar sesión:', error);
-    }
-  };
   const menuItems = [
     { id: 'dashboard', icon: Home, label: 'Dashboard' },
     { id: 'profile', icon: UserCog, label: 'Mi Perfil' },
@@ -85,7 +75,7 @@ function UserSidebar({ currentView, onViewChange, userRole, isOpen, onToggle }) 
         </div>
         
         {/* Navegación moderna */}
-        <div className="p-6 space-y-1 overflow-y-auto" style={{ height: 'calc(100vh - 240px)' }}>
+        <div className="p-4 space-y-1 overflow-y-auto" style={{ height: 'calc(100vh - 240px)' }}>
           <nav className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
@@ -94,7 +84,7 @@ function UserSidebar({ currentView, onViewChange, userRole, isOpen, onToggle }) 
                 <button
                   key={item.id}
                   onClick={() => onViewChange(item.id)}
-                  className={`sidebar-button w-full group flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                  className={`sidebar-button w-full group flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 ${
                     isActive 
                       ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg' 
                       : 'hover:bg-blue-100 dark:hover:bg-gray-800'
@@ -104,13 +94,13 @@ function UserSidebar({ currentView, onViewChange, userRole, isOpen, onToggle }) 
                   }}
                 >
                   <div 
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
                       isActive 
                         ? 'bg-white/20' 
                         : 'bg-blue-100 dark:bg-gray-700'
                     }`}
                   >
-                    <Icon size={18} className="sidebar-button-text" />
+                    <Icon size={16} className="sidebar-button-text" />
                   </div>
                   <span className="font-medium text-sm sidebar-button-text">{item.label}</span>
                 </button>
@@ -120,13 +110,13 @@ function UserSidebar({ currentView, onViewChange, userRole, isOpen, onToggle }) 
         </div>
         
         {/* Footer */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 border-t" style={{ borderColor: 'var(--sidebar-border)' }}>
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t-2" style={{ borderColor: 'var(--sidebar-border)', backgroundColor: 'var(--sidebar-bg)', boxShadow: '0 -2px 6px var(--sidebar-shadow, rgba(0, 0, 0, 0.03))' }}>
           <button
-            onClick={handleLogout}
-            className="sidebar-button w-full flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-300 group text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+            onClick={onLogout}
+            className="sidebar-button w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-300 group text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/50 border-2 border-transparent hover:border-red-300 dark:hover:border-red-700"
           >
-            <div className="w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 bg-red-100 dark:bg-red-950/40">
-              <LogOut size={18} />
+            <div className="w-7 h-7 rounded-lg flex items-center justify-center transition-all duration-300 bg-red-100 dark:bg-red-950/50 group-hover:bg-red-200 dark:group-hover:bg-red-900/50">
+              <LogOut size={16} />
             </div>
             <span className="text-sm font-medium">Cerrar Sesión</span>
           </button>

@@ -132,15 +132,15 @@ function ScrumMasterSidebar({ currentView, onViewChange, onLogout, userRole, isO
         </div>
         
         {/* Navegación moderna */}
-        <div className="p-6 space-y-4 overflow-y-auto" style={{ height: 'calc(100vh - 240px)' }}>
-          <nav className="space-y-4">
+        <div className="p-4 space-y-3 overflow-y-auto" style={{ height: 'calc(100vh - 240px)' }}>
+          <nav className="space-y-3">
             {Object.entries(groupedItems).map(([section, items]) => (
               <div key={section}>
-                <h3 className="text-xs font-semibold uppercase tracking-wider mb-2 px-3 opacity-60" 
+                <h3 className="text-[10px] font-semibold uppercase tracking-wider mb-1.5 px-2 opacity-60" 
                     style={{ color: 'var(--sidebar-text)' }}>
                   {sectionLabels[section]}
                 </h3>
-                <div className="space-y-1">
+                <div className="space-y-0.5">
                   {items.map((item) => {
                     const Icon = item.icon;
                     const isActive = currentView === item.id;
@@ -148,7 +148,7 @@ function ScrumMasterSidebar({ currentView, onViewChange, onLogout, userRole, isO
                       <button
                         key={item.id}
                         onClick={() => onViewChange(item.id)}
-                        className={`sidebar-button w-full group flex items-center justify-between px-4 py-2.5 rounded-xl transition-all duration-300 ${
+                        className={`sidebar-button w-full group flex items-center justify-between px-3 py-2 rounded-xl transition-all duration-300 ${
                           isActive 
                             ? 'bg-gradient-to-r from-purple-600 to-violet-600 text-white shadow-lg' 
                             : 'hover:bg-purple-100 dark:hover:bg-gray-800'
@@ -157,7 +157,7 @@ function ScrumMasterSidebar({ currentView, onViewChange, onLogout, userRole, isO
                           color: isActive ? '#ffffff' : 'var(--sidebar-text)'
                         }}
                       >
-                        <div className="flex items-center gap-4">
+                        <div className="flex items-center gap-3">
                           <div 
                             className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
                               isActive 
@@ -165,12 +165,12 @@ function ScrumMasterSidebar({ currentView, onViewChange, onLogout, userRole, isO
                                 : 'bg-purple-100 dark:bg-gray-700'
                             }`}
                           >
-                            <Icon size={18} className="shrink-0 sidebar-button-text" />
+                            <Icon size={16} className="shrink-0 sidebar-button-text" />
                           </div>
                           <span className="text-sm font-medium sidebar-button-text">{item.label}</span>
                         </div>
                         {item.isNew && (
-                          <span className="bg-success-100 text-success-800 text-xs font-medium px-2.5 py-1 rounded-full">
+                          <span className="bg-success-100 text-success-800 text-[10px] font-medium px-2 py-0.5 rounded-full">
                             Nuevo
                           </span>
                         )}

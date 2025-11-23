@@ -76,8 +76,8 @@ function ProductOwnerSidebar({ currentView, onViewChange, onLogout, userRole, is
         </div>
         
         {/* Navegación moderna */}
-        <div className="p-6">
-          <nav className="space-y-3">
+        <div className="p-4">
+          <nav className="space-y-1">
             {menuItems.map((item) => {
               const Icon = item.icon;
               const isActive = currentView === item.id;
@@ -85,25 +85,22 @@ function ProductOwnerSidebar({ currentView, onViewChange, onLogout, userRole, is
                 <button
                   key={item.id}
                   onClick={() => onViewChange(item.id)}
-                  className={`sidebar-button w-full group flex items-center gap-4 px-4 py-4 rounded-xl transition-all duration-300 ${
+                  className={`sidebar-button w-full group flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-300 ${
                     isActive 
-                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-500 dark:to-cyan-500 shadow-lg scale-105 sidebar-button-text-active border-2 border-blue-400 dark:border-blue-300' 
-                      : 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 sidebar-button-text border-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600'
+                      ? 'bg-gradient-to-r from-blue-600 to-cyan-600 dark:from-blue-500 dark:to-cyan-500 shadow-lg sidebar-button-text-active' 
+                      : 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-800 sidebar-button-text'
                   }`}
-                  style={{
-                    transform: isActive ? 'scale(1.02)' : 'scale(1)'
-                  }}
                 >
                   <div 
-                    className={`w-10 h-10 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                    className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
                       isActive 
                         ? 'bg-white/20' 
                         : 'bg-gray-200 dark:bg-gray-700'
                     }`}
                   >
-                    <Icon size={20} className={isActive ? 'sidebar-button-text-active' : 'sidebar-button-text'} />
+                    <Icon size={18} className={isActive ? 'sidebar-button-text-active' : 'sidebar-button-text'} />
                   </div>
-                  <span className="font-medium">{item.label}</span>
+                  <span className="font-medium text-sm">{item.label}</span>
                 </button>
               );
             })}

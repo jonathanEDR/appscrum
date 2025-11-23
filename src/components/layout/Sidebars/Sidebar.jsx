@@ -63,7 +63,7 @@ function Sidebar({ currentView, onViewChange, onLogout, isOpen, onToggle }) {
           <ThemeToggle size="small" showLabel={false} />
         </div>
 
-        <h2 className="text-sm font-medium opacity-60 mb-4 uppercase tracking-wide" style={{ color: 'var(--sidebar-text)' }}>
+        <h2 className="text-xs font-medium opacity-60 mb-3 uppercase tracking-wide" style={{ color: 'var(--sidebar-text)' }}>
           PANEL DE USUARIO
         </h2>
         <nav className="space-y-1">
@@ -74,7 +74,7 @@ function Sidebar({ currentView, onViewChange, onLogout, isOpen, onToggle }) {
               <button
                 key={item.id}
                 onClick={() => onViewChange(item.id)}
-                className={`w-full flex items-center gap-4 px-4 py-2.5 rounded-xl transition-all duration-300 group ${
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-xl transition-all duration-300 group ${
                   isActive
                     ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg'
                     : 'hover:bg-indigo-100 dark:hover:bg-gray-800'
@@ -83,14 +83,14 @@ function Sidebar({ currentView, onViewChange, onLogout, isOpen, onToggle }) {
                   color: isActive ? '#ffffff' : 'var(--sidebar-text)'
                 }}
               >
-                <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all duration-300 ${
+                <div className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-300 ${
                   isActive
                     ? 'bg-white/20'
                     : 'bg-indigo-100 dark:bg-gray-700'
                 }`}>
-                  <Icon size={18} className="sidebar-button-text" />
+                  <Icon size={16} className="sidebar-button-text" />
                 </div>
-                <span className="font-medium sidebar-button-text">{item.label}</span>
+                <span className="font-medium text-sm sidebar-button-text">{item.label}</span>
               </button>
             );
           })}
