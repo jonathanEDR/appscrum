@@ -1,8 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import config from '../../config/config';
 import AssignStoryModal from './AssignStoryModal';
 import SprintStoriesPanel from './SprintStoriesPanel';
+// ✅ OPTIMIZADO: Importar hooks con caché
+import { useProducts } from '../../hooks/useProducts';
+import { useUsers } from '../../hooks/useUsers';
+import { useSprints } from '../../hooks/useSprints';
 import { 
   Target, 
   BarChart3, 
@@ -29,15 +33,17 @@ import {
 const SprintPlanning = () => {
   const { getToken } = useAuth();
   
-  // Estados
+  // ✅ OPTIMIZADO: Usar hooks con caché en lugar de estados locales
+  const { products: productos, loading: loadingProducts } = useProducts();
+  const { users: teamMembers, loading: loadingUsers } = useUsers();
+  const { sprints: allSprints, loading: loadingSprints } = useSprints();
+  
+  // Estados locales solo para UI
   const [availableItems, setAvailableItems] = useState([]);
-  const [sprints, setSprints] = useState([]);
   const [selectedSprint, setSelectedSprint] = useState(null);
   const [sprintItems, setSprintItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const [productos, setProductos] = useState([]);
-  const [teamMembers, setTeamMembers] = useState([]);
   const [showAssignModal, setShowAssignModal] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState(''); // Filtro por producto
   
@@ -50,6 +56,17 @@ const SprintPlanning = () => {
     media: false,
     baja: false
   });
+
+  // ✅ OPTIMIZADO: Filtrar sprints disponibles para planificación localmente con useMemo
+  // Mostrar sprints en estado 'planificado' o 'activo' (excluyendo 'completado' y 'cancelado')
+  const sprints = useMemo(() => {
+    return allSprints.filter(sprint => {
+      const estado = sprint.estado || sprint.status;
+      const isAvailable = estado === 'planificado' || estado === 'activo';
+      const matchProduct = !selectedProduct || sprint.producto?._id === selectedProduct || sprint.producto === selectedProduct;
+      return isAvailable && matchProduct;
+    });
+  }, [allSprints, selectedProduct]);
 
   // Configuración de prioridades con colores y iconos
   const prioridadConfig = {
@@ -95,18 +112,8 @@ const SprintPlanning = () => {
     cargarDatosIniciales();
   }, []);
 
-  // Recargar sprints cuando cambie el producto seleccionado
-  useEffect(() => {
-    if (selectedProduct !== '') {
-      const reloadSprints = async () => {
-        const token = await getToken();
-        if (token) {
-          await fetchSprints(token);
-        }
-      };
-      reloadSprints();
-    }
-  }, [selectedProduct]);
+  // ✅ OPTIMIZADO: Ya no necesitamos recargar sprints cuando cambie producto
+  // El filtrado se hace localmente con useMemo
 
   const cargarDatosIniciales = async () => {
     try {
@@ -118,12 +125,9 @@ const SprintPlanning = () => {
         return;
       }
 
-      await Promise.all([
-        fetchAvailableItems(token),
-        fetchSprints(token),
-        fetchProductos(token),
-        fetchTeamMembers(token) // Agregar carga de miembros del equipo
-      ]);
+      // ✅ OPTIMIZADO: Solo cargar availableItems
+      // productos, teamMembers y sprints vienen de los hooks con caché
+      await fetchAvailableItems(token);
       
     } catch (error) {
       console.error('Error cargando datos:', error);
@@ -133,56 +137,17 @@ const SprintPlanning = () => {
     }
   };
 
-  // Nueva función para obtener miembros del equipo
-  const fetchTeamMembers = async (token) => {
-    try {
-      const API_URL = import.meta.env.VITE_API_URL;
-      
-      const response = await fetch(`${API_URL}/team/members`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const teamData = await response.json();
-        const members = (teamData.members || teamData || []).map(member => ({
-          _id: member._id,
-          name: member.user ? 
-            `${member.user.firstName || ''} ${member.user.lastName || ''}`.trim() || 
-            member.user.nombre_negocio || 
-            member.user.email : 
-            'Usuario Desconocido',
-          email: member.user?.email || '',
-          role: member.role || 'developer',
-          skills: member.skills || [],
-          availability: member.availability || 100,
-          workload: {
-            currentStoryPoints: member.workload?.currentStoryPoints || 0,
-            maxStoryPoints: member.workload?.maxStoryPoints || 24
-          }
-        }));
-        
-        setTeamMembers(members);
-        console.log('Miembros del equipo cargados:', members.length);
-      } else {
-        console.warn('No se pudieron cargar los miembros del equipo');
-        setTeamMembers([]);
-      }
-    } catch (error) {
-      console.error('Error fetching team members:', error);
-      setTeamMembers([]);
-    }
-  };
+  // ✅ ELIMINADAS: fetchTeamMembers, fetchSprints y fetchProductos
+  // Estos datos ahora vienen de los hooks useUsers, useSprints y useProducts con caché
 
-  // Obtener items disponibles para planning
+  // ✅ SEMI-OPTIMIZADO: Obtener items disponibles para planning
+  // TODO: En el futuro, reemplazar con useBacklogItems hook
   const fetchAvailableItems = async (token) => {
     try {
+      // ✅ Simplificado: Solo obtener items pendientes sin filtros
+      // El filtrado por producto/prioridad se hace localmente
       const params = new URLSearchParams();
       params.append('estado', 'pendiente');
-      if (filtroProducto) params.append('producto', filtroProducto);
-      if (filtroPrioridad) params.append('prioridad', filtroPrioridad);
       
       const response = await fetch(`${config.API_URL}/backlog?${params.toString()}`, {
         headers: {
@@ -205,72 +170,20 @@ const SprintPlanning = () => {
     }
   };
 
-  // Obtener sprints disponibles
-  const fetchSprints = async (token) => {
-    try {
-      const params = new URLSearchParams();
-      // Mostrar sprints activos y planificados para planning
-      params.append('estado', 'activo'); // Solo sprints activos para planeación
-      if (selectedProduct) {
-        params.append('producto', selectedProduct);
-      }
-      
-      console.log('🔍 Solicitando sprints con parámetros:', params.toString());
-      
-      const response = await fetch(`${config.API_URL}/sprints?${params.toString()}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+  // ✅ OPTIMIZADO: Filtrar items localmente con useMemo
+  const filteredAvailableItems = useMemo(() => {
+    return availableItems.filter(item => {
+      const matchProduct = !filtroProducto || 
+        item.producto?._id === filtroProducto || 
+        item.producto === filtroProducto;
+      const matchPriority = !filtroPrioridad || item.prioridad === filtroPrioridad;
+      return matchProduct && matchPriority;
+    });
+  }, [availableItems, filtroProducto, filtroPrioridad]);
 
-      console.log('📡 Respuesta del servidor:', response.status, response.statusText);
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log('📊 Datos recibidos:', data);
-        const sprintsDisponibles = data.sprints || [];
-        setSprints(sprintsDisponibles);
-        console.log('✅ Sprints cargados:', sprintsDisponibles.length);
-        
-        // Mostrar los estados de los sprints para debug
-        sprintsDisponibles.forEach(sprint => {
-          console.log(`📝 Sprint: ${sprint.nombre} - Estado: ${sprint.estado}`);
-        });
-      } else {
-        const errorText = await response.text();
-        console.error('❌ Error del servidor:', errorText);
-        throw new Error(`Error al obtener sprints: ${response.status} ${response.statusText}`);
-      }
-    } catch (error) {
-      console.error('Error fetching sprints:', error);
-      setError('Error al cargar sprints: ' + error.message);
-      setSprints([]);
-    }
-  };
-
-  // Obtener productos
-  const fetchProductos = async (token) => {
-    try {
-      const response = await fetch(`${config.API_URL}/products`, { // CORREGIDO: /productos -> /products
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setProductos(data.products || []); // CORREGIDO: productos -> products
-      } else {
-        throw new Error('Error al obtener productos');
-      }
-    } catch (error) {
-      console.error('Error fetching productos:', error);
-      setError('Error al cargar productos: ' + error.message);
-      setProductos([]);
-    }
-  };
+  // ✅ ELIMINADAS: fetchSprints y fetchProductos
+  // sprints viene de useSprints hook con filtrado local (useMemo)
+  // productos viene de useProducts hook con caché
 
   // Cargar items del sprint seleccionado
   const loadSprintItems = async (sprintId) => {
@@ -362,9 +275,8 @@ const SprintPlanning = () => {
     setSelectedSprint(null);
     setSprintItems([]);
     
-    // Recargar sprints con el nuevo filtro
-    const token = await getToken();
-    await fetchSprints(token);
+    // ✅ OPTIMIZADO: Ya no necesitamos recargar sprints
+    // El filtrado por producto se hace localmente con useMemo
   };
 
   // Manejar apertura del modal con debug
@@ -374,7 +286,7 @@ const SprintPlanning = () => {
     setShowAssignModal(true);
   };
 
-  if (loading) {
+  if (loading || loadingProducts || loadingUsers || loadingSprints) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -383,8 +295,8 @@ const SprintPlanning = () => {
     );
   }
 
-  const itemsGrouped = groupItemsByPriority(availableItems);
-  const totalStoryPoints = availableItems.reduce((sum, item) => sum + (item.puntos_historia || 0), 0);
+  const itemsGrouped = groupItemsByPriority(filteredAvailableItems);
+  const totalStoryPoints = filteredAvailableItems.reduce((sum, item) => sum + (item.puntos_historia || 0), 0);
   const sprintStoryPoints = sprintItems.reduce((sum, item) => sum + (item.puntos_historia || 0), 0);
 
   return (
@@ -421,7 +333,7 @@ const SprintPlanning = () => {
           {/* Resumen de métricas */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div className="bg-white p-4 rounded-lg border shadow-sm">
-              <div className="text-2xl font-bold text-blue-600">{availableItems.length}</div>
+              <div className="text-2xl font-bold text-blue-600">{filteredAvailableItems.length}</div>
               <div className="text-sm text-gray-600">Items Disponibles</div>
             </div>
             <div className="bg-white p-4 rounded-lg border shadow-sm">
@@ -576,8 +488,10 @@ const SprintPlanning = () => {
                   
                   <div className="space-y-2">
                     {teamMembers.slice(0, 5).map(member => {
-                      const workloadPercentage = member.workload.maxStoryPoints > 0 
-                        ? Math.round((member.workload.currentStoryPoints / member.workload.maxStoryPoints) * 100)
+                      // Validación defensiva para workload
+                      const workload = member.workload || { currentStoryPoints: 0, maxStoryPoints: 0 };
+                      const workloadPercentage = workload.maxStoryPoints > 0 
+                        ? Math.round((workload.currentStoryPoints / workload.maxStoryPoints) * 100)
                         : 0;
                       
                       const getWorkloadColor = (percentage) => {
@@ -587,14 +501,14 @@ const SprintPlanning = () => {
                       };
                       
                       return (
-                        <div key={member._id} className="flex items-center justify-between text-sm">
+                        <div key={member._id || member.id} className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs font-medium">
-                              {member.name.charAt(0).toUpperCase()}
+                              {(member.nombre_negocio || member.name || member.email || '?').charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <div className="font-medium text-gray-900">{member.name}</div>
-                              <div className="text-xs text-gray-500">{member.role}</div>
+                              <div className="font-medium text-gray-900">{member.nombre_negocio || member.name || member.email || 'Usuario'}</div>
+                              <div className="text-xs text-gray-500">{member.role || 'developer'}</div>
                             </div>
                           </div>
                           <div className="text-right">
@@ -602,7 +516,7 @@ const SprintPlanning = () => {
                               {workloadPercentage}%
                             </div>
                             <div className="text-xs text-gray-500">
-                              {member.workload.currentStoryPoints}/{member.workload.maxStoryPoints} SP
+                              {workload.currentStoryPoints}/{workload.maxStoryPoints} SP
                             </div>
                           </div>
                         </div>
@@ -623,7 +537,7 @@ const SprintPlanning = () => {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold text-gray-900">Product Backlog</h3>
               
-              {availableItems.length === 0 ? (
+              {filteredAvailableItems.length === 0 ? (
                 <div className="bg-white p-6 rounded-lg border text-center">
                   <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                   <p className="text-gray-500">No hay items en el backlog</p>

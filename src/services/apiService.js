@@ -231,6 +231,25 @@ class ApiService {
     return this.put(`/ceremonies/${ceremonyId}`, ceremonyData, getToken);
   }
 
+  // Gestión de impedimentos
+  async getImpediments(getToken, filters = {}) {
+    const params = new URLSearchParams(filters);
+    const endpoint = params.toString() ? `/impediments?${params}` : '/impediments';
+    return this.get(endpoint, getToken);
+  }
+
+  async createImpediment(impedimentData, getToken) {
+    return this.post('/impediments', impedimentData, getToken);
+  }
+
+  async updateImpediment(impedimentId, impedimentData, getToken) {
+    return this.put(`/impediments/${impedimentId}`, impedimentData, getToken);
+  }
+
+  async deleteImpediment(impedimentId, getToken) {
+    return this.delete(`/impediments/${impedimentId}`, getToken);
+  }
+
   // Método para obtener miembros del equipo con fallback a datos mock
   async getTeamMembersWithFallback(getToken) {
     try {

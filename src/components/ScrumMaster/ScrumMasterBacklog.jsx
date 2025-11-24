@@ -1,7 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import config from '../../config/config';
 import ModalBacklogItem from './modalsSM/ModalBacklogItemSM';
+// ✅ OPTIMIZADO: Importar hooks con caché
+import { useProducts } from '../../hooks/useProducts';
+import { useUsers } from '../../hooks/useUsers';
+import { useSprints } from '../../hooks/useSprints';
+import { useScrumMasterData } from '../../hooks/useScrumMasterData';
 import { 
   Plus, 
   Search, 
@@ -21,10 +26,15 @@ import {
 
 const ScrumMasterBacklog = () => {
   const { getToken } = useAuth();
+  
+  // ✅ OPTIMIZADO: Usar hooks con caché en lugar de estados locales
+  const { products: productos, loading: loadingProducts } = useProducts();
+  const { users: usuariosRaw, loading: loadingUsers } = useUsers();
+  const { sprints: allSprints, loading: loadingSprints } = useSprints();
+  const { technicalItems, loading: loadingTechnical, refresh: refreshScrumMaster } = useScrumMasterData();
+  
+  // Estados locales solo para UI
   const [items, setItems] = useState([]);
-  const [productos, setProductos] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);
-  const [sprints, setSprints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -35,6 +45,21 @@ const ScrumMasterBacklog = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [successMessage, setSuccessMessage] = useState('');
+
+  // ✅ OPTIMIZADO: Mapear usuarios de hook a formato compatible
+  const usuarios = useMemo(() => {
+    return usuariosRaw.map(user => ({
+      _id: user._id,
+      nombre_negocio: user.firstName && user.lastName 
+        ? `${user.firstName} ${user.lastName}` 
+        : user.nombre_negocio || user.email || 'Usuario',
+      email: user.email || '',
+      role: user.role || 'developer'
+    }));
+  }, [usuariosRaw]);
+
+  // ✅ OPTIMIZADO: Usar sprints del hook directamente
+  const sprints = allSprints;
 
   // Configuración de colores por tipo
   const tipoColors = {
@@ -67,15 +92,19 @@ const ScrumMasterBacklog = () => {
     fetchInitialData();
   }, []);
 
+  // ✅ OPTIMIZADO: Sincronizar technicalItems del hook con items locales
+  useEffect(() => {
+    if (technicalItems && technicalItems.length > 0) {
+      setItems(technicalItems);
+    }
+  }, [technicalItems]);
+
   const fetchInitialData = async () => {
     try {
       setLoading(true);
-      await Promise.all([
-        fetchItems(),
-        fetchProductos(),
-        fetchUsuarios(),
-        fetchSprints()
-      ]);
+      // ✅ OPTIMIZADO: Solo cargar items técnicos directamente
+      // productos, usuarios y sprints vienen de los hooks con caché
+      await fetchItems();
     } catch (error) {
       console.error('Error fetching initial data:', error);
       setError('Error al cargar datos iniciales');
@@ -115,72 +144,8 @@ const ScrumMasterBacklog = () => {
     }
   };
 
-  const fetchProductos = async () => {
-    try {
-      const token = await getToken();
-      const response = await fetch(`${config.API_URL}/products`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setProductos(data.products || data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching productos:', error);
-    }
-  };
-
-  const fetchUsuarios = async () => {
-    try {
-      const token = await getToken();
-      const response = await fetch(`${config.API_URL}/team/members`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const members = data.members || data || [];
-        // Mapear a formato compatible
-        const usuariosFormateados = members.map(member => ({
-          _id: member._id,
-          nombre_negocio: member.user?.firstName && member.user?.lastName 
-            ? `${member.user.firstName} ${member.user.lastName}` 
-            : member.user?.nombre_negocio || member.user?.email || 'Usuario',
-          email: member.user?.email || '',
-          role: member.role || 'developer'
-        }));
-        setUsuarios(usuariosFormateados);
-      }
-    } catch (error) {
-      console.error('Error fetching usuarios:', error);
-    }
-  };
-
-  const fetchSprints = async () => {
-    try {
-      const token = await getToken();
-      const response = await fetch(`${config.API_URL}/sprints`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        setSprints(data.sprints || data || []);
-      }
-    } catch (error) {
-      console.error('Error fetching sprints:', error);
-    }
-  };
+  // ✅ ELIMINADAS: fetchProductos, fetchUsuarios y fetchSprints
+  // Estos datos ahora vienen de los hooks useProducts, useUsers y useSprints con caché
 
   const handleCreateItem = () => {
     setEditingItem(null);
@@ -204,19 +169,21 @@ const ScrumMasterBacklog = () => {
     handleModalClose();
   };
 
-  // Filtrar items
-  const filteredItems = items.filter(item => {
-    const matchesSearch = !searchTerm || 
-      item.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.descripcion.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesProducto = !filtroProducto || item.producto?._id === filtroProducto;
-    const matchesEstado = !filtroEstado || item.estado === filtroEstado;
-    const matchesPrioridad = !filtroPrioridad || item.prioridad === filtroPrioridad;
-    const matchesTipo = !filtroTipo || item.tipo === filtroTipo;
+  // ✅ OPTIMIZADO: Filtrar items localmente con useMemo
+  const filteredItems = useMemo(() => {
+    return items.filter(item => {
+      const matchesSearch = !searchTerm || 
+        item.titulo?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.descripcion?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesProducto = !filtroProducto || item.producto?._id === filtroProducto;
+      const matchesEstado = !filtroEstado || item.estado === filtroEstado;
+      const matchesPrioridad = !filtroPrioridad || item.prioridad === filtroPrioridad;
+      const matchesTipo = !filtroTipo || item.tipo === filtroTipo;
 
-    return matchesSearch && matchesProducto && matchesEstado && matchesPrioridad && matchesTipo;
-  });
+      return matchesSearch && matchesProducto && matchesEstado && matchesPrioridad && matchesTipo;
+    });
+  }, [items, searchTerm, filtroProducto, filtroEstado, filtroPrioridad, filtroTipo]);
 
   const clearFilters = () => {
     setSearchTerm('');

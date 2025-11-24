@@ -20,15 +20,8 @@ export const useSprints = (productId = null) => {
       setLoading(true);
       setError(null);
 
-      // Si no hay productId, retornar array vacío
-      if (!prodId) {
-        setSprints([]);
-        setLoading(false);
-        return [];
-      }
-
-      // Clave de caché específica por producto
-      const cacheKey = `sprints:${prodId}`;
+      // Clave de caché: si hay producto específico, usar esa clave; sino, usar clave general
+      const cacheKey = prodId ? `sprints:${prodId}` : 'sprints:all';
       
       // 1. Verificar caché primero
       const cached = getCachedData(cacheKey);
@@ -39,7 +32,9 @@ export const useSprints = (productId = null) => {
       }
 
       // 2. Si no hay caché, hacer petición a la API
-      const data = await apiService.get(`/sprints?producto=${prodId}`, getToken);
+      // Si hay productId, filtrar por producto; sino, obtener todos
+      const endpoint = prodId ? `/sprints?producto=${prodId}` : '/sprints';
+      const data = await apiService.get(endpoint, getToken);
       const sprintList = data.sprints || [];
       
       setSprints(sprintList);
@@ -63,9 +58,8 @@ export const useSprints = (productId = null) => {
 
   // Función para refrescar manualmente
   const refetch = async () => {
-    if (productId) {
-      invalidateCache(`sprints:${productId}`);
-    }
+    const cacheKey = productId ? `sprints:${productId}` : 'sprints:all';
+    invalidateCache(cacheKey);
     return await loadSprints(productId);
   };
 

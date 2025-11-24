@@ -13,51 +13,9 @@ import {
   CheckCircle,
   Target,
   MessageSquare,
-  BarChart3
+  BarChart3,
+  AlertCircle
 } from 'lucide-react';
-
-// Datos mock para ceremonias
-const mockCeremonies = [
-  {
-    id: 1,
-    type: 'sprint_planning',
-    title: 'Sprint Planning - Sprint 23',
-    date: '2025-01-06',
-    time: '09:00',
-    duration: 120,
-    status: 'scheduled',
-    participants: ['Ana García', 'Carlos López', 'María Rodríguez', 'David Chen'],
-    notes: '',
-    goals: [],
-    blockers: []
-  },
-  {
-    id: 2,
-    type: 'daily_standup',
-    title: 'Daily Standup',
-    date: '2025-01-05',
-    time: '09:00',
-    duration: 15,
-    status: 'completed',
-    participants: ['Ana García', 'Carlos López', 'María Rodríguez'],
-    notes: 'Revisión de progreso diario. Carlos reportó bloqueo con API externa.',
-    goals: [],
-    blockers: ['Dependencia con API de pagos']
-  },
-  {
-    id: 3,
-    type: 'sprint_review',
-    title: 'Sprint Review - Sprint 22',
-    date: '2025-01-03',
-    time: '14:00',
-    duration: 60,
-    status: 'completed',
-    participants: ['Ana García', 'Carlos López', 'María Rodríguez', 'David Chen', 'Product Owner'],
-    notes: 'Demostración de funcionalidades completadas. Feedback positivo del PO.',
-    goals: ['Mostrar nueva funcionalidad de reportes', 'Validar criterios de aceptación'],
-    blockers: []
-  }
-];
 
 const CeremonyCard = ({ ceremony, onEdit, onStart, onComplete }) => {
   const getCeremonyIcon = (type) => {
@@ -122,7 +80,7 @@ const CeremonyCard = ({ ceremony, onEdit, onStart, onComplete }) => {
           </div>
           <div className="flex items-center gap-1">
             <Users className="h-4 w-4" />
-            <span>{ceremony.participants.length} participantes</span>
+            <span>{ceremony.participants?.length || 0} participantes</span>
           </div>
         </div>
 
@@ -132,7 +90,7 @@ const CeremonyCard = ({ ceremony, onEdit, onStart, onComplete }) => {
           </div>
         )}
 
-        {ceremony.blockers.length > 0 && (
+        {ceremony.blockers && ceremony.blockers.length > 0 && (
           <div className="mb-4">
             <h4 className="text-sm font-medium text-red-700 mb-2">Bloqueos identificados:</h4>
             <ul className="text-sm text-red-600">
@@ -181,11 +139,52 @@ const CeremonyCard = ({ ceremony, onEdit, onStart, onComplete }) => {
 };
 
 const Ceremonies = () => {
-  const [ceremonies, setCeremonies] = useState(mockCeremonies);
+  const [ceremonies, setCeremonies] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCeremony, setEditingCeremony] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { getToken } = useAuth();
+
+  // Cargar ceremonias desde el backend
+  useEffect(() => {
+    loadCeremonies();
+  }, [getToken]);
+
+  const loadCeremonies = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiService.getCeremonies(getToken);
+      
+      // El backend retorna { ceremonies: [...], total: X }
+      const ceremoniesData = response.ceremonies || response || [];
+      
+      // Transformar datos del backend al formato del componente
+      const formattedCeremonies = ceremoniesData.map(ceremony => ({
+        id: ceremony._id || ceremony.id,
+        type: ceremony.type,
+        title: ceremony.title,
+        date: new Date(ceremony.date).toISOString().split('T')[0],
+        time: ceremony.startTime,
+        duration: ceremony.duration,
+        status: ceremony.status || 'scheduled',
+        participants: ceremony.participants || [],
+        notes: ceremony.notes || '',
+        goals: ceremony.goals || [],
+        blockers: ceremony.blockers || []
+      }));
+      
+      setCeremonies(formattedCeremonies);
+    } catch (error) {
+      console.error('Error loading ceremonies:', error);
+      setError('Error al cargar ceremonias. Mostrando vista vacía.');
+      setCeremonies([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchTeamMembers = async () => {
@@ -231,29 +230,65 @@ const Ceremonies = () => {
     setIsModalOpen(true);
   };
 
-  const handleStartCeremony = (ceremony) => {
-    setCeremonies(prev => prev.map(c => 
-      c.id === ceremony.id 
-        ? { ...c, status: 'in_progress' }
-        : c
-    ));
+  const handleStartCeremony = async (ceremony) => {
+    try {
+      await apiService.updateCeremony(
+        ceremony.id,
+        { status: 'in_progress' },
+        getToken
+      );
+      
+      setCeremonies(prev => prev.map(c => 
+        c.id === ceremony.id 
+          ? { ...c, status: 'in_progress' }
+          : c
+      ));
+    } catch (error) {
+      console.error('Error starting ceremony:', error);
+      alert('Error al iniciar la ceremonia.');
+    }
   };
 
-  const handleCompleteCeremony = (ceremony) => {
-    setCeremonies(prev => prev.map(c => 
-      c.id === ceremony.id 
-        ? { ...c, status: 'completed' }
-        : c
-    ));
+  const handleCompleteCeremony = async (ceremony) => {
+    try {
+      await apiService.updateCeremony(
+        ceremony.id,
+        { status: 'completed' },
+        getToken
+      );
+      
+      setCeremonies(prev => prev.map(c => 
+        c.id === ceremony.id 
+          ? { ...c, status: 'completed' }
+          : c
+      ));
+    } catch (error) {
+      console.error('Error completing ceremony:', error);
+      alert('Error al completar la ceremonia.');
+    }
   };
 
   const handleSaveCeremony = async (formData) => {
     try {
+      // Transformar formData para coincidir con lo que el backend espera
+      const apiData = {
+        type: formData.type,
+        title: formData.title,
+        date: formData.date,
+        startTime: formData.time, // El modal envía 'time', el backend espera 'startTime'
+        duration: formData.duration || 60,
+        notes: formData.notes || '',
+        description: formData.description || '',
+        participants: formData.participants || [],
+        goals: formData.goals || [],
+        blockers: formData.blockers || []
+      };
+
       if (editingCeremony) {
         // Editar ceremonia existente
         const updatedCeremony = await apiService.updateCeremony(
           editingCeremony.id, 
-          formData, 
+          apiData, 
           getToken
         );
         
@@ -265,17 +300,14 @@ const Ceremonies = () => {
       } else {
         // Crear nueva ceremonia
         try {
-          const newCeremony = await apiService.createCeremony(formData, getToken);
-          setCeremonies(prev => [newCeremony, ...prev]);
+          const newCeremony = await apiService.createCeremony(apiData, getToken);
+          
+          // Recargar todas las ceremonias para obtener el formato correcto del backend
+          await loadCeremonies();
         } catch (apiError) {
-          // Fallback: crear localmente si la API falla
-          console.warn('API failed, creating ceremony locally:', apiError.message);
-          const newCeremony = {
-            ...formData,
-            id: Date.now(),
-            status: 'scheduled'
-          };
-          setCeremonies(prev => [newCeremony, ...prev]);
+          console.error('Error creating ceremony:', apiError);
+          alert('Error al crear la ceremonia. Por favor, inténtalo de nuevo.');
+          return;
         }
       }
       
@@ -290,6 +322,36 @@ const Ceremonies = () => {
 
   const upcomingCeremonies = ceremonies.filter(c => c.status === 'scheduled' || c.status === 'in_progress');
   const completedCeremonies = ceremonies.filter(c => c.status === 'completed');
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Cargando ceremonias...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={loadCeremonies}
+            className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

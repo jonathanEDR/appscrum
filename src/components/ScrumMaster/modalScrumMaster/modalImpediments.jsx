@@ -1,22 +1,42 @@
 ﻿import React, { useState, useEffect } from 'react';
 import { AlertTriangle } from 'lucide-react';
 
-const ImpedimentModal = ({ isOpen, onClose, impediment, onSave }) => {
+const ImpedimentModal = ({ isOpen, onClose, impediment, onSave, teamMembers = [] }) => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
+    responsible: '',
     priority: 'medium',
-    status: 'open',
-    fecha_identificacion: ''
+    category: 'technical',
+    status: 'open'
   });
 
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && !impediment) {
-      const today = new Date().toISOString().split('T')[0];
-      setFormData(prev => ({ ...prev, fecha_identificacion: today }));
+    if (isOpen) {
+      if (impediment) {
+        // Editar impedimento existente
+        setFormData({
+          title: impediment.title || '',
+          description: impediment.description || '',
+          responsible: impediment.responsible || '',
+          priority: impediment.priority || 'medium',
+          category: impediment.category || 'technical',
+          status: impediment.status || 'open'
+        });
+      } else {
+        // Nuevo impedimento - resetear formulario
+        setFormData({
+          title: '',
+          description: '',
+          responsible: '',
+          priority: 'medium',
+          category: 'technical',
+          status: 'open'
+        });
+      }
     }
   }, [isOpen, impediment]);
 
@@ -28,6 +48,12 @@ const ImpedimentModal = ({ isOpen, onClose, impediment, onSave }) => {
     try {
       if (!formData.title.trim()) {
         throw new Error('El título es obligatorio');
+      }
+      if (!formData.description.trim()) {
+        throw new Error('La descripción es obligatoria');
+      }
+      if (!formData.responsible.trim()) {
+        throw new Error('El responsable es obligatorio');
       }
       
       await onSave(formData);
@@ -66,16 +92,60 @@ const ImpedimentModal = ({ isOpen, onClose, impediment, onSave }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Descripción *</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={3}
                 className="w-full p-3 border border-gray-300 rounded-lg"
+                required
               />
             </div>
-            
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Responsable *</label>
+              {teamMembers && teamMembers.length > 0 ? (
+                <select
+                  value={formData.responsible}
+                  onChange={(e) => setFormData({ ...formData, responsible: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                  required
+                >
+                  <option value="">Seleccionar responsable...</option>
+                  {teamMembers.map((member, index) => (
+                    <option key={index} value={member}>
+                      {member}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <input
+                  type="text"
+                  value={formData.responsible}
+                  onChange={(e) => setFormData({ ...formData, responsible: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                  placeholder="Nombre del responsable"
+                  required
+                />
+              )}
+            </div>
+
             <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                <select
+                  value={formData.category}
+                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  className="w-full p-3 border border-gray-300 rounded-lg"
+                >
+                  <option value="technical">Técnico</option>
+                  <option value="requirements">Requisitos</option>
+                  <option value="external_dependency">Dependencia Externa</option>
+                  <option value="resource">Recursos</option>
+                  <option value="communication">Comunicación</option>
+                </select>
+              </div>
+            
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Prioridad</label>
                 <select
@@ -86,33 +156,8 @@ const ImpedimentModal = ({ isOpen, onClose, impediment, onSave }) => {
                   <option value="low">Baja</option>
                   <option value="medium">Media</option>
                   <option value="high">Alta</option>
-                  <option value="critical">Crítica</option>
                 </select>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                <select
-                  value={formData.status}
-                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                  className="w-full p-3 border border-gray-300 rounded-lg"
-                >
-                  <option value="open">Abierto</option>
-                  <option value="in_progress">En Progreso</option>
-                  <option value="resolved">Resuelto</option>
-                  <option value="closed">Cerrado</option>
-                </select>
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Fecha Identificación</label>
-              <input
-                type="date"
-                value={formData.fecha_identificacion}
-                onChange={(e) => setFormData({ ...formData, fecha_identificacion: e.target.value })}
-                className="w-full p-3 border border-gray-300 rounded-lg"
-              />
             </div>
 
             {error && (

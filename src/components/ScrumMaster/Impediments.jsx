@@ -17,43 +17,6 @@ import {
 import apiService from '../../services/apiService';
 import { useAuth } from '@clerk/clerk-react';
 
-// Datos de ejemplo para impedimentos
-const mockImpediments = [
-  {
-    id: 1,
-    title: 'Dependencia con API externa',
-    description: 'El servicio de pagos está experimentando problemas de conectividad que impiden completar las pruebas.',
-    responsible: 'Carlos López',
-    status: 'open',
-    priority: 'high',
-    createdDate: '2025-01-03',
-    resolvedDate: null,
-    category: 'external_dependency'
-  },
-  {
-    id: 2,
-    title: 'Conflicto en base de datos',
-    description: 'Hay un conflicto en el esquema de la base de datos que está bloqueando el desarrollo del módulo de reportes.',
-    responsible: 'Ana García',
-    status: 'in_progress',
-    priority: 'medium',
-    createdDate: '2025-01-02',
-    resolvedDate: null,
-    category: 'technical'
-  },
-  {
-    id: 3,
-    title: 'Falta de claridad en requisitos',
-    description: 'El Product Owner no ha definido claramente los criterios de aceptación para la historia US-105.',
-    responsible: 'María Rodríguez',
-    status: 'resolved',
-    priority: 'medium',
-    createdDate: '2024-12-28',
-    resolvedDate: '2025-01-01',
-    category: 'requirements'
-  }
-];
-
 const ImpedimentCard = ({ impediment, onEdit, onDelete, onStatusChange }) => {
   const getStatusColor = (status) => {
     const colors = {
@@ -163,14 +126,37 @@ const ImpedimentCard = ({ impediment, onEdit, onDelete, onStatusChange }) => {
 import ImpedimentModal from "./modalScrumMaster/modalImpediments";
 
 const Impediments = () => {
-  const [impediments, setImpediments] = useState(mockImpediments);
-  const [filteredImpediments, setFilteredImpediments] = useState(mockImpediments);
+  const [impediments, setImpediments] = useState([]);
+  const [filteredImpediments, setFilteredImpediments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingImpediment, setEditingImpediment] = useState(null);
   const [teamMembers, setTeamMembers] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const { getToken } = useAuth();
+
+  // Cargar impedimentos desde el backend
+  useEffect(() => {
+    loadImpediments();
+  }, [getToken]);
+
+  const loadImpediments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await apiService.getImpediments(getToken);
+      const impedimentsList = response.impediments || response || [];
+      setImpediments(impedimentsList);
+    } catch (error) {
+      console.error('Error loading impediments:', error);
+      setError('Error al cargar impedimentos');
+      setImpediments([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchTeamMembers = async () => {
@@ -227,45 +213,66 @@ const Impediments = () => {
     setIsModalOpen(true);
   };
 
-  const handleDeleteImpediment = (id) => {
+  const handleDeleteImpediment = async (id) => {
     if (window.confirm('¿Estás seguro de que quieres eliminar este impedimento?')) {
-      setImpediments(prev => prev.filter(imp => imp.id !== id));
+      try {
+        await apiService.deleteImpediment(id, getToken);
+        setImpediments(prev => prev.filter(imp => (imp._id || imp.id) !== id));
+      } catch (error) {
+        console.error('Error deleting impediment:', error);
+        alert('Error al eliminar el impedimento');
+      }
     }
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setImpediments(prev => prev.map(imp => 
-      imp.id === id 
-        ? { 
-            ...imp, 
-            status: newStatus, 
-            resolvedDate: newStatus === 'resolved' ? new Date().toISOString().split('T')[0] : null 
-          }
-        : imp
-    ));
-  };
-
-  const handleSaveImpediment = (formData) => {
-    if (editingImpediment) {
-      // Editar
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      await apiService.updateImpediment(
+        id,
+        { 
+          status: newStatus,
+          resolvedDate: newStatus === 'resolved' ? new Date().toISOString() : null
+        },
+        getToken
+      );
+      
       setImpediments(prev => prev.map(imp => 
-        imp.id === editingImpediment.id 
-          ? { ...imp, ...formData }
+        imp._id === id || imp.id === id
+          ? { 
+              ...imp, 
+              status: newStatus, 
+              resolvedDate: newStatus === 'resolved' ? new Date().toISOString() : null 
+            }
           : imp
       ));
-    } else {
-      // Crear
-      const newImpediment = {
-        ...formData,
-        id: Date.now(),
-        status: 'open',
-        createdDate: new Date().toISOString().split('T')[0],
-        resolvedDate: null
-      };
-      setImpediments(prev => [newImpediment, ...prev]);
+    } catch (error) {
+      console.error('Error updating impediment status:', error);
+      alert('Error al actualizar el estado del impedimento');
     }
-    setIsModalOpen(false);
-    setEditingImpediment(null);
+  };
+
+  const handleSaveImpediment = async (formData) => {
+    try {
+      if (editingImpediment) {
+        // Editar impedimento existente
+        await apiService.updateImpediment(
+          editingImpediment._id || editingImpediment.id,
+          formData,
+          getToken
+        );
+        await loadImpediments(); // Recargar lista
+      } else {
+        // Crear nuevo impedimento
+        await apiService.createImpediment(formData, getToken);
+        await loadImpediments(); // Recargar lista
+      }
+      
+      setIsModalOpen(false);
+      setEditingImpediment(null);
+    } catch (error) {
+      console.error('Error saving impediment:', error);
+      alert('Error al guardar el impedimento');
+    }
   };
 
   const handleExportReport = () => {
@@ -283,6 +290,34 @@ const Impediments = () => {
   };
 
   const counts = getStatusCounts();
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
+        <span className="ml-2 text-gray-600">Cargando impedimentos...</span>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="flex items-center justify-center p-8">
+        <div className="text-center">
+          <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+          <p className="text-gray-600 mb-4">{error}</p>
+          <button
+            onClick={loadImpediments}
+            className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
+          >
+            Reintentar
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

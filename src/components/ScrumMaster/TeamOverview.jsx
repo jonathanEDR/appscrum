@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import sprintService from '../../services/sprintService';
+// ✅ OPTIMIZADO: Importar hook con caché
+import { useScrumMasterData } from '../../hooks/useScrumMasterData';
 import { 
   Users, 
   User, 
@@ -118,7 +120,7 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
           </div>
           {member.workload?.completedPoints > 0 && (
             <div className="text-xs text-success-600 mt-1">
-              ✓ {member.workload.completedPoints} SP completados
+              ✓ {member.workload?.completedPoints || 0} SP completados
             </div>
           )}
         </div>
@@ -195,172 +197,60 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
 
 const TeamOverview = () => {
   const { getToken } = useAuth();
-  const [teamMembers, setTeamMembers] = useState([]);
+  
+  // ✅ OPTIMIZADO: Usar hook con caché
+  const { 
+    teamMembers: teamMembersFromHook, 
+    activeSprint, 
+    loading: loadingHook,
+    refresh 
+  } = useScrumMasterData();
+  
+  // Estados locales solo para UI
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
 
-  // Función optimizada para obtener miembros del equipo
-  const fetchTeamMembers = async () => {
-    setLoading(true);
-    setError('');
+  // ✅ OPTIMIZADO: Procesar teamMembers del hook con useMemo
+  const teamMembers = useMemo(() => {
+    if (!teamMembersFromHook || teamMembersFromHook.length === 0) return [];
     
-    try {
-      const token = await getToken();
-      const API_URL = import.meta.env.VITE_API_URL;
-      
-      console.log('🔍 DEBUG - API_URL configurada:', API_URL);
-      console.log('🔍 DEBUG - Token obtenido:', token ? 'SÍ' : 'NO');
-      
-      // Si no hay API configurada, mostrar error
-      if (!API_URL) {
-        throw new Error('API_URL no configurada');
+    return teamMembersFromHook.map(member => ({
+      _id: member._id || member.id || Math.random().toString(36),
+      user: {
+        firstName: member.user?.firstName || member.firstName || 
+          (member.user?.nombre_negocio?.split(' ')[0]) || 'Usuario',
+        lastName: member.user?.lastName || member.lastName || 
+          (member.user?.nombre_negocio?.split(' ').slice(1).join(' ')) || '',
+        email: member.user?.email || member.email || 'usuario@email.com',
+        phone: member.user?.phone || member.phone || ''
+      },
+      role: member.role || 'developer',
+      status: member.status || 'active',
+      availability: member.availability || 100,
+      workload: {
+        currentStoryPoints: member.workload?.currentStoryPoints || 0,
+        maxStoryPoints: member.workload?.maxStoryPoints || 24,
+        completedPoints: member.workload?.completedPoints || 0
+      },
+      workloadPercentage: member.workload && member.workload.maxStoryPoints > 0 ? 
+        Math.round((member.workload.currentStoryPoints / member.workload.maxStoryPoints) * 100) : 0,
+      skills: member.skills || [],
+      lastActiveDate: member.updatedAt ? new Date(member.updatedAt) : new Date(),
+      sprintInfo: member.sprintAssignment || {
+        currentSprint: activeSprint?.nombre || activeSprint?.name,
+        assignedItems: member.sprintAssignment?.itemsCount || 0,
+        completedItems: member.sprintAssignment?.completedCount || 0
       }
-      
-      // Intentar endpoint específico para miembros del equipo
-      console.log('🔍 DEBUG - Haciendo fetch a:', `${API_URL}/team/members`);
-      const response = await fetch(`${API_URL}/team/members`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      console.log('🔍 DEBUG - Respuesta del servidor:', {
-        ok: response.ok,
-        status: response.status,
-        statusText: response.statusText
-      });
-      
-      if (response.ok) {
-        const teamData = await response.json();
-        console.log('🔍 DEBUG - Datos del equipo obtenidos:', teamData);
-        console.log('🔍 DEBUG - Total miembros en respuesta:', teamData.members?.length || teamData.length || 0);
-        
-        // Mapear datos de la API al formato del componente
-        const mapped = (teamData.members || teamData || []).map(member => ({
-          _id: member._id || Math.random().toString(36),
-          user: {
-            firstName: member.user?.firstName || ((member.user && member.user.nombre_negocio && typeof member.user.nombre_negocio === 'string') ? member.user.nombre_negocio.split(' ')[0] : 'Usuario'),
-            lastName: member.user?.lastName || ((member.user && member.user.nombre_negocio && typeof member.user.nombre_negocio === 'string') ? member.user.nombre_negocio.split(' ').slice(1).join(' ') : ''),
-            email: member.user?.email || 'usuario@email.com',
-            phone: member.user?.phone || ''
-          },
-          role: member.role || 'developer',
-          status: member.status || 'active',
-          availability: member.availability || 100,
-          workload: {
-            currentStoryPoints: member.workload?.currentStoryPoints || 0,
-            maxStoryPoints: member.workload?.maxStoryPoints || 24,
-            completedPoints: member.workload?.completedPoints || 0
-          },
-          workloadPercentage: member.workload ? 
-            Math.round((member.workload.currentStoryPoints / member.workload.maxStoryPoints) * 100) : 0,
-          skills: member.skills || [],
-          lastActiveDate: member.updatedAt ? new Date(member.updatedAt) : new Date(),
-          sprintInfo: {
-            currentSprint: null,
-            assignedItems: 0,
-              completedItems: 0
-            }
-          }));
-          
-          console.log('🔍 DEBUG - Miembros mapeados:', mapped.length);
-          console.log('🔍 DEBUG - Miembros mapeados detalle:', mapped.map(m => ({
-            name: `${m.user.firstName} ${m.user.lastName}`,
-            email: m.user.email,
-            role: m.role
-          })));
-          
-          if (mapped.length > 0) {
-            setTeamMembers(mapped);
-            setError('');
-            console.log('✅ DEBUG - Datos reales establecidos en el estado');
-          } else {
-            console.info('⚠️ DEBUG - No se encontraron miembros del equipo');
-            setTeamMembers([]);
-            setError('No se encontraron miembros del equipo registrados.');
-          }
-        } else {
-          console.error('❌ DEBUG - Error en response:', response.status, response.statusText);
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-      
-    } catch (error) {
-      console.error('❌ DEBUG - Error al obtener miembros del equipo:', error);
-      setTeamMembers([]);
-      setError('Error de conexión con el servidor: ' + error.message);
-    }
-    
-    setLoading(false);
-  };
+    }));
+  }, [teamMembersFromHook, activeSprint]);
 
-  useEffect(() => {
-    fetchTeamMembers();
-    fetchActiveSprintWorkload(); // Nueva función para obtener workload del sprint activo
-  }, []); // Removemos getToken de las dependencias para evitar re-renders innecesarios
+  // ✅ ELIMINADAS: fetchTeamMembers y fetchActiveSprintWorkload
+  // Los datos ahora vienen directamente del hook useScrumMasterData con caché
 
-  // Nueva función para obtener la carga de trabajo del sprint activo
-  const fetchActiveSprintWorkload = async () => {
-    try {
-      const token = await getToken();
-      const workloadData = await sprintService.getTeamWorkloadFromActiveSprint(token);
-      
-      console.log('Workload del sprint activo:', workloadData);
-      
-      // Actualizar workload de team members con datos reales
-      updateTeamMembersWithSprintWorkload(workloadData);
-    } catch (error) {
-      console.error('Error fetching sprint workload:', error);
-    }
-  };
-
-  // Nueva función para actualizar workload basado en sprint activo
-  const updateTeamMembersWithSprintWorkload = (workloadData) => {
-    setTeamMembers(prevMembers => {
-      return prevMembers.map(member => {
-        // Buscar workload por ID o email
-        const memberWorkload = workloadData[member._id] || 
-                              workloadData[member.user?.email] ||
-                              null;
-
-        if (memberWorkload) {
-          const maxStoryPoints = Math.max(
-            memberWorkload.currentStoryPoints, 
-            member.workload?.maxStoryPoints || 24
-          );
-          
-          const workloadPercentage = Math.round(
-            (memberWorkload.currentStoryPoints / maxStoryPoints) * 100
-          );
-
-          return {
-            ...member,
-            workload: {
-              currentStoryPoints: memberWorkload.currentStoryPoints,
-              maxStoryPoints,
-              completedPoints: memberWorkload.completedStoryPoints
-            },
-            workloadPercentage,
-            sprintInfo: {
-              currentSprint: memberWorkload.sprintName,
-              assignedItems: memberWorkload.assignedItems,
-              completedItems: memberWorkload.completedItems
-            },
-            // Actualizar status basado en carga de trabajo
-            status: workloadPercentage > 100 ? 'busy' : 
-                   workloadPercentage === 0 ? 'inactive' : 'active'
-          };
-        }
-
-        return member;
-      });
-    });
-  };
-
-  // Filtrado optimizado con useMemo
+  // ✅ OPTIMIZADO: Filtrado optimizado con useMemo
   const filteredMembers = useMemo(() => {
     let filtered = teamMembers;
 
@@ -403,12 +293,10 @@ const TeamOverview = () => {
 
   const handleRefresh = useCallback(async () => {
     setLoading(true);
-    await Promise.all([
-      fetchTeamMembers(),
-      fetchActiveSprintWorkload()
-    ]);
+    // ✅ OPTIMIZADO: Usar refresh del hook
+    await refresh();
     setLoading(false);
-  }, []);
+  }, [refresh]);
 
   // Estadísticas optimizadas con useMemo
   const statsCards = useMemo(() => {

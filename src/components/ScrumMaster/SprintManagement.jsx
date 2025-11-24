@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import sprintService from '../../services/sprintService';
-import { useScrumMasterDashboard } from '../../hooks/useScrumMasterDashboard';
+import { useScrumMasterData } from '../../hooks/useScrumMasterData';
 import { MetricCard, SprintProgressCard, CriticalAlertsCard } from './MetricCards';
 import SprintTechnicalItems from './SprintTechnicalItems';
 import { 
@@ -721,44 +721,50 @@ const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggle
 const SprintManagement = () => {
   const { getToken } = useAuth();
   const navigate = useNavigate();
-  const { data: dashboardData, loading: dashboardLoading } = useScrumMasterDashboard();
   
-  const [sprintData, setSprintData] = useState(null);
-  const [sprints, setSprints] = useState([]);
-  const [loading, setLoading] = useState(true);
+  // ✅ OPTIMIZADO: Usar hook centralizado con caché
+  const { 
+    sprints,
+    activeSprint: activeSprintData,
+    backlogItems,
+    technicalItems,
+    teamMembers,
+    metrics,
+    loading: isLoading,
+    error: hookError,
+    refresh,
+    setActiveSprint: setActiveSprintHook
+  } = useScrumMasterData();
+  
+  // Estados locales solo para UI
   const [error, setError] = useState('');
-  const [activeSprint, setActiveSprint] = useState(null);
   const [showDetails, setShowDetails] = useState(false);
-  
-  // Nuevo estado para controlar las pestañas
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'planning', 'backlog'
-
-  useEffect(() => {
-    fetchSprints();
-  }, []);
-
-  // Integrar datos del dashboard cuando estén disponibles
-  useEffect(() => {
-    if (dashboardData && !dashboardLoading) {
-      setSprints(dashboardData.sprints || []);
-      if (dashboardData.activeSprint && !activeSprint) {
-        setActiveSprint(dashboardData.activeSprint);
-        // Evitar llamar a fetchSprintDetails si no tenemos un _id válido
-        if (dashboardData.activeSprint._id) {
-          fetchSprintDetails(dashboardData.activeSprint._id);
-        } else {
-          console.warn('SprintManagement: dashboardData.activeSprint has no _id, skipping fetchSprintDetails');
-          // Configurar sprintData con fallback desde dashboard
-          setSprintData({
-            ...dashboardData.activeSprint,
-            backlogItems: dashboardData.activeSprintItems || [],
-            technicalItems: dashboardData.technicalItems || [],
-            teamMembers: dashboardData.teamMembers || []
-          });
-        }
-      }
-    }
-  }, [dashboardData, dashboardLoading]);
+  
+  // ✅ OPTIMIZADO: Mantener compatibilidad con componentes hijos
+  const activeSprint = activeSprintData;
+  
+  // ✅ OPTIMIZADO: Construir sprintData desde datos del hook para compatibilidad con componentes hijos
+  const sprintData = activeSprintData ? {
+    ...activeSprintData,
+    // Añadir propiedades calculadas desde metrics
+    completed: metrics?.completedStoryPoints || 0,
+    planned: metrics?.plannedStoryPoints || 0,
+    inProgress: metrics?.inProgressCount || 0,
+    totalStoryPoints: metrics?.totalStoryPoints || 0,
+    velocity: metrics?.velocity || 0,
+    previousVelocity: metrics?.previousVelocity,
+    capacity: metrics?.teamCapacity || 0,
+    // Datos relacionados
+    backlogItems: backlogItems || [],
+    technicalItems: technicalItems || [],
+    teamMembers: teamMembers || [],
+    // Datos del sprint
+    status: activeSprintData.estado || activeSprintData.status || 'planning',
+    startDate: activeSprintData.fecha_inicio || activeSprintData.startDate,
+    endDate: activeSprintData.fecha_fin || activeSprintData.endDate,
+    burndownData: metrics?.burndownData || []
+  } : mockSprintData;
 
   const handleNavigateToSprint = () => {
     navigate('/scrum_master/sprint-planning');
@@ -779,259 +785,14 @@ const SprintManagement = () => {
     }
   };
 
-  const fetchSprints = async () => {
-    try {
-      setLoading(true);
-      setError('');
-      
-      // Primero intentar usar datos del dashboard si están disponibles
-      if (dashboardData?.sprints?.length > 0) {
-        setSprints(dashboardData.sprints);
-        
-        // Buscar sprint activo
-        const active = dashboardData.activeSprint;
-        if (active) {
-          setActiveSprint(active);
-          await fetchSprintDetails(active._id);
-        } else if (dashboardData.sprints.length > 0) {
-          const latest = dashboardData.sprints[0];
-          setActiveSprint(latest);
-          await fetchSprintDetails(latest._id);
-        }
-        return;
-      }
-      
-      // Fallback: obtener desde API directamente
-      const token = await getToken();
-      const sprints = await sprintService.getSprints(token);
-      
-      console.log('Sprints obtenidos:', sprints);
-      setSprints(sprints);
-      
-      // Buscar sprint activo
-      const active = await sprintService.getActiveSprint(token);
-      
-      if (active) {
-        setActiveSprint(active);
-        if (active._id) {
-          await fetchSprintDetails(active._id);
-        } else {
-          console.warn('SprintManagement: active sprint from API has no _id, skipping fetchSprintDetails');
-          setSprintData({
-            ...active,
-            backlogItems: [],
-            technicalItems: [],
-            teamMembers: []
-          });
-        }
-      } else if (sprints.length > 0) {
-        // Si no hay sprint activo, tomar el más reciente
-        const latest = sprints[0];
-        setActiveSprint(latest);
-        if (latest._id) {
-          await fetchSprintDetails(latest._id);
-        } else {
-          console.warn('SprintManagement: latest sprint has no _id, skipping fetchSprintDetails');
-          setSprintData({ ...latest, backlogItems: [], technicalItems: [], teamMembers: [] });
-        }
-      } else {
-        setError('No hay sprints disponibles. Los sprints se crean desde el módulo Product Owner.');
-      }
-    } catch (error) {
-      console.error('Error fetching sprints:', error);
-      setError('Error al conectar con el servidor. Verifica tu conexión e intenta nuevamente.');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchSprintDetails = async (sprintId) => {
-    // Si sprintId no está definido, no intentar llamar al backend
-    if (!sprintId) {
-      console.warn('fetchSprintDetails called with falsy sprintId, returning fallback data');
-      if (dashboardData?.activeSprint) {
-        setSprintData({
-          ...dashboardData.activeSprint,
-          _id: sprintId,
-          backlogItems: dashboardData.activeSprintItems || [],
-          technicalItems: dashboardData.technicalItems || [],
-          teamMembers: dashboardData.teamMembers || []
-        });
-      } else {
-        setSprintData({
-          ...mockSprintData,
-          _id: sprintId
-        });
-      }
-      return;
-    }
-
-    try {
-      const token = await getToken();
-
-      // Obtener métricas del sprint, items del backlog, items técnicos y datos del equipo en paralelo
-      const [metrics, backlogItems, technicalItemsData, teamMembers] = await Promise.all([
-        sprintService.getSprintMetrics(token, sprintId),
-        sprintService.getSprintBacklogItems(token, sprintId),
-        fetchTechnicalItemsForSprint(token, sprintId),
-        fetchTeamMembersWithSprintData(token, sprintId)
-      ]);
-
-      // Agregar las historias, miembros reales y items técnicos al objeto de métricas
-      const enhancedMetrics = {
-        ...metrics,
-        _id: sprintId, // Asegurar que el ID del sprint esté incluido
-        backlogItems: backlogItems || [],
-        teamMembers: teamMembers || metrics.teamMembers || [],
-        technicalItems: technicalItemsData || [],
-        // Métricas mejoradas que incluyen items técnicos
-        totalItems: (backlogItems?.length || 0) + (technicalItemsData?.length || 0),
-        totalCompletedItems: (backlogItems?.filter(item => 
-          item.estado === 'completado' || item.status === 'completed'
-        ).length || 0) + (technicalItemsData?.filter(item => 
-          item.estado === 'completado' || item.status === 'completed'
-        ).length || 0)
-      };
-
-      setSprintData(enhancedMetrics);
-    } catch (error) {
-      console.error('Error fetching sprint details:', error);
-      // Usar datos del dashboard como fallback si están disponibles
-      if (dashboardData?.activeSprint) {
-        setSprintData({
-          ...dashboardData.activeSprint,
-          _id: sprintId, // Asegurar que el ID del sprint esté incluido
-          backlogItems: dashboardData.activeSprintItems || [],
-          technicalItems: dashboardData.technicalItems || [],
-          teamMembers: dashboardData.teamMembers || []
-        });
-      } else {
-        setSprintData({
-          ...mockSprintData,
-          _id: sprintId // Asegurar que el ID del sprint esté incluido
-        });
-      }
-    }
-  };
-
-  // Nueva función para obtener items técnicos específicos del sprint
-  const fetchTechnicalItemsForSprint = async (token, sprintId) => {
-    try {
-      const API_URL = import.meta.env.VITE_API_URL;
-      
-      // Obtener items técnicos del sprint específico
-      const response = await fetch(
-        `${API_URL}/backlog?tipo=tarea,bug,mejora&sprint=${sprintId}&limit=100`,
-        {
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-
-      if (!response.ok) {
-        console.warn('Error al obtener items técnicos, usando fallback');
-        return dashboardData?.technicalItems || [];
-      }
-
-      const data = await response.json();
-      return data.items || [];
-      
-    } catch (error) {
-      console.error('Error fetching technical items for sprint:', error);
-      // Usar datos del dashboard como fallback
-      return dashboardData?.technicalItems || [];
-    }
-  };
-
-  // Nueva función para obtener miembros del equipo con datos del sprint
-  const fetchTeamMembersWithSprintData = async (token, sprintId) => {
-    try {
-      const API_URL = import.meta.env.VITE_API_URL;
-      
-      // Obtener miembros del equipo desde el endpoint dedicado
-      const teamResponse = await fetch(`${API_URL}/team/members`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-      
-      if (!teamResponse.ok) {
-        throw new Error('Error al obtener miembros del equipo');
-      }
-      
-      const teamData = await teamResponse.json();
-      const teamMembers = teamData.members || teamData || [];
-      
-      // Obtener items del backlog del sprint para calcular workload real
-      const backlogItems = await sprintService.getSprintBacklogItems(token, sprintId);
-      
-      // Mapear miembros del equipo con datos reales del sprint
-      const enhancedTeamMembers = teamMembers.map(member => {
-        // Encontrar items asignados a este miembro en el sprint actual
-        const memberItems = backlogItems.filter(item => {
-          const assignedUser = item.asignado_a || item.assignedTo;
-          return assignedUser && (
-            assignedUser._id === member._id ||
-            assignedUser.email === member.user?.email ||
-            assignedUser.id === member._id
-          );
-        });
-        
-        // Calcular métricas basadas en items asignados
-        const completed = memberItems.filter(item => 
-          item.estado === 'completado' || item.status === 'completed'
-        ).length;
-        
-        const planned = memberItems.length;
-        
-        const completedPoints = memberItems
-          .filter(item => item.estado === 'completado' || item.status === 'completed')
-          .reduce((sum, item) => sum + (item.puntos_historia || item.storyPoints || 1), 0);
-        
-        const plannedPoints = memberItems
-          .reduce((sum, item) => sum + (item.puntos_historia || item.storyPoints || 1), 0);
-
-        return {
-          id: member._id,
-          name: member.user ? 
-            `${member.user.firstName || ''} ${member.user.lastName || ''}`.trim() || 
-            member.user.nombre_negocio || 
-            member.user.email : 
-            'Usuario Desconocido',
-          role: member.role || 'Developer',
-          completed: completedPoints,
-          planned: plannedPoints > 0 ? plannedPoints : member.workload?.maxStoryPoints || 24,
-          availability: member.status === 'active' ? 'available' : 
-                       member.status === 'busy' ? 'busy' : 'off',
-          email: member.user?.email || '',
-          workload: {
-            currentStoryPoints: plannedPoints,
-            maxStoryPoints: member.workload?.maxStoryPoints || 24,
-            completedPoints: completedPoints
-          },
-          sprintAssignment: {
-            itemsCount: planned,
-            completedCount: completed,
-            storyPoints: plannedPoints,
-            completedPoints: completedPoints
-          }
-        };
-      });
-      
-      return enhancedTeamMembers;
-      
-    } catch (error) {
-      console.error('Error fetching team members with sprint data:', error);
-      // Fallback a datos generados por el sprint service
-      return null;
-    }
-  };
+  // ✅ ELIMINADAS: fetchSprints y fetchSprintDetails ya no son necesarias
+  // Los datos vienen directamente del hook useScrumMasterData
+  
+  // ✅ ELIMINADAS: fetchTechnicalItemsForSprint y fetchTeamMembersWithSprintData
+  // Estos datos ya vienen incluidos en el hook
 
   const handleSprintAction = async (action) => {
-    if (!activeSprint) return;
+    if (!activeSprintData) return;
     
     try {
       const token = await getToken();
@@ -1042,50 +803,32 @@ const SprintManagement = () => {
         'end': 'finalizar'
       };
       
-      const actionData = action === 'end' ? { velocidad_real: sprintData?.completed || 0 } : {};
+      const actionData = action === 'end' ? { velocidad_real: metrics?.completedStoryPoints || 0 } : {};
       
       await sprintService.executeSprintAction(
         token, 
-        activeSprint._id, 
+        activeSprintData._id, 
         actionMap[action], 
         actionData
       );
 
-      // Recargar datos después de la acción
-      await fetchSprints();
+      // ✅ OPTIMIZADO: Refrescar usando el hook en lugar de fetchSprints
+      await refresh();
     } catch (error) {
       console.error('Error in sprint action:', error);
       setError(`Error al ${action} sprint: ${error.message}`);
-      
-      // Actualizar localmente como fallback
-      switch (action) {
-        case 'start':
-          setSprintData(prev => ({ ...prev, status: 'active' }));
-          break;
-        case 'pause':
-          setSprintData(prev => ({ ...prev, status: 'paused' }));
-          break;
-        case 'end':
-          setSprintData(prev => ({ ...prev, status: 'completed' }));
-          break;
-        default:
-          break;
-      }
     }
   };
 
   const handleSelectSprint = async (sprint) => {
-    setActiveSprint(sprint);
-    setLoading(true);
-    await fetchSprintDetails(sprint._id);
-    setLoading(false);
+    // ✅ OPTIMIZADO: Usar setActiveSprintHook del hook
+    setActiveSprintHook(sprint);
   };
 
-  // Función para refrescar solo el componente de items técnicos
+  // ✅ OPTIMIZADO: handleRefreshTechnicalItems ya no es necesario,
+  // pero lo mantenemos para no romper el componente SprintTechnicalItems
   const handleRefreshTechnicalItems = async () => {
-    if (activeSprint) {
-      await fetchSprintDetails(activeSprint._id);
-    }
+    await refresh();
   };
 
   const handleToggleStory = (story) => {
@@ -1094,7 +837,7 @@ const SprintManagement = () => {
     // o navegar a una página de detalles de la historia
   };
 
-  const handleQuickAction = (action) => {
+  const handleQuickAction = async (action) => {
     switch (action) {
       case 'daily':
         console.log('Navegando a Daily Standup...');
@@ -1103,10 +846,8 @@ const SprintManagement = () => {
         break;
       case 'metrics':
         console.log('Actualizando métricas...');
-        // Refrescar datos del sprint
-        if (activeSprint) {
-          fetchSprintDetails(activeSprint._id);
-        }
+        // ✅ OPTIMIZADO: Refrescar usando el hook
+        await refresh();
         break;
       case 'review':
         console.log('Navegando a Sprint Review...');
@@ -1119,18 +860,18 @@ const SprintManagement = () => {
   };
 
   const getSprintProgress = () => {
-    if (!sprintData) return 0;
-    const totalPlanned = sprintData.planned;
-    const totalCompleted = sprintData.completed;
+    if (!metrics) return 0;
+    const totalPlanned = metrics.plannedStoryPoints || 0;
+    const totalCompleted = metrics.completedStoryPoints || 0;
     return totalPlanned > 0 ? (totalCompleted / totalPlanned) * 100 : 0;
   };
 
   const getSprintStatus = () => {
-    if (!sprintData) return { totalDays: 0, daysElapsed: 0, daysRemaining: 0, isOverdue: false };
+    if (!activeSprintData) return { totalDays: 0, daysElapsed: 0, daysRemaining: 0, isOverdue: false };
     
     const today = new Date();
-    const endDate = new Date(sprintData.endDate);
-    const startDate = new Date(sprintData.startDate);
+    const endDate = new Date(activeSprintData.fecha_fin || activeSprintData.endDate);
+    const startDate = new Date(activeSprintData.fecha_inicio || activeSprintData.startDate);
     const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
     const daysElapsed = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
     const daysRemaining = Math.max(0, totalDays - daysElapsed);
@@ -1147,7 +888,7 @@ const SprintManagement = () => {
   const progress = getSprintProgress();
 
   // Mostrar loading
-  if (loading && !sprintData) {
+  if (isLoading && !activeSprintData) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
@@ -1162,7 +903,7 @@ const SprintManagement = () => {
         sprints={sprints}
         activeSprint={activeSprint}
         onSelectSprint={handleSelectSprint}
-        loading={loading}
+        loading={isLoading}
       />
 
       {/* Mensaje de error/información */}
