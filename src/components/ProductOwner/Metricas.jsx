@@ -1,7 +1,9 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import config from '../../config/config';
 import { apiService } from '../../services/apiService';
+import { useProducts } from '../../hooks/useProducts';
+import { useSprints } from '../../hooks/useSprints';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -23,11 +25,11 @@ const API_BASE_URL = config.API_URL || '';
 
 const Metricas = () => {
   const { getToken } = useAuth();
+  
+  // Estados locales
   const [metricas, setMetricas] = useState(null);
   const [velocityData, setVelocityData] = useState(null);
   const [burndownData, setBurndownData] = useState(null);
-  const [productos, setProductos] = useState([]);
-  const [sprints, setSprints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState('');
@@ -35,54 +37,18 @@ const Metricas = () => {
   const [periodo, setPeriodo] = useState('30');
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  useEffect(() => {
-    cargarProductos();
-  }, []);
+  // ✅ Usar custom hooks con caché
+  const { products: productos, loading: loadingProducts } = useProducts();
+  const { sprints, loading: loadingSprints } = useSprints(selectedProduct);
 
-  useEffect(() => {
-    if (selectedProduct) {
-      cargarDatos();
-      cargarSprints();
-    }
-  }, [selectedProduct, periodo]);
-
-  useEffect(() => {
-    if (selectedSprint) {
-      cargarBurndown();
-    }
-  }, [selectedSprint]);
-
-  const cargarProductos = async () => {
-    try {
-      console.log('Iniciando carga de productos...');
-      setLoading(true);
-      
-      // Usar apiService para mejor manejo de errores
-      const data = await apiService.get('/products', getToken);
-      
-      console.log('Datos productos recibidos:', data);
-      setProductos(data.products || data.productos || []);
-    } catch (error) {
-      console.error('Error al cargar productos:', error);
-      setError('Error al cargar productos');
-    } finally {
-      console.log('Finalizando carga de productos...');
+  // ✅ OPTIMIZADO: Usar useCallback para cargarDatos
+  const cargarDatos = useCallback(async () => {
+    if (!selectedProduct) {
       setLoading(false);
+      return;
     }
-  };
 
-  const cargarSprints = async () => {
     try {
-      const data = await apiService.get(`/sprints?producto=${selectedProduct}`, getToken);
-      setSprints(data.sprints || []);
-    } catch (error) {
-      console.error('Error al cargar sprints:', error);
-    }
-  };
-
-  const cargarDatos = async () => {
-    try {
-      console.log('Iniciando carga de datos para producto:', selectedProduct);
       setLoading(true);
       setError(null);
 
@@ -92,28 +58,38 @@ const Metricas = () => {
         apiService.get(`/metricas/velocity/${selectedProduct}`, getToken)
       ]);
 
-      console.log('Datos dashboard recibidos:', dashboardData);
-      console.log('Datos velocity recibidos:', velocityDataRes);
-
       setMetricas(dashboardData);
       setVelocityData(velocityDataRes);
     } catch (error) {
       console.error('Error al cargar datos:', error);
       setError(error.message);
     } finally {
-      console.log('Finalizando carga de datos...');
       setLoading(false);
     }
-  };
+  }, [selectedProduct, periodo, getToken]);
 
-  const cargarBurndown = async () => {
+  // ✅ OPTIMIZADO: Solo cargar métricas cuando cambian producto o periodo
+  useEffect(() => {
+    cargarDatos();
+  }, [cargarDatos]);
+
+  const cargarBurndown = useCallback(async () => {
+    if (!selectedSprint) {
+      setBurndownData(null);
+      return;
+    }
+
     try {
       const data = await apiService.get(`/metricas/burndown/${selectedSprint}`, getToken);
       setBurndownData(data);
     } catch (error) {
       console.error('Error al cargar burndown:', error);
     }
-  };
+  }, [selectedSprint, getToken]);
+
+  useEffect(() => {
+    cargarBurndown();
+  }, [cargarBurndown]);
 
   const exportarMetricas = async (formato) => {
     try {

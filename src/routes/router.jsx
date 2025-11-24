@@ -33,6 +33,7 @@ const Productos = lazy(() => import('../components/ProductOwner/Productos.jsx'))
 const ProductBacklog = lazy(() => import('../components/ProductOwner/ProductBacklog.jsx'));
 const Roadmap = lazy(() => import('../components/ProductOwner/Roadmap.jsx'));
 const Metricas = lazy(() => import('../components/ProductOwner/Metricas.jsx'));
+const SprintBacklogPlanning = lazy(() => import('../components/ProductOwner/SprintBacklogPlanning.jsx'));
 
 // Componentes de Scrum Master - lazy loading
 const Impediments = lazy(() => import('../components/ScrumMaster/Impediments.jsx'));
@@ -199,6 +200,10 @@ export const router = createBrowserRouter([
       {
         path: 'roadmap',
         element: <LazyWrapper><Roadmap /></LazyWrapper>,
+      },
+      {
+        path: 'sprint-planning',
+        element: <LazyWrapper><SprintBacklogPlanning /></LazyWrapper>,
       },
       {
         path: 'metricas',

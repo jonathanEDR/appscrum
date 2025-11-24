@@ -17,7 +17,7 @@ export function ThemeProvider({ children }) {
   // Cargar configuración del sistema desde el backend
   const loadSystemConfig = useCallback(async () => {
     try {
-      console.log('🎨 ThemeContext: Cargando configuración del sistema...');
+      // console.log('🎨 ThemeContext: Cargando configuración del sistema...');
       
       const token = await getToken();
       if (!token) {
@@ -31,7 +31,7 @@ export function ThemeProvider({ children }) {
         method: 'GET'
       }, () => Promise.resolve(token));
 
-      console.log('✅ ThemeContext: Configuración cargada:', response);
+      // console.log('✅ ThemeContext: Configuración cargada:', response);
 
       if (response?.status === 'success' && response?.config) {
         setSystemConfig(response.config);

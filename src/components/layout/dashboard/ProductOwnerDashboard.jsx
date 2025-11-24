@@ -1,4 +1,5 @@
 ﻿import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useRole } from '../../../context/RoleContext.jsx';
 import { useDashboardData } from '../../../hooks/useDashboardData.js';
 import { 
@@ -119,6 +120,7 @@ const CurrentSprint = () => {
 
 // Dashboard específico para Product Owner mejorado
 const ProductOwnerDashboard = () => {
+  const navigate = useNavigate();
   const { loading, error } = useDashboardData('product_owner');
 
   if (loading) {
@@ -206,22 +208,34 @@ const ProductOwnerDashboard = () => {
           <div className="lg:col-span-1">
             <Panel title="Acciones Rápidas" className="bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800">
               <div className="space-y-4">
-                <button className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center">
+                <button 
+                  onClick={() => navigate('/product_owner/backlog')}
+                  className="w-full bg-gradient-to-r from-primary-500 to-primary-600 text-white px-6 py-3 rounded-xl hover:from-primary-600 hover:to-primary-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center"
+                >
                   <Target className="h-5 w-5 mr-2" />
                   Gestionar Backlog
                 </button>
                 
-                <button className="w-full bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-6 py-3 rounded-xl hover:from-secondary-600 hover:to-secondary-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center">
+                <button 
+                  onClick={() => navigate('/product_owner/sprint-planning')}
+                  className="w-full bg-gradient-to-r from-secondary-500 to-secondary-600 text-white px-6 py-3 rounded-xl hover:from-secondary-600 hover:to-secondary-700 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center"
+                >
                   <Calendar className="h-5 w-5 mr-2" />
                   Planificar Sprint
                 </button>
 
-                <button className="w-full bg-gradient-to-r from-accent-400 to-accent-500 text-white px-6 py-3 rounded-xl hover:from-accent-500 hover:to-accent-600 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center">
+                <button 
+                  onClick={() => navigate('/product_owner/metricas')}
+                  className="w-full bg-gradient-to-r from-accent-400 to-accent-500 text-white px-6 py-3 rounded-xl hover:from-accent-500 hover:to-accent-600 transition-all duration-300 font-medium shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center"
+                >
                   <BarChart3 className="h-5 w-5 mr-2" />
                   Ver Métricas
                 </button>
 
-                <button className="w-full bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-300 font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5 flex items-center justify-center">
+                <button 
+                  onClick={() => navigate('/product_owner/colaboradores')}
+                  className="w-full bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 hover:border-gray-400 dark:hover:border-gray-500 transition-all duration-300 font-medium shadow-sm hover:shadow-md transform hover:-translate-y-0.5 flex items-center justify-center"
+                >
                   <Users className="h-5 w-5 mr-2" />
                   Reunión con Stakeholders
                 </button>

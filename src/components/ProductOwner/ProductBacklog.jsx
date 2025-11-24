@@ -1,7 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import config from '../../config/config';
 import { apiService } from '../../services/apiService';
+import { useProducts } from '../../hooks/useProducts';
+import { useUsers } from '../../hooks/useUsers';
+import { useSprints } from '../../hooks/useSprints';
 import ModalBacklogItem from './modalsPO/ModalBacklogItem';
 import { 
   List, 
@@ -21,10 +24,9 @@ import {
 
 const ProductBacklog = () => {
   const { getToken } = useAuth();
+  
+  // Estados locales primero
   const [items, setItems] = useState([]);
-  const [productos, setProductos] = useState([]);
-  const [usuarios, setUsuarios] = useState([]);
-  const [sprints, setSprints] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,6 +36,14 @@ const ProductBacklog = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isFiltering, setIsFiltering] = useState(false);
+  
+  // ✅ Usar custom hooks con caché para productos y usuarios (siempre cargan)
+  const { products: productos, loading: loadingProducts } = useProducts();
+  const { users: usuarios, loading: loadingUsers } = useUsers(true);
+  
+  // ✅ Para sprints, cargarlos manualmente solo cuando se necesiten
+  const [sprints, setSprints] = useState([]);
+  const [loadingSprints, setLoadingSprints] = useState(false);
 
   const tipoColors = {
     historia: 'bg-blue-100 text-blue-800',
@@ -72,7 +82,7 @@ const ProductBacklog = () => {
     return hasDescription && hasCriteria && hasStoryPoints && isPending;
   };
 
-  const fetchItems = async () => {
+  const fetchItems = useCallback(async () => {
     try {
       setIsFiltering(true);
       const token = await getToken();
@@ -84,7 +94,6 @@ const ProductBacklog = () => {
       if (filtroPrioridad) params.append('prioridad', filtroPrioridad);
       
       const url = `${config.API_URL}/backlog?${params.toString()}`;
-      console.log('Fetching with filters:', { searchTerm, filtroProducto, filtroEstado, filtroPrioridad });
       
       const response = await fetch(url, {
         headers: {
@@ -97,7 +106,6 @@ const ProductBacklog = () => {
         const data = await response.json();
         setItems(data.items || []);
         setError('');
-        console.log('Filtered items received:', data.items?.length || 0);
       } else {
         const errorText = await response.text();
         throw new Error(errorText || 'Error al cargar backlog');
@@ -109,97 +117,45 @@ const ProductBacklog = () => {
       setLoading(false);
       setIsFiltering(false);
     }
-  };
+  }, [getToken, searchTerm, filtroProducto, filtroEstado, filtroPrioridad]);
 
-  const fetchProductos = async () => {
-    try {
-      const token = await getToken();
-  const response = await fetch(`${config.API_URL}/products`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
+  // ✅ OPTIMIZADO: Solo cargar items inicialmente, productos/usuarios/sprints vienen de hooks
+  useEffect(() => {
+    const cargarDatos = async () => {
+      try {
+        const token = await getToken();
+        if (!token) {
+          setError('No hay token de autenticación');
+          setLoading(false);
+          return;
         }
-      });
-      
-      if (response.ok) {
-        const ct = response.headers.get('content-type') || '';
-        if (!ct.includes('application/json')) {
-          const text = await response.text();
-          console.error('Productos API devolvió no-JSON:', text.substring(0,300));
-          setProductos([]);
-        } else {
-          const data = await response.json();
-          console.log('Productos recibidos:', data); // Debug log
-          setProductos(data.products || data.productos || []); // Manejar ambos formatos
-        }
-      } else {
-        console.error('❌ Error response from productos API:', response.status, response.statusText);
-        const errorText = await response.text();
-        console.error('❌ Error details:', errorText);
+        
+        // ✅ Solo cargar items, el resto viene de los hooks con caché
+        await fetchItems();
+      } catch (error) {
+        console.error('Error cargando datos:', error);
+        setError('Error al cargar datos iniciales');
+      } finally {
+        setLoading(false);
       }
-    } catch (error) {
-      console.error('❌ Error fetching productos:', error);
+    };
+
+    cargarDatos();
+  }, [fetchItems, getToken]);
+
+  // ✅ OPTIMIZADO: Efecto para aplicar filtros con debounce mejorado
+  useEffect(() => {
+    // Solo ejecutar si ya terminó la carga inicial de productos
+    if (loadingProducts) {
+      return;
     }
-  };
 
-  const fetchUsuarios = async () => {
-    try {
-      const token = await getToken();
-  const response = await fetch(`${config.API_URL}/users-for-assignment`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+    const timeoutId = setTimeout(() => {
+      fetchItems();
+    }, 300); // Debounce de 300ms
 
-      if (response.ok) {
-        const ct = response.headers.get('content-type') || '';
-        if (!ct.includes('application/json')) {
-          const t = await response.text();
-          console.error('users-for-assignment returned non-JSON:', t.substring(0,300));
-          setUsuarios([]);
-        } else {
-          const data = await response.json();
-          setUsuarios(data.users || []);
-        }
-      }
-    } catch (error) {
-      console.error('Error al cargar usuarios:', error);
-    }
-  };
-
-  const fetchSprints = async () => {
-    try {
-      const token = await getToken();
-      const response = await fetch(`${config.API_URL}/sprints`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        const allSprints = data.sprints || [];
-        const sprintsDisponibles = allSprints.filter(sprint => 
-          sprint.estado === 'planificado' || sprint.estado === 'activo'
-        );
-        setSprints(sprintsDisponibles);
-      }
-    } catch (error) {
-      console.error('Error al cargar sprints:', error);
-    }
-  };
-
-  const handleNewItem = () => {
-    setEditingItem(null);
-    setShowModal(true);
-  };
-
-  const handleEditItem = (item) => {
-    setEditingItem(item);
-    setShowModal(true);
-  };
+    return () => clearTimeout(timeoutId);
+  }, [fetchItems, loadingProducts]);
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -238,50 +194,40 @@ const ProductBacklog = () => {
     }
   };
 
-  // Efecto para cargar datos iniciales
-  useEffect(() => {
-    const cargarDatos = async () => {
-      try {
-        const token = await getToken();
-        if (!token) {
-          setError('No hay token de autenticación');
-          setLoading(false);
-          return;
-        }
-        
-        await Promise.all([
-          fetchProductos(),
-          fetchUsuarios(),
-          fetchSprints()
-        ]);
-        
-        // Cargar items después de tener los datos de referencia
-        await fetchItems();
-      } catch (error) {
-        console.error('Error cargando datos:', error);
-        setError('Error al cargar datos iniciales');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    cargarDatos();
-  }, []);
-
-  // Efecto para aplicar filtros automáticamente
-  useEffect(() => {
-    // Solo ejecutar si ya se han cargado los datos iniciales y no estamos en loading
-    if (productos.length > 0 && !loading) {
-      console.log('Aplicando filtros:', { searchTerm, filtroProducto, filtroEstado, filtroPrioridad });
-      const timeoutId = setTimeout(() => {
-        fetchItems();
-      }, 300); // Debounce de 300ms
-
-      return () => clearTimeout(timeoutId);
+  const handleNewItem = async () => {
+    setEditingItem(null);
+    // Cargar sprints si hay un producto seleccionado
+    if (filtroProducto) {
+      await cargarSprintsDelProducto(filtroProducto);
     }
-  }, [searchTerm, filtroProducto, filtroEstado, filtroPrioridad, productos.length]);
+    setShowModal(true);
+  };
 
-  if (loading) {
+  const handleEditItem = async (item) => {
+    setEditingItem(item);
+    // Cargar sprints del producto del item
+    if (item.producto?._id) {
+      await cargarSprintsDelProducto(item.producto._id);
+    }
+    setShowModal(true);
+  };
+
+  // Función para cargar sprints de un producto específico
+  const cargarSprintsDelProducto = async (productId) => {
+    try {
+      setLoadingSprints(true);
+      const response = await apiService.get(`/api/sprints?producto=${productId}`);
+      setSprints(response.data || []);
+    } catch (error) {
+      console.error('Error cargando sprints:', error);
+      setSprints([]);
+    } finally {
+      setLoadingSprints(false);
+    }
+  };
+
+  // ✅ Mostrar loading solo si los datos principales están cargando
+  if (loading || loadingProducts) {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>

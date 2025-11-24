@@ -2,24 +2,21 @@
 class ApiService {
   constructor() {
     // Debug: Verificar variables de entorno
-    console.log('🔍 Environment Debug:');
-    console.log('   - import.meta.env.PROD:', import.meta.env.PROD);
-    console.log('   - import.meta.env.DEV:', import.meta.env.DEV);
-    console.log('   - import.meta.env.MODE:', import.meta.env.MODE);
-    console.log('   - VITE_API_URL:', import.meta.env.VITE_API_URL);
-    
-    // En desarrollo, usar URL relativa para aprovechar el proxy de Vite
+// Environment debug disabled for production    // En desarrollo, usar URL relativa para aprovechar el proxy de Vite
     // En producción, usar la URL completa
     this.baseURL = import.meta.env.PROD 
       ? (import.meta.env.VITE_API_URL || 'https://appscrum-backend.onrender.com/api')
       : ''; // URL relativa para desarrollo (usará el proxy de Vite)
-      
-    console.log('📡 Final baseURL:', this.baseURL);
     
     this.defaultHeaders = {
       'Content-Type': 'application/json',
       'Accept': 'application/json'
     };
+
+    // ✅ Sistema de deduplicación de peticiones
+    this.pendingRequests = new Map(); // Peticiones en curso
+    this.requestCache = new Map();    // Caché de respuestas (corta duración)
+    this.CACHE_DURATION = 30000;      // 30 segundos para caché de API
   }
 
   async getHeaders(getToken) {
@@ -52,9 +49,48 @@ class ApiService {
 
   // Método genérico para hacer peticiones CON token de Clerk
   async request(endpoint, options = {}, getToken = null) {
+    const method = options.method || 'GET';
+    const cacheKey = `${method}:${endpoint}:${JSON.stringify(options.body || '')}`;
+    
+    // ✅ Deduplicación: Si ya hay una petición pendiente idéntica, esperar a que termine
+    if (this.pendingRequests.has(cacheKey)) {
+      return this.pendingRequests.get(cacheKey);
+    }
+
+    // ✅ Verificar caché de API (solo para GET)
+    if (method === 'GET') {
+      const cached = this.requestCache.get(cacheKey);
+      if (cached && Date.now() - cached.timestamp < this.CACHE_DURATION) {
+        return Promise.resolve(cached.data);
+      }
+    }
+
+    // Crear la promesa de petición
+    const requestPromise = this._executeRequest(endpoint, options, getToken)
+      .then(data => {
+        // Guardar en caché solo si es GET y exitoso
+        if (method === 'GET') {
+          this.requestCache.set(cacheKey, {
+            data,
+            timestamp: Date.now()
+          });
+        }
+        return data;
+      })
+      .finally(() => {
+        // Limpiar de peticiones pendientes
+        this.pendingRequests.delete(cacheKey);
+      });
+
+    // Guardar como pendiente
+    this.pendingRequests.set(cacheKey, requestPromise);
+    
+    return requestPromise;
+  }
+
+  // Método privado que ejecuta la petición real
+  async _executeRequest(endpoint, options = {}, getToken = null) {
     try {
-      console.log('Making request to:', endpoint);
-      console.log('Base URL:', this.baseURL);
       const headers = await this.getHeaders(getToken);
       
       // Si estamos en desarrollo y baseURL está vacío, agregar /api al endpoint
@@ -64,9 +100,6 @@ class ApiService {
       }
       
       const url = finalEndpoint.startsWith('http') ? finalEndpoint : `${this.baseURL}${finalEndpoint}`;
-
-      console.log('Haciendo petición a:', url);
-      console.log('Headers:', headers);
 
       const config = {
         ...options,
@@ -99,6 +132,28 @@ class ApiService {
       console.error('API request failed:', error);
       throw error;
     }
+  }
+
+  /**
+   * Invalidar caché de API por patrón
+   * @param {string} pattern - Patrón para buscar en las claves
+   */
+  invalidateApiCache(pattern) {
+    console.log(`🗑️ Invalidando caché API: ${pattern}`);
+    for (const key of this.requestCache.keys()) {
+      if (key.includes(pattern)) {
+        this.requestCache.delete(key);
+        console.log(`   - Eliminado: ${key}`);
+      }
+    }
+  }
+
+  /**
+   * Limpiar todo el caché de API
+   */
+  clearApiCache() {
+    console.log('🧹 Limpiando caché API completo');
+    this.requestCache.clear();
   }
 
   // Métodos HTTP genéricos que trabajan con tokens de Clerk

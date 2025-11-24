@@ -2,15 +2,18 @@ import React from 'react';
 import { RouterProvider } from 'react-router-dom';
 import { router } from './routes/router.jsx';
 import DynamicHead from './components/common/DynamicHead';
+import { DataProvider } from './context/DataContext';
 import './App.css';
 
 function App() {
   try {
     return (
-      <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300">
-        <DynamicHead />
-        <RouterProvider router={router} />
-      </div>
+      <DataProvider>
+        <div className="min-h-screen bg-white dark:bg-black transition-colors duration-300">
+          <DynamicHead />
+          <RouterProvider router={router} />
+        </div>
+      </DataProvider>
     );
   } catch (error) {
     console.error('Error in App component:', error);

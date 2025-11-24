@@ -235,6 +235,9 @@ const Sidebar = ({ isOpen, onClose, onToggle, role, onLogout }) => {
         case 'roadmap':
           navigate('/product_owner/roadmap');
           break;
+        case 'sprint-planning':
+          navigate('/product_owner/sprint-planning');
+          break;
         case 'metricas':
           navigate('/product_owner/metricas');
           break;

@@ -9,6 +9,7 @@ const TimelineWithMilestones = ({
   onDeleteRelease,
   onEditSprint,
   onSprintAction,
+  onShowBurndown,
   getEstadoColor, 
   formatearFecha,
   calcularProgresoReal,
@@ -226,6 +227,7 @@ const TimelineWithMilestones = ({
                             key={sprint._id} 
                             sprint={{...sprint, release_nombre: release.nombre}} 
                             className="bg-white"
+                            onShowBurndown={onShowBurndown}
                           />
                         ))
                       }
@@ -262,6 +264,7 @@ const TimelineWithMilestones = ({
                       key={sprint._id} 
                       sprint={sprint} 
                       className="bg-white"
+                      onShowBurndown={onShowBurndown}
                     />
                   ))
                 }

@@ -31,15 +31,13 @@ export function RoleProvider({ children }) {
         throw new Error('No se pudo obtener el token de autenticación');
       }
 
-      console.log('🔐 RoleContext: Obteniendo perfil de usuario desde servidor...');
-
-      // FUENTE ÚNICA DE VERDAD: Backend con middleware authenticate
+        // Obteniendo perfil de usuario desde servidor      // FUENTE ÚNICA DE VERDAD: Backend con middleware authenticate
       // Este endpoint garantiza que el usuario existe y tiene un rol válido
       const response = await apiService.request('/auth/user-profile', {
         method: 'GET'
       }, () => Promise.resolve(token));
 
-      console.log('✅ RoleContext: Respuesta del servidor:', response);
+      // console.log('✅ RoleContext: Respuesta del servidor:', response);
 
       if (response?.status === 'success' && response?.user) {
         const userData = response.user;
@@ -57,7 +55,7 @@ export function RoleProvider({ children }) {
         }
         
         setIsRoleLoaded(true);
-        console.log('✅ RoleContext: Rol sincronizado correctamente:', userData.role);
+        // console.log('✅ RoleContext: Rol sincronizado correctamente:', userData.role);
         return;
       }
 
@@ -91,7 +89,7 @@ export function RoleProvider({ children }) {
 
   useEffect(() => {
     if (!isLoaded) {
-      console.log('RoleContext: Esperando a que Clerk se cargue...');
+      // Esperando a que Clerk se cargue
       return;
     }
 

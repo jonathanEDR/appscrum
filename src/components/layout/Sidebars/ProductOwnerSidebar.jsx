@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, FileText, UserCog, LogOut, Shield, Users, Menu, X, ChevronLeft, ChevronRight, Target, Calendar, BarChart3 } from 'lucide-react';
+import { Home, FileText, UserCog, LogOut, Shield, Users, Menu, X, ChevronLeft, ChevronRight, Target, Calendar, BarChart3, Sparkles } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 import LogoDisplay from '../LogoDisplay';
 
@@ -9,6 +9,7 @@ function ProductOwnerSidebar({ currentView, onViewChange, onLogout, userRole, is
     { id: 'productos', icon: FileText, label: 'Productos' },
     { id: 'backlog', icon: Target, label: 'Product Backlog' },
     { id: 'roadmap', icon: Calendar, label: 'Roadmap' },
+    { id: 'sprint-planning', icon: Sparkles, label: 'Planificación Sprint' },
     { id: 'metricas', icon: BarChart3, label: 'Métricas' },
     { id: 'colaboradores', icon: Users, label: 'Colaboradores' },
     { id: 'perfil', icon: UserCog, label: 'Mi Perfil' }

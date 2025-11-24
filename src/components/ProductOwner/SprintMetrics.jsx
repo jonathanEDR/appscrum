@@ -1,6 +1,7 @@
 import React from 'react';
+import { Activity } from 'lucide-react';
 
-const SprintMetrics = ({ sprint, className = '' }) => {
+const SprintMetrics = ({ sprint, className = '', onShowBurndown }) => {
   // Función para calcular burndown
   const calculateBurndown = (sprint) => {
     if (!sprint?.metricas?.burndown_data || sprint.metricas.burndown_data.length === 0) {
@@ -101,6 +102,16 @@ const SprintMetrics = ({ sprint, className = '' }) => {
           <p className="text-sm text-gray-600">{sprint.objetivo}</p>
         </div>
         <div className="flex items-center gap-2">
+          {/* Botón de Burndown */}
+          {onShowBurndown && (
+            <button
+              onClick={() => onShowBurndown(sprint._id)}
+              className="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+              title="Ver Burndown Chart"
+            >
+              <Activity size={18} />
+            </button>
+          )}
           <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getPriorityColor(sprint.prioridad)}`}>
             {getPriorityEmoji(sprint.prioridad)} {sprint.prioridad?.charAt(0).toUpperCase() + sprint.prioridad?.slice(1)}
           </span>

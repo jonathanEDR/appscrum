@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { 
   Calendar, 
@@ -16,7 +16,8 @@ import {
   MoreVertical,
   History,
   Tag,
-  Hash
+  Hash,
+  Activity
 } from 'lucide-react';
 import ReleaseModal from './modalsPO/ReleaseModal';
 import SprintModal from './modalsPO/SprintModal';
@@ -28,17 +29,20 @@ import ReleaseHistoryModal from './components/ReleaseHistoryModal';
 import VersionManager from './components/VersionManager';
 import TimelineWithMilestones from './TimelineWithMilestones';
 import SprintMetrics from './SprintMetrics';
+import BurndownChart from './BurndownChart';
 
 import config from '../../config/config';
 import { apiService } from '../../services/apiService';
+import { useProducts } from '../../hooks/useProducts';
+import { useSprints } from '../../hooks/useSprints';
 
 const API_BASE_URL = config.API_URL || import.meta.env.VITE_API_URL || '';
 
 const Roadmap = () => {
   const { getToken } = useAuth();
+  
+  // Estados locales
   const [releases, setReleases] = useState([]);
-  const [sprints, setSprints] = useState([]);
-  const [productos, setProductos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedProduct, setSelectedProduct] = useState('');
@@ -49,6 +53,7 @@ const Roadmap = () => {
   const [viewMode, setViewMode] = useState('timeline'); // timeline, kanban, dependencies
   const [showHistory, setShowHistory] = useState(null); // Release para mostrar historial
   const [showVersionManager, setShowVersionManager] = useState(null); // Release para gestionar versión
+  const [showBurndown, setShowBurndown] = useState(null); // Sprint para mostrar burndown
   const [filters, setFilters] = useState({
     search: '',
     estado: '',
@@ -58,6 +63,10 @@ const Roadmap = () => {
     responsable: ''
   });
   const [alerts, setAlerts] = useState([]);
+
+  // ✅ Usar custom hooks con caché
+  const { products: productos, loading: loadingProducts } = useProducts();
+  const { sprints, loading: loadingSprints } = useSprints(selectedProduct);
 
   // Función para agregar alertas
   const addAlert = (message, type = 'info') => {
@@ -147,44 +156,33 @@ const Roadmap = () => {
     }
   };
 
-  useEffect(() => {
-    cargarDatos();
-  }, [selectedProduct]);
+  // ✅ OPTIMIZADO: Usar useCallback para cargarReleases
+  const cargarReleases = useCallback(async () => {
+    if (!selectedProduct) {
+      setReleases([]);
+      setLoading(false);
+      return;
+    }
 
-  const cargarDatos = async () => {
     try {
       setLoading(true);
       setError(null);
+      
+      const releasesData = await apiService.get(`/releases/roadmap/${selectedProduct}`, getToken);
 
-      // Cargar productos primero
-      const productosData = await apiService.get('/products', getToken);
-      setProductos(productosData.products || []);
-
-      // Si hay un producto seleccionado, cargar sus releases y sprints
-      if (selectedProduct) {
-        console.log('Loading data for product:', selectedProduct);
-        
-        const [releasesData, sprintsData] = await Promise.all([
-          apiService.get(`/releases/roadmap/${selectedProduct}`, getToken),
-          apiService.get(`/sprints?producto=${selectedProduct}`, getToken)
-        ]);
-        console.log('Releases data received:', releasesData);
-        console.log('Sprints data received:', sprintsData);
-        console.log('Number of releases:', releasesData.releases?.length || 0);
-        console.log('Number of sprints:', sprintsData.sprints?.length || 0);
-
-        setReleases(releasesData.releases || []);
-        setSprints(sprintsData.sprints || []);
-        
-        console.log('State updated - releases:', releasesData.releases?.length || 0, 'sprints:', sprintsData.sprints?.length || 0);
-      }
+      setReleases(releasesData.releases || []);
     } catch (error) {
-      console.error('Error al cargar datos:', error);
-      setError('Error al cargar datos del roadmap');
+      console.error('Error al cargar releases:', error);
+      setError('Error al cargar releases del roadmap');
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectedProduct, getToken]);
+
+  // ✅ OPTIMIZADO: Solo cargar releases cuando cambia el producto
+  useEffect(() => {
+    cargarReleases();
+  }, [cargarReleases]);
 
   const crearRelease = async (formData) => {
     try {
@@ -205,7 +203,7 @@ const Roadmap = () => {
       console.log('Response:', response);
       console.log('Success response:', response);
       
-      await cargarDatos();
+      await cargarReleases();
       setShowReleaseModal(false);
     } catch (error) {
       console.error('Error creating release:', error);
@@ -216,7 +214,7 @@ const Roadmap = () => {
   const actualizarRelease = async (id, formData) => {
     try {
       await apiService.put(`/releases/${id}`, formData, getToken);
-      await cargarDatos();
+      await cargarReleases();
       setEditingRelease(null);
     } catch (error) {
       setError(error.message);
@@ -260,7 +258,7 @@ const Roadmap = () => {
       const result = await response.json();
       console.log('Sprint updated successfully:', result);
       
-      await cargarDatos();
+      await cargarReleases();
       setEditingSprint(null);
       addAlert('Sprint actualizado exitosamente', 'success');
     } catch (error) {
@@ -284,7 +282,7 @@ const Roadmap = () => {
         throw new Error(errorData.error || 'Error al eliminar release');
       }
 
-      await cargarDatos();
+      await cargarReleases();
     } catch (error) {
       setError(error.message);
     }
@@ -326,7 +324,7 @@ const Roadmap = () => {
       );
       
       setShowVersionManager(null);
-      await cargarDatos();
+      await cargarReleases();
     } catch (error) {
       console.error('Error al crear versión:', error);
       addAlert(error.message || 'Error al crear nueva versión', 'error');
@@ -381,8 +379,8 @@ const Roadmap = () => {
       const result = await response.json();
       console.log('Success response:', result);
       
-      console.log('Reloading data after sprint creation...');
-      await cargarDatos();
+      // console.log('Reloading data after sprint creation...');
+      await cargarReleases();
       setShowSprintModal(false);
       console.log('Sprint creation completed successfully');
     } catch (error) {
@@ -408,7 +406,7 @@ const Roadmap = () => {
         throw new Error(errorData.error || `Error al ${accion} sprint`);
       }
 
-      await cargarDatos();
+      await cargarReleases();
     } catch (error) {
       setError(error.message);
     }
@@ -444,7 +442,7 @@ const Roadmap = () => {
       addAlert(`Release actualizado a ${nuevoEstado}`, 'success');
       
       // Recargar datos para obtener el progreso actualizado
-      await cargarDatos();
+      await cargarReleases();
       
     } catch (error) {
       console.error('Error al cambiar estado:', error);
@@ -631,6 +629,7 @@ const Roadmap = () => {
               onEditSprint={setEditingSprint}
               onSprintAction={cambiarEstadoSprint}
               onReleaseAction={cambiarEstadoRelease}
+              onShowBurndown={setShowBurndown}
               getEstadoColor={getEstadoColor}
               formatearFecha={formatearFecha}
               calcularProgresoReal={calcularProgresoReal}
@@ -646,6 +645,7 @@ const Roadmap = () => {
               onReleaseAction={cambiarEstadoRelease}
               onShowHistory={setShowHistory}
               onShowVersionManager={setShowVersionManager}
+              onShowBurndown={setShowBurndown}
               getEstadoColor={getEstadoColor}
               formatearFecha={formatearFecha}
               calcularProgresoReal={calcularProgresoReal}
@@ -719,6 +719,20 @@ const Roadmap = () => {
           onVersionChange={manejarCambioVersion}
           onClose={() => setShowVersionManager(null)}
         />
+      )}
+
+      {/* Modal de Burndown Chart */}
+      {showBurndown && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <BurndownChart 
+                sprintId={showBurndown}
+                onClose={() => setShowBurndown(null)}
+              />
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -813,6 +827,7 @@ const TimelineView = ({
                     sprint={sprint}
                     onEdit={onEditSprint}
                     onAction={onSprintAction}
+                    onShowBurndown={setShowBurndown}
                     getEstadoColor={getEstadoColor}
                     formatearFecha={formatearFecha}
                   />
@@ -836,6 +851,7 @@ const TimelineView = ({
                       sprint={sprint}
                       onEdit={onEditSprint}
                       onAction={onSprintAction}
+                      onShowBurndown={setShowBurndown}
                       getEstadoColor={getEstadoColor}
                       formatearFecha={formatearFecha}
                     />
@@ -865,6 +881,7 @@ const TimelineView = ({
                       sprint={sprint}
                       onEdit={onEditSprint}
                       onAction={onSprintAction}
+                      onShowBurndown={setShowBurndown}
                       getEstadoColor={getEstadoColor}
                       formatearFecha={formatearFecha}
                     />
@@ -890,6 +907,7 @@ const KanbanView = ({
   onReleaseAction,
   onShowHistory,
   onShowVersionManager,
+  onShowBurndown,
   getEstadoColor, 
   formatearFecha,
   calcularProgresoReal
@@ -1038,7 +1056,8 @@ const KanbanView = ({
 const SprintCard = ({ 
   sprint, 
   onEdit, 
-  onAction, 
+  onAction,
+  onShowBurndown, 
   getEstadoColor, 
   formatearFecha 
 }) => {
@@ -1054,6 +1073,15 @@ const SprintCard = ({
         </div>
         
         <div className="flex items-center gap-1">
+          {/* Botón de Burndown - Siempre visible */}
+          <button
+            onClick={() => onShowBurndown(sprint._id)}
+            className="p-1 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded transition-colors"
+            title="Ver Burndown Chart"
+          >
+            <Activity size={16} />
+          </button>
+          
           {sprint.estado === 'planificado' && (
             <button
               onClick={() => onAction(sprint._id, 'start')}

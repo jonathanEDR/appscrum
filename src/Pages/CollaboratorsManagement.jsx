@@ -80,15 +80,19 @@ const CollaboratorsManagement = () => {
             // Endpoint /admin/users devuelve { users: [...] }
             setCollaborators(data.users || []);
           } else {
-            // Endpoint /team/members devuelve { teamMembers: [...] }
+            // Endpoint /team/members devuelve { teamMembers: [...] } o { members: [...] }
             // Necesitamos transformar los datos de TeamMember a formato de usuario
-            const users = (data.teamMembers || []).map(teamMember => ({
+            const teamMembers = data.teamMembers || data.members || [];
+            const users = teamMembers.map(teamMember => ({
               _id: teamMember.user?._id || teamMember._id,
+              clerk_id: teamMember.user?.clerk_id || 'N/A',
               nombre_negocio: teamMember.user?.nombre_negocio || teamMember.user?.firstName + ' ' + teamMember.user?.lastName,
               email: teamMember.user?.email,
               role: teamMember.role,
               avatar: teamMember.user?.avatar,
               status: teamMember.status || 'active',
+              is_active: teamMember.status === 'active',
+              createdAt: teamMember.createdAt || teamMember.joinedDate || new Date(),
               team: teamMember.team,
               position: teamMember.position,
               skills: teamMember.skills
