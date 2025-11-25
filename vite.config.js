@@ -18,10 +18,19 @@ export default defineConfig({
       }
     }
   },
+  css: {
+    devSourcemap: true,
+    postcss: './postcss.config.js'
+  },
+  esbuild: {
+    logOverride: { 'css-syntax-error': 'silent' }
+  },
   build: {
     outDir: 'dist',
     sourcemap: true,
     chunkSizeWarningLimit: 1000, // Incrementar el límite a 1MB
+    minify: 'esbuild',
+    target: 'esnext',
     rollupOptions: {
       output: {
         manualChunks: {
@@ -59,7 +68,6 @@ export default defineConfig({
           // Componentes de Developers
           'developers': [
             './src/components/developers/SprintBoard.jsx',
-            './src/components/developers/CodeRepositories.jsx',
             './src/components/developers/MyTasks.jsx',
             './src/components/developers/TimeTracking.jsx'
           ]
