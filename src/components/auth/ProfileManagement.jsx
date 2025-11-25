@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
-import { Edit2, Save, X, Search, RefreshCw, UserPlus } from 'lucide-react';
+import { Edit2, Save, X, Search, RefreshCw } from 'lucide-react';
 
 const ProfileManagement = ({ userRole }) => {
   const { getToken } = useAuth();
@@ -135,17 +135,15 @@ const ProfileManagement = ({ userRole }) => {
   };
 
   // Función para cambiar el rol de un usuario
-  const handlePromoteRole = async (userId, currentRole) => {
-    let newRole = '';
-    // Secuencia de roles
-    const roles = ['user', 'developers', 'scrum_master', 'product_owner', 'super_admin'];
-    const currentIndex = roles.indexOf(currentRole);
-    if (currentIndex === -1 || currentIndex === roles.length - 1) {
-      setError('No se puede promover más este usuario');
+  const handleChangeRole = async (userId, newRole, currentRole) => {
+    // Validar que el rol sea diferente
+    if (newRole === currentRole) {
+      setError('El rol seleccionado es el mismo que el actual');
       return;
     }
-    newRole = roles[currentIndex + 1];
+    
     if (!window.confirm(`¿Estás seguro de que quieres cambiar el rol de este usuario a ${newRole}?`)) return;
+    
     try {
       const token = await getToken();
       const response = await fetch(`${API_URL}/admin/users/${userId}/role`, {
@@ -156,15 +154,31 @@ const ProfileManagement = ({ userRole }) => {
         },
         body: JSON.stringify({ role: newRole })
       });
+      
       if (response.ok) {
         fetchUsers();
         setError('success:Rol actualizado exitosamente');
       } else {
-        throw new Error('Error al cambiar el rol');
+        const errorData = await response.json();
+        throw new Error(errorData.message || 'Error al cambiar el rol');
       }
     } catch (error) {
       setError('Error al cambiar el rol: ' + error.message);
     }
+  };
+  
+  // Roles disponibles en el sistema
+  const availableRoles = [
+    { value: 'user', label: 'Usuario', color: 'bg-gray-100 text-gray-800' },
+    { value: 'developers', label: 'Desarrollador', color: 'bg-green-100 text-green-800' },
+    { value: 'scrum_master', label: 'Scrum Master', color: 'bg-blue-100 text-blue-800' },
+    { value: 'product_owner', label: 'Product Owner', color: 'bg-orange-100 text-orange-800' },
+    { value: 'super_admin', label: 'Super Admin', color: 'bg-purple-100 text-purple-800' }
+  ];
+  
+  // Obtener el label y color de un rol
+  const getRoleInfo = (roleValue) => {
+    return availableRoles.find(r => r.value === roleValue) || { label: roleValue, color: 'bg-gray-100 text-gray-800' };
   };
 
   useEffect(() => {
@@ -274,25 +288,43 @@ const ProfileManagement = ({ userRole }) => {
                     )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                      user.role === 'super_admin' ? 'bg-purple-100 text-purple-800' :
-                      user.role === 'admin' ? 'bg-blue-100 text-blue-800' :
-                      'bg-gray-100 text-gray-800'
-                    }`}>
-                      {user.role}
-                    </span>
+                    {editingUser?._id === user._id ? (
+                      <select
+                        className="border border-gray-300 rounded px-3 py-1 text-sm"
+                        value={user.role}
+                        onChange={(e) => {
+                          handleCancelEdit();
+                          handleChangeRole(user._id, e.target.value, user.role);
+                        }}
+                        disabled={user.role === 'super_admin'}
+                      >
+                        {availableRoles.map((role) => (
+                          <option key={role.value} value={role.value}>
+                            {role.label}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="flex items-center gap-2">
+                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${getRoleInfo(user.role).color}`}>
+                          {getRoleInfo(user.role).label}
+                        </span>
+                      </div>
+                    )}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">                    {editingUser?._id === user._id ? (
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleSaveProfile(user._id)}
                           className="text-green-600 hover:text-green-900"
+                          title="Guardar cambios"
                         >
                           <Save size={18} />
                         </button>
                         <button
                           onClick={handleCancelEdit}
                           className="text-red-600 hover:text-red-900"
+                          title="Cancelar edición"
                         >
                           <X size={18} />
                         </button>
@@ -305,19 +337,35 @@ const ProfileManagement = ({ userRole }) => {
                             <button
                               onClick={() => handleEdit(user)}
                               className="text-blue-600 hover:text-blue-900"
-                              title="Editar usuario"
+                              title="Editar perfil"
                             >
                               <Edit2 size={18} />
                             </button>
-                            {/* Botón para promover/cambiar rol */}
+                            {/* Selector de rol como dropdown en lugar de botón de promoción */}
                             {user.role !== 'super_admin' && (
-                              <button
-                                onClick={() => handlePromoteRole(user._id, user.role)}
-                                className="text-yellow-600 hover:text-yellow-900"
-                                title="Promover/Cambiar rol"
+                              <select
+                                onChange={(e) => {
+                                  if (e.target.value !== user.role) {
+                                    handleChangeRole(user._id, e.target.value, user.role);
+                                  }
+                                  e.target.value = user.role; // Reset al valor actual
+                                }}
+                                defaultValue=""
+                                className="text-sm border border-gray-300 rounded px-2 py-1 hover:bg-gray-50 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                title="Cambiar rol"
                               >
-                                <UserPlus size={18} />
-                              </button>
+                                <option value="" disabled>
+                                  Cambiar rol...
+                                </option>
+                                {availableRoles
+                                  .filter(role => role.value !== 'super_admin' && role.value !== user.role)
+                                  .map((role) => (
+                                    <option key={role.value} value={role.value}>
+                                      {role.label}
+                                    </option>
+                                  ))
+                                }
+                              </select>
                             )}
                           </>
                         )}
