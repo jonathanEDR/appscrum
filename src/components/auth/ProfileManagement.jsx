@@ -19,7 +19,7 @@ const ProfileManagement = ({ userRole }) => {
   // Opciones de roles disponibles
   const availableRoles = [
     { value: 'user', label: 'Usuario', color: theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800' },
-    { value: 'developers', label: 'Developer', color: theme === 'dark' ? 'bg-blue-800/50 text-blue-300' : 'bg-blue-100 text-blue-800' },
+    { value: 'developers', label: 'Desarrollador', color: theme === 'dark' ? 'bg-blue-800/50 text-blue-300' : 'bg-blue-100 text-blue-800' },
     { value: 'scrum_master', label: 'Scrum Master', color: theme === 'dark' ? 'bg-green-800/50 text-green-300' : 'bg-green-100 text-green-800' },
     { value: 'product_owner', label: 'Product Owner', color: theme === 'dark' ? 'bg-yellow-800/50 text-yellow-300' : 'bg-yellow-100 text-yellow-800' },
     { value: 'super_admin', label: 'Super Admin', color: theme === 'dark' ? 'bg-purple-800/50 text-purple-300' : 'bg-purple-100 text-purple-800' }
@@ -181,20 +181,6 @@ const ProfileManagement = ({ userRole }) => {
     } catch (error) {
       setError('Error al cambiar el rol: ' + error.message);
     }
-  };
-  
-  // Roles disponibles en el sistema
-  const availableRoles = [
-    { value: 'user', label: 'Usuario', color: 'bg-gray-100 text-gray-800' },
-    { value: 'developers', label: 'Desarrollador', color: 'bg-green-100 text-green-800' },
-    { value: 'scrum_master', label: 'Scrum Master', color: 'bg-blue-100 text-blue-800' },
-    { value: 'product_owner', label: 'Product Owner', color: 'bg-orange-100 text-orange-800' },
-    { value: 'super_admin', label: 'Super Admin', color: 'bg-purple-100 text-purple-800' }
-  ];
-  
-  // Obtener el label y color de un rol
-  const getRoleInfo = (roleValue) => {
-    return availableRoles.find(r => r.value === roleValue) || { label: roleValue, color: 'bg-gray-100 text-gray-800' };
   };
 
   useEffect(() => {
