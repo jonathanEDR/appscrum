@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, CheckCircle, Edit, Trash2, Users, Target, Clock } from 'lucide-react';
 import SprintMetrics from './SprintMetrics';
+import SprintTasksSummary from './components/SprintTasksSummary';
 
 const TimelineWithMilestones = ({ 
   releases, 
@@ -15,6 +16,30 @@ const TimelineWithMilestones = ({
   calcularProgresoReal,
   milestones = []
 }) => {
+  // 🔥 NUEVO: Cargar tareas de sprints desde sessionStorage
+  const [sprintTasksData, setSprintTasksData] = useState({});
+  
+  useEffect(() => {
+    const loadSprintTasks = () => {
+      try {
+        const storedTasks = sessionStorage.getItem('roadmap_sprint_tasks');
+        if (storedTasks) {
+          const tasksMap = JSON.parse(storedTasks);
+          setSprintTasksData(tasksMap);
+        }
+      } catch (error) {
+        console.error('Error al cargar tareas de sprints:', error);
+      }
+    };
+    
+    loadSprintTasks();
+    
+    // Listener para cambios en sessionStorage (si se actualiza desde Roadmap)
+    const handleStorageChange = () => loadSprintTasks();
+    window.addEventListener('storage', handleStorageChange);
+    
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, [releases, sprints]); // Recargar cuando cambien releases o sprints
   
   // Función para determinar los milestones del año
   const generateMilestones = () => {
@@ -219,17 +244,35 @@ const TimelineWithMilestones = ({
                 {releaseSprintList.length > 0 && (
                   <div className="mt-4">
                     <h5 className="text-sm font-medium text-gray-700 mb-3">Sprints Asociados:</h5>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                    <div className="space-y-4">
                       {releaseSprintList
                         .sort((a, b) => new Date(a.fecha_inicio) - new Date(b.fecha_inicio))
-                        .map(sprint => (
-                          <SprintMetrics 
-                            key={sprint._id} 
-                            sprint={{...sprint, release_nombre: release.nombre}} 
-                            className="bg-white"
-                            onShowBurndown={onShowBurndown}
-                          />
-                        ))
+                        .map(sprint => {
+                          // 🔥 NUEVO: Obtener tareas del sprint
+                          const sprintTasks = sprintTasksData[sprint._id];
+                          
+                          return (
+                            <div key={sprint._id} className="space-y-3">
+                              {/* Sprint Metrics Card */}
+                              <SprintMetrics 
+                                sprint={{...sprint, release_nombre: release.nombre}} 
+                                className="bg-white"
+                                onShowBurndown={onShowBurndown}
+                              />
+                              
+                              {/* 🔥 NUEVO: Resumen de tareas del sprint */}
+                              {sprintTasks && (
+                                <SprintTasksSummary
+                                  sprintId={sprint._id}
+                                  sprintName={sprint.nombre}
+                                  tasksByStatus={sprintTasks.tasks}
+                                  metrics={sprintTasks.metrics}
+                                  compact={false}
+                                />
+                              )}
+                            </div>
+                          );
+                        })
                       }
                     </div>
                   </div>
@@ -256,17 +299,35 @@ const TimelineWithMilestones = ({
                 Sprints no asociados a ningún release específico
               </p>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 {independentSprints
                   .sort((a, b) => new Date(a.fecha_inicio) - new Date(b.fecha_inicio))
-                  .map(sprint => (
-                    <SprintMetrics 
-                      key={sprint._id} 
-                      sprint={sprint} 
-                      className="bg-white"
-                      onShowBurndown={onShowBurndown}
-                    />
-                  ))
+                  .map(sprint => {
+                    // 🔥 NUEVO: Obtener tareas del sprint
+                    const sprintTasks = sprintTasksData[sprint._id];
+                    
+                    return (
+                      <div key={sprint._id} className="space-y-3">
+                        {/* Sprint Metrics Card */}
+                        <SprintMetrics 
+                          sprint={sprint} 
+                          className="bg-white"
+                          onShowBurndown={onShowBurndown}
+                        />
+                        
+                        {/* 🔥 NUEVO: Resumen de tareas del sprint */}
+                        {sprintTasks && (
+                          <SprintTasksSummary
+                            sprintId={sprint._id}
+                            sprintName={sprint.nombre}
+                            tasksByStatus={sprintTasks.tasks}
+                            metrics={sprintTasks.metrics}
+                            compact={false}
+                          />
+                        )}
+                      </div>
+                    );
+                  })
                 }
               </div>
             </div>

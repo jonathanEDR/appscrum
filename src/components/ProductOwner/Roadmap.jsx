@@ -168,9 +168,28 @@ const Roadmap = () => {
       setLoading(true);
       setError(null);
       
-      const releasesData = await apiService.get(`/releases/roadmap/${selectedProduct}`, getToken);
+      // 🔥 NUEVO: Incluir tareas en el roadmap
+      const releasesData = await apiService.get(
+        `/releases/roadmap/${selectedProduct}?includeTasks=true`, 
+        getToken
+      );
 
       setReleases(releasesData.releases || []);
+      
+      // 🔥 NUEVO: Guardar las tareas de sprints en estado
+      if (releasesData.sprintTasks) {
+        // Convertir array a objeto para fácil acceso por sprintId
+        const tasksMap = releasesData.sprintTasks.reduce((acc, sprintTask) => {
+          acc[sprintTask.sprintId] = {
+            tasks: sprintTask.tasks,
+            metrics: sprintTask.metrics
+          };
+          return acc;
+        }, {});
+        
+        // Guardar en sessionStorage para Timeline
+        sessionStorage.setItem('roadmap_sprint_tasks', JSON.stringify(tasksMap));
+      }
     } catch (error) {
       console.error('Error al cargar releases:', error);
       setError('Error al cargar releases del roadmap');

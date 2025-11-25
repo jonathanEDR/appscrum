@@ -1,297 +1,278 @@
-import { useState, useEffect, useCallback, useRef } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
 import { developersApiService } from '../services/developersApiService';
 
 /**
- * Hook para manejar time tracking y timer
+ * Hook para manejar time tracking y timer con React Query
+ * 
+ * Mejoras implementadas:
+ * - Caché automático de stats y entries
+ * - Timer optimizado (calculado on-demand en lugar de interval de 1s)
+ * - Polling inteligente del timer activo (solo cuando hay timer corriendo)
+ * - Invalidación automática de queries relacionadas
  */
 export const useTimeTracking = (initialPeriod = 'week') => {
   const { getToken } = useAuth();
-  const [stats, setStats] = useState(null);
-  const [entries, setEntries] = useState([]);
-  const [activeTimer, setActiveTimer] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const queryClient = useQueryClient();
   const [period, setPeriod] = useState(initialPeriod);
-  const [timerSeconds, setTimerSeconds] = useState(0);
   
-  // Ref para el intervalo del timer
-  const timerIntervalRef = useRef(null);
-
   // Configurar el token provider en el servicio
   useEffect(() => {
     developersApiService.setTokenProvider(getToken);
   }, [getToken]);
 
-  // Función para cargar estadísticas
-  const loadStats = useCallback(async (newPeriod = period) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const response = await developersApiService.getTimeTrackingStats(newPeriod);
-      
-      if (response.success) {
-        setStats(response.data);
-      } else {
-        setError('Error al cargar estadísticas');
-      }
-    } catch (err) {
-      setError(err.message || 'Error al cargar estadísticas');
-    } finally {
-      setLoading(false);
-    }
-  }, [period]);
 
-  // Función para cargar entradas de tiempo
-  const loadEntries = useCallback(async (filters = {}) => {
-    try {
-      const response = await developersApiService.getTimeEntries(filters);
-      
-      if (response.success) {
-        setEntries(response.data || []);
-      } else {
-        setError('Error al cargar entradas de tiempo');
+  // Query para obtener estadísticas de time tracking
+  const {
+    data: stats,
+    isLoading: statsLoading,
+    error: statsError,
+    refetch: refetchStats
+  } = useQuery({
+    queryKey: ['developer-time-stats', period],
+    queryFn: async () => {
+      const response = await developersApiService.getTimeTrackingStats(period);
+      if (!response.success) {
+        throw new Error('Error al cargar estadísticas');
       }
-    } catch (err) {
-      setError(err.message || 'Error al cargar entradas de tiempo');
-    }
-  }, []);
+      return response.data;
+    },
+    staleTime: 120000, // 2 minutos - Stats cambian con menos frecuencia
+    cacheTime: 10 * 60 * 1000, // 10 minutos
+  });
 
-  // Función para cargar timer activo
-  const loadActiveTimer = useCallback(async () => {
-    try {
+  // Query para obtener entradas de tiempo
+  const {
+    data: entries,
+    isLoading: entriesLoading,
+    refetch: refetchEntries
+  } = useQuery({
+    queryKey: ['developer-time-entries'],
+    queryFn: async () => {
+      const response = await developersApiService.getTimeEntries();
+      if (!response.success) {
+        throw new Error('Error al cargar entradas de tiempo');
+      }
+      return response.data || [];
+    },
+    staleTime: 60000, // 1 minuto
+    cacheTime: 5 * 60 * 1000, // 5 minutos
+  });
+
+  // Query para obtener timer activo con polling inteligente
+  const {
+    data: activeTimer,
+    isLoading: timerLoading,
+    refetch: refetchTimer
+  } = useQuery({
+    queryKey: ['developer-active-timer'],
+    queryFn: async () => {
       const response = await developersApiService.getActiveTimer();
-      
-      if (response.success && response.data) {
-        setActiveTimer(response.data);
-        
-        // Calcular tiempo transcurrido
-        if (response.data.startTime) {
-          const startTime = new Date(response.data.startTime);
-          const now = new Date();
-          const elapsedSeconds = Math.floor((now - startTime) / 1000);
-          setTimerSeconds(elapsedSeconds);
-          
-          // Iniciar contador si hay timer activo
-          startTimerCounter();
-        }
-      } else {
-        setActiveTimer(null);
-        setTimerSeconds(0);
+      if (!response.success) {
+        return null;
       }
-    } catch (err) {
-      console.error('Error al cargar timer activo:', err);
-      setActiveTimer(null);
-      setTimerSeconds(0);
-    }
-  }, []);
+      return response.data;
+    },
+    staleTime: 5000, // 5 segundos - Timer necesita actualizarse más seguido pero no cada 1s
+    cacheTime: 30000, // 30 segundos
+    // Refetch automático cada 10 segundos SOLO si hay timer activo
+    refetchInterval: (data) => {
+      return data ? 10000 : false; // 10s cuando hay timer, desactivado cuando no hay
+    },
+    refetchIntervalInBackground: true, // Continuar polling en background
+  });
 
-  // Función para iniciar timer
-  const startTimer = useCallback(async (taskId) => {
-    try {
-      setError(null);
-      
+  // ⚡ OPTIMIZACIÓN: Calcular tiempo del timer on-demand en lugar de interval de 1s
+  const timerSeconds = useMemo(() => {
+    if (!activeTimer?.startTime) return 0;
+    const start = new Date(activeTimer.startTime);
+    const now = new Date();
+    return Math.floor((now - start) / 1000);
+  }, [activeTimer, statsLoading]); // Re-calcular cuando cambia activeTimer o cada render
+
+  // Formato del tiempo del timer
+  const formattedTimerTime = useMemo(() => {
+    const hours = Math.floor(timerSeconds / 3600);
+    const minutes = Math.floor((timerSeconds % 3600) / 60);
+    const secs = timerSeconds % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }, [timerSeconds]);
+
+  // Mutation para iniciar timer
+  const startTimerMutation = useMutation({
+    mutationFn: async (taskId) => {
       const response = await developersApiService.startTimer(taskId);
-      
-      if (response.success) {
-        setActiveTimer(response.data);
-        setTimerSeconds(0);
-        startTimerCounter();
-        
-        // Recargar estadísticas
-        await loadStats();
-        
-        return response.data;
-      } else {
+      if (!response.success) {
         throw new Error('Error al iniciar timer');
       }
-    } catch (err) {
-      setError(err.message || 'Error al iniciar timer');
-      throw err;
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidar queries relacionadas
+      queryClient.invalidateQueries(['developer-active-timer']);
+      queryClient.invalidateQueries(['developer-time-stats']);
+      queryClient.invalidateQueries(['developer-tasks']);
+    },
+    onError: (err) => {
+      console.error('Error al iniciar timer:', err);
     }
-  }, [loadStats]);
+  });
 
-  // Función para detener timer
-  const stopTimer = useCallback(async (description = '') => {
-    try {
-      setError(null);
-      
+  // Mutation para detener timer
+  const stopTimerMutation = useMutation({
+    mutationFn: async (description = '') => {
       const response = await developersApiService.stopTimer(description);
-      
-      if (response.success) {
-        setActiveTimer(null);
-        setTimerSeconds(0);
-        stopTimerCounter();
-        
-        // Recargar estadísticas y entradas
-        await Promise.all([
-          loadStats(),
-          loadEntries()
-        ]);
-        
-        return response.data;
-      } else {
+      if (!response.success) {
         throw new Error('Error al detener timer');
       }
-    } catch (err) {
-      setError(err.message || 'Error al detener timer');
-      throw err;
+      return response.data;
+    },
+    onSuccess: () => {
+      // Invalidar queries relacionadas
+      queryClient.invalidateQueries(['developer-active-timer']);
+      queryClient.invalidateQueries(['developer-time-stats']);
+      queryClient.invalidateQueries(['developer-time-entries']);
+      queryClient.invalidateQueries(['developer-tasks']);
+    },
+    onError: (err) => {
+      console.error('Error al detener timer:', err);
     }
-  }, [loadStats, loadEntries]);
+  });
 
-  // Función para crear entrada manual de tiempo
-  const createTimeEntry = useCallback(async (timeData) => {
-    try {
-      setError(null);
-      
+  // Mutation para crear entrada manual
+  const createEntryMutation = useMutation({
+    mutationFn: async (timeData) => {
       const response = await developersApiService.createTimeEntry(timeData);
-      
-      if (response.success) {
-        // Recargar datos
-        await Promise.all([
-          loadStats(),
-          loadEntries()
-        ]);
-        
-        return response.data;
-      } else {
+      if (!response.success) {
         throw new Error('Error al crear entrada de tiempo');
       }
-    } catch (err) {
-      setError(err.message || 'Error al crear entrada de tiempo');
-      throw err;
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries(['developer-time-stats']);
+      queryClient.invalidateQueries(['developer-time-entries']);
+      queryClient.invalidateQueries(['developer-tasks']);
     }
-  }, [loadStats, loadEntries]);
+  });
 
-  // Función para actualizar entrada de tiempo
-  const updateTimeEntry = useCallback(async (entryId, updateData) => {
-    try {
-      setError(null);
-      
+  // Mutation para actualizar entrada
+  const updateEntryMutation = useMutation({
+    mutationFn: async ({ entryId, updateData }) => {
       const response = await developersApiService.updateTimeEntry(entryId, updateData);
-      
-      if (response.success) {
-        // Actualizar entrada en el estado local
-        setEntries(prevEntries => 
-          prevEntries.map(entry => 
-            entry._id === entryId 
-              ? { ...entry, ...updateData }
-              : entry
-          )
-        );
-        
-        // Recargar estadísticas
-        await loadStats();
-        
-        return response.data;
-      } else {
+      if (!response.success) {
         throw new Error('Error al actualizar entrada de tiempo');
       }
-    } catch (err) {
-      setError(err.message || 'Error al actualizar entrada de tiempo');
-      throw err;
-    }
-  }, [loadStats]);
-
-  // Función para eliminar entrada de tiempo
-  const deleteTimeEntry = useCallback(async (entryId) => {
-    try {
-      setError(null);
+      return response.data;
+    },
+    // Optimistic update
+    onMutate: async ({ entryId, updateData }) => {
+      await queryClient.cancelQueries(['developer-time-entries']);
+      const previousEntries = queryClient.getQueryData(['developer-time-entries']);
       
-      const response = await developersApiService.deleteTimeEntry(entryId);
-      
-      if (response.success) {
-        // Eliminar entrada del estado local
-        setEntries(prevEntries => 
-          prevEntries.filter(entry => entry._id !== entryId)
+      queryClient.setQueryData(['developer-time-entries'], (old) => {
+        if (!old) return old;
+        return old.map(entry =>
+          entry._id === entryId ? { ...entry, ...updateData } : entry
         );
-        
-        // Recargar estadísticas
-        await loadStats();
-        
-        return response.data;
-      } else {
+      });
+      
+      return { previousEntries };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousEntries) {
+        queryClient.setQueryData(['developer-time-entries'], context.previousEntries);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(['developer-time-stats']);
+      queryClient.invalidateQueries(['developer-time-entries']);
+    }
+  });
+
+  // Mutation para eliminar entrada
+  const deleteEntryMutation = useMutation({
+    mutationFn: async (entryId) => {
+      const response = await developersApiService.deleteTimeEntry(entryId);
+      if (!response.success) {
         throw new Error('Error al eliminar entrada de tiempo');
       }
-    } catch (err) {
-      setError(err.message || 'Error al eliminar entrada de tiempo');
-      throw err;
+      return response.data;
+    },
+    // Optimistic update
+    onMutate: async (entryId) => {
+      await queryClient.cancelQueries(['developer-time-entries']);
+      const previousEntries = queryClient.getQueryData(['developer-time-entries']);
+      
+      queryClient.setQueryData(['developer-time-entries'], (old) => {
+        if (!old) return old;
+        return old.filter(entry => entry._id !== entryId);
+      });
+      
+      return { previousEntries };
+    },
+    onError: (err, variables, context) => {
+      if (context?.previousEntries) {
+        queryClient.setQueryData(['developer-time-entries'], context.previousEntries);
+      }
+    },
+    onSettled: () => {
+      queryClient.invalidateQueries(['developer-time-stats']);
+      queryClient.invalidateQueries(['developer-time-entries']);
     }
-  }, [loadStats]);
+  });
 
-  // Función para iniciar contador del timer
-  const startTimerCounter = useCallback(() => {
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-    }
-    
-    timerIntervalRef.current = setInterval(() => {
-      setTimerSeconds(prev => prev + 1);
-    }, 1000);
-  }, []);
+  // Funciones wrapper para mantener API consistente
+  const startTimer = useCallback(async (taskId) => {
+    return startTimerMutation.mutateAsync(taskId);
+  }, [startTimerMutation]);
 
-  // Función para detener contador del timer
-  const stopTimerCounter = useCallback(() => {
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
-      timerIntervalRef.current = null;
-    }
-  }, []);
+  const stopTimer = useCallback(async (description = '') => {
+    return stopTimerMutation.mutateAsync(description);
+  }, [stopTimerMutation]);
 
-  // Función para cambiar período de estadísticas
+  const createTimeEntry = useCallback(async (timeData) => {
+    return createEntryMutation.mutateAsync(timeData);
+  }, [createEntryMutation]);
+
+  const updateTimeEntry = useCallback(async (entryId, updateData) => {
+    return updateEntryMutation.mutateAsync({ entryId, updateData });
+  }, [updateEntryMutation]);
+
+  const deleteTimeEntry = useCallback(async (entryId) => {
+    return deleteEntryMutation.mutateAsync(entryId);
+  }, [deleteEntryMutation]);
+
+  // Función para cambiar período
   const changePeriod = useCallback((newPeriod) => {
     setPeriod(newPeriod);
     loadStats(newPeriod);
-  }, [loadStats]);
+  }, []);
 
-  // Función para formatear tiempo del timer
+  // Función para refrescar todos los datos manualmente
+  const refresh = useCallback(async () => {
+    await Promise.all([
+      refetchStats(),
+      refetchEntries(),
+      refetchTimer()
+    ]);
+  }, [refetchStats, refetchEntries, refetchTimer]);
+
+  // Función helper para formatear tiempo (mantenida por compatibilidad)
   const formatTimerTime = useCallback((seconds) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-  }, []);
-
-  // Función para refrescar todos los datos
-  const refresh = useCallback(async () => {
-    await Promise.all([
-      loadStats(),
-      loadEntries(),
-      loadActiveTimer()
-    ]);
-  }, [loadStats, loadEntries, loadActiveTimer]);
-
-  // Efecto para cargar datos iniciales
-  useEffect(() => {
-    const loadInitialData = async () => {
-      await Promise.all([
-        loadStats(),
-        loadEntries(),
-        loadActiveTimer()
-      ]);
-    };
-    
-    loadInitialData();
-  }, [loadStats, loadEntries, loadActiveTimer]);
-
-  // Efecto para limpiar interval al desmontar
-  useEffect(() => {
-    return () => {
-      if (timerIntervalRef.current) {
-        clearInterval(timerIntervalRef.current);
-      }
-    };
   }, []);
 
   return {
     // Estados
-    stats,
-    entries,
-    activeTimer,
-    loading,
-    error,
+    stats: stats || null,
+    entries: entries || [],
+    activeTimer: activeTimer || null,
+    loading: statsLoading || entriesLoading || timerLoading,
+    error: statsError?.message || null,
     period,
     timerSeconds,
     
@@ -304,10 +285,17 @@ export const useTimeTracking = (initialPeriod = 'week') => {
     changePeriod,
     refresh,
     formatTimerTime,
-    setError,
+    setError: () => {}, // Mantenido por compatibilidad
     
     // Estados computados
     isTimerRunning: !!activeTimer,
-    formattedTimerTime: formatTimerTime(timerSeconds)
+    formattedTimerTime,
+    
+    // Extras de React Query
+    isStartingTimer: startTimerMutation.isLoading,
+    isStoppingTimer: stopTimerMutation.isLoading,
+    isCreatingEntry: createEntryMutation.isLoading,
+    isUpdatingEntry: updateEntryMutation.isLoading,
+    isDeletingEntry: deleteEntryMutation.isLoading
   };
 };

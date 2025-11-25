@@ -1,20 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@clerk/clerk-react';
 import { developersApiService } from '../services/developersApiService';
 
 /**
- * Hook para manejar las tareas del developer
+ * Hook para manejar las tareas del developer con React Query
+ * 
+ * Beneficios de React Query:
+ * - Caché automático (30s staleTime)
+ * - Stale-while-revalidate (muestra datos cacheados mientras actualiza)
+ * - Invalidación automática de caché
+ * - Menos código y mejor performance
  */
 export const useDeveloperTasks = (initialFilters = {}) => {
   const { getToken } = useAuth();
-  const [tasks, setTasks] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [pagination, setPagination] = useState({
-    current: 1,
-    pages: 1,
-    total: 0
-  });
+  const queryClient = useQueryClient();
   const [filters, setFilters] = useState(initialFilters);
 
   // Configurar el token provider en el servicio
@@ -22,52 +22,80 @@ export const useDeveloperTasks = (initialFilters = {}) => {
     developersApiService.setTokenProvider(getToken);
   }, [getToken]);
 
-  // Función para cargar tareas
-  const loadTasks = useCallback(async (newFilters = {}) => {
-    try {
-      setLoading(true);
-      setError(null);
-      
-      const mergedFilters = { ...filters, ...newFilters };
-      const response = await developersApiService.getTasks(mergedFilters);
-      
-      if (response.success) {
-        setTasks(response.data.tasks || []);
-        setPagination(response.data.pagination || { current: 1, pages: 1, total: 0 });
-      } else {
-        setError('Error al cargar tareas');
+  // Query para obtener tareas con React Query
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+    isFetching
+  } = useQuery({
+    queryKey: ['developer-tasks', filters],
+    queryFn: async () => {
+      const response = await developersApiService.getTasks(filters);
+      if (!response.success) {
+        throw new Error('Error al cargar tareas');
       }
-    } catch (err) {
-      setError(err.message || 'Error al cargar tareas');
-      setTasks([]);
-    } finally {
-      setLoading(false);
+      return response.data;
+    },
+    staleTime: 30000, // 30s - Coincide con backend cache
+    cacheTime: 5 * 60 * 1000, // 5 minutos
+    // keepPreviousData: Mantener datos anteriores mientras carga nuevos
+    keepPreviousData: true,
+    // onError: Manejar errores
+    onError: (err) => {
+      console.error('Error al cargar tareas:', err);
     }
-  }, [filters]);
+  });
 
-  // Función para actualizar estado de tarea
-  const updateTaskStatus = useCallback(async (taskId, newStatus) => {
-    try {
+  // Mutation para actualizar estado de tarea
+  const updateTaskMutation = useMutation({
+    mutationFn: async ({ taskId, newStatus }) => {
       const response = await developersApiService.updateTaskStatus(taskId, newStatus);
-      
-      if (response.success) {
-        // Actualizar la tarea en el estado local
-        setTasks(prevTasks => 
-          prevTasks.map(task => 
-            task._id === taskId 
+      if (!response.success) {
+        throw new Error('Error al actualizar tarea');
+      }
+      return response.data;
+    },
+    // Optimistic update: Actualizar UI antes de la respuesta del servidor
+    onMutate: async ({ taskId, newStatus }) => {
+      // Cancelar queries en progreso para evitar sobrescribir el optimistic update
+      await queryClient.cancelQueries(['developer-tasks']);
+
+      // Snapshot del estado anterior (para rollback si falla)
+      const previousTasks = queryClient.getQueryData(['developer-tasks', filters]);
+
+      // Optimistic update
+      queryClient.setQueryData(['developer-tasks', filters], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          tasks: old.tasks.map(task =>
+            task._id === taskId
               ? { ...task, status: newStatus, updatedAt: new Date().toISOString() }
               : task
           )
-        );
-        return response.data;
-      } else {
-        throw new Error('Error al actualizar tarea');
+        };
+      });
+
+      // Retornar contexto para rollback
+      return { previousTasks };
+    },
+    // Si falla, hacer rollback
+    onError: (err, variables, context) => {
+      if (context?.previousTasks) {
+        queryClient.setQueryData(['developer-tasks', filters], context.previousTasks);
       }
-    } catch (err) {
-      setError(err.message || 'Error al actualizar tarea');
-      throw err;
+      console.error('Error al actualizar tarea:', err);
+    },
+    // Después de éxito o error, invalidar caché para refrescar datos
+    onSettled: () => {
+      queryClient.invalidateQueries(['developer-tasks']);
+      // También invalidar sprint board y dashboard que dependen de tareas
+      queryClient.invalidateQueries(['developer-sprint-board']);
+      queryClient.invalidateQueries(['developer-dashboard']);
     }
-  }, []);
+  });
 
   // Función para aplicar filtros
   const applyFilters = useCallback((newFilters) => {
@@ -79,26 +107,36 @@ export const useDeveloperTasks = (initialFilters = {}) => {
     setFilters(prevFilters => ({ ...prevFilters, page }));
   }, []);
 
-  // Función para refrescar datos
-  const refresh = useCallback(() => {
-    loadTasks();
-  }, [loadTasks]);
+  // Función para actualizar estado de tarea (wrapper)
+  const updateTaskStatus = useCallback(async (taskId, newStatus) => {
+    return updateTaskMutation.mutateAsync({ taskId, newStatus });
+  }, [updateTaskMutation]);
 
-  // Efecto para cargar tareas cuando cambian los filtros
-  useEffect(() => {
-    loadTasks();
-  }, [loadTasks]);
+  // Función para refrescar datos manualmente
+  const refresh = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return {
-    tasks,
-    loading,
-    error,
-    pagination,
+    // Datos
+    tasks: data?.tasks || [],
+    pagination: data?.pagination || { current: 1, pages: 1, total: 0 },
     filters,
+    
+    // Estados
+    loading: isLoading,
+    isFetching, // Útil para mostrar spinner mientras refresca en background
+    error: error?.message || null,
+    
+    // Acciones
     updateTaskStatus,
     applyFilters,
     changePage,
     refresh,
-    setError
+    setError: () => {}, // Mantenido por compatibilidad
+    
+    // Extras de React Query
+    isUpdating: updateTaskMutation.isLoading,
+    updateError: updateTaskMutation.error
   };
 };

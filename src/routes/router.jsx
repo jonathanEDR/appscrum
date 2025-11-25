@@ -11,6 +11,9 @@ import { RoleProtectedRoute, RoleBasedRedirect } from '../components/auth/RoleBa
 // Layout principal para dashboards - inmediata
 import RoleBasedLayout from '../components/layout/RoleBasedLayout.jsx';
 
+// Error Boundary
+import ErrorBoundary from '../components/common/ErrorBoundary.jsx';
+
 // Dashboards específicos por rol - inmediata
 import SuperAdminDashboard from '../components/layout/dashboard/SuperAdminDashboard.jsx';
 import ProfileManagement from '../components/auth/ProfileManagement.jsx';
@@ -278,7 +281,11 @@ export const router = createBrowserRouter([
     children: [
       {
         path: '',
-        element: <DevelopersDashboard />,
+        element: (
+          <ErrorBoundary>
+            <DevelopersDashboard />
+          </ErrorBoundary>
+        ),
       },
       {
         path: 'perfil',
@@ -286,23 +293,43 @@ export const router = createBrowserRouter([
       },
       {
         path: 'tareas',
-        element: <LazyWrapper><MyTasks /></LazyWrapper>,
+        element: (
+          <ErrorBoundary>
+            <LazyWrapper><MyTasks /></LazyWrapper>
+          </ErrorBoundary>
+        ),
       },
       {
         path: 'proyectos',
-        element: <LazyWrapper><Projects /></LazyWrapper>,
+        element: (
+          <ErrorBoundary>
+            <LazyWrapper><Projects /></LazyWrapper>
+          </ErrorBoundary>
+        ),
       },
       {
         path: 'sprint-board',
-        element: <LazyWrapper><SprintBoard /></LazyWrapper>,
+        element: (
+          <ErrorBoundary>
+            <LazyWrapper><SprintBoard /></LazyWrapper>
+          </ErrorBoundary>
+        ),
       },
       {
         path: 'time-tracking',
-        element: <LazyWrapper><TimeTracking /></LazyWrapper>,
+        element: (
+          <ErrorBoundary>
+            <LazyWrapper><TimeTracking /></LazyWrapper>
+          </ErrorBoundary>
+        ),
       },
       {
         path: 'bug-reports',
-        element: <LazyWrapper><BugReports /></LazyWrapper>,
+        element: (
+          <ErrorBoundary>
+            <LazyWrapper><BugReports /></LazyWrapper>
+          </ErrorBoundary>
+        ),
       },
     ],
   },

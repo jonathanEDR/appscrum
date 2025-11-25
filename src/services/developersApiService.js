@@ -438,6 +438,42 @@ class DevelopersApiService {
   }
 
   /**
+   * Asigna una tarea del backlog al developer autenticado
+   */
+  async assignBacklogTask(taskId) {
+    try {
+      const token = await this._getTokenFromContext();
+      const response = await apiService.post(
+        `${this.baseURL}/backlog/${taskId}/take`,
+        {},
+        token
+      );
+      return response;
+    } catch (error) {
+      console.error('Error al asignar tarea del backlog:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Asigna una tarea regular al developer autenticado
+   */
+  async assignRegularTask(taskId) {
+    try {
+      const token = await this._getTokenFromContext();
+      const response = await apiService.put(
+        `${this.baseURL}/tasks/${taskId}/assign`,
+        { assign_to_me: true },
+        token
+      );
+      return response;
+    } catch (error) {
+      console.error('Error al asignar tarea regular:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Maneja errores de la API de forma consistente
    */
   handleError(error) {

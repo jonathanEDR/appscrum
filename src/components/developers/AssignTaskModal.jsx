@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { developersApiService } from '../../services/developersApiService';
 import { 
   X, 
   User, 
@@ -13,9 +15,14 @@ import {
 
 const AssignTaskModal = ({ isOpen, onClose, task, onAssignSuccess }) => {
   const { getToken } = useAuth();
-  const [loading, setLoading] = useState(false);
+  const queryClient = useQueryClient();
   const [error, setError] = useState('');
   const [confirmation, setConfirmation] = useState(false);
+
+  // Configurar token provider
+  useEffect(() => {
+    developersApiService.setTokenProvider(getToken);
+  }, [getToken]);
 
   useEffect(() => {
     if (isOpen && task) {
@@ -24,76 +31,65 @@ const AssignTaskModal = ({ isOpen, onClose, task, onAssignSuccess }) => {
     }
   }, [isOpen, task]);
 
+  // Mutation para asignar tarea del backlog
+  const assignBacklogMutation = useMutation({
+    mutationFn: (taskId) => developersApiService.assignBacklogTask(taskId),
+    onSuccess: (data) => {
+      // Invalidar queries relacionadas
+      queryClient.invalidateQueries(['developer-tasks']);
+      queryClient.invalidateQueries(['developer-sprint-board']);
+      queryClient.invalidateQueries(['developer-dashboard']);
+      
+      setConfirmation(true);
+      setTimeout(() => {
+        onAssignSuccess(data);
+        onClose();
+      }, 1500);
+    },
+    onError: (err) => {
+      console.error('Error al asignar tarea del backlog:', err);
+      setError(err.message || 'Error al asignar tarea');
+    }
+  });
+
+  // Mutation para asignar tarea regular
+  const assignRegularMutation = useMutation({
+    mutationFn: (taskId) => developersApiService.assignRegularTask(taskId),
+    onSuccess: (data) => {
+      // Invalidar queries relacionadas
+      queryClient.invalidateQueries(['developer-tasks']);
+      queryClient.invalidateQueries(['developer-sprint-board']);
+      queryClient.invalidateQueries(['developer-dashboard']);
+      
+      setConfirmation(true);
+      setTimeout(() => {
+        onAssignSuccess(data);
+        onClose();
+      }, 1500);
+    },
+    onError: (err) => {
+      console.error('Error al asignar tarea regular:', err);
+      setError(err.message || 'Error al asignar tarea');
+    }
+  });
+
   const handleAssignToMe = async () => {
     if (!task) return;
 
-    try {
-      setLoading(true);
-      setError('');
+    setError('');
 
-      const token = await getToken();
-      const API_URL = import.meta.env.VITE_API_URL;
-
-      // Para tareas del backlog, usar el nuevo endpoint específico para developers
-      if (task.tipo && task._id) {
-        console.log('Asignando tarea del backlog:', task._id);
-        
-        const response = await fetch(
-          `${API_URL}/developers/backlog/${task._id}/take`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            }
-          }
-        );
-
-        const responseData = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(responseData.message || 'Error al asignar tarea');
-        }
-
-        console.log('Tarea asignada exitosamente:', responseData);
-
-        // Notificar éxito
-        onAssignSuccess(responseData);
-        onClose();
-        
-      } else {
-        // Si es una tarea normal del sistema de tasks, usar el endpoint anterior
-        const response = await fetch(
-          `${API_URL}/developers/tasks/${task._id}/assign`,
-          {
-            method: 'PUT',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              assign_to_me: true
-            })
-          }
-        );
-
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Error al asignar tarea');
-        }
-
-        const result = await response.json();
-        onAssignSuccess(result);
-        onClose();
-      }
-
-    } catch (error) {
-      console.error('Error asignando tarea:', error);
-      setError(error.message);
-    } finally {
-      setLoading(false);
+    // Determinar si es tarea del backlog o tarea regular
+    // Tareas del backlog tienen el campo 'tipo'
+    if (task.tipo && task._id) {
+      console.log('Asignando tarea del backlog:', task._id);
+      assignBacklogMutation.mutate(task._id);
+    } else {
+      // Tarea regular del sistema de tasks
+      assignRegularMutation.mutate(task._id);
     }
   };
+
+  const loading = assignBacklogMutation.isLoading || assignRegularMutation.isLoading;
 
   const getTaskIcon = (type) => {
     switch (type) {

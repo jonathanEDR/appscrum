@@ -25,14 +25,10 @@ const SprintSelector = ({
     const fetchSprints = async () => {
       setLoading(true);
       try {
-        console.log('🔄 Cargando sprints disponibles...');
         const response = await developersApiService.getAvailableSprints();
         
         if (response.success) {
-          console.log('✅ Sprints cargados:', response.data);
           setSprints(response.data || []);
-        } else {
-          console.error('Error al cargar sprints:', response);
         }
       } catch (error) {
         console.error('Error al cargar sprints:', error);
