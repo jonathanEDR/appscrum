@@ -1,7 +1,10 @@
 import React from 'react';
+import { useTheme } from '../../../context/ThemeContext';
 import { TrendingUp, TrendingDown, Clock, Target, BarChart3 } from 'lucide-react';
 
 const AdvancedMetrics = ({ releases, sprints }) => {
+  const { theme } = useTheme();
+  
   // Cálculos de métricas avanzadas
   const calcularVelocidadPromedio = () => {
     // Ajustar filtros para estados reales del backend
@@ -192,81 +195,141 @@ const AdvancedMetrics = ({ releases, sprints }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
       {/* Velocidad Promedio */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className={`rounded-lg shadow-sm p-6 ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border border-gray-700' 
+          : 'bg-white border border-gray-200'
+      }`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <TrendingUp className="h-5 w-5 text-blue-600" />
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' 
+                ? 'bg-blue-900/30 text-blue-400' 
+                : 'bg-blue-100 text-blue-600'
+            }`}>
+              <TrendingUp className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700">Velocidad Promedio</p>
-              <p className="text-2xl font-bold text-gray-900">{velocidadPromedio}</p>
+              <p className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>Velocidad Promedio</p>
+              <p className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>{velocidadPromedio}</p>
             </div>
           </div>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className={`w-full rounded-full h-2 ${
+          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+        }`}>
           <div 
             className="bg-blue-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${Math.min(velocidadPromedio * 10, 100)}%` }}
           ></div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">Story points por sprint</p>
+        <p className={`text-xs mt-2 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+        }`}>Story points por sprint</p>
       </div>
 
       {/* Tiempo Promedio Release */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className={`rounded-lg shadow-sm p-6 ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border border-gray-700' 
+          : 'bg-white border border-gray-200'
+      }`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <Clock className="h-5 w-5 text-orange-600" />
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' 
+                ? 'bg-orange-900/30 text-orange-400' 
+                : 'bg-orange-100 text-orange-600'
+            }`}>
+              <Clock className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700">Tiempo Promedio</p>
-              <p className="text-2xl font-bold text-gray-900">{tiempoPromedioRelease}</p>
+              <p className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>Tiempo Promedio</p>
+              <p className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>{tiempoPromedioRelease}</p>
             </div>
           </div>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className={`w-full rounded-full h-2 ${
+          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+        }`}>
           <div 
             className="bg-orange-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${Math.min(tiempoPromedioRelease / 2, 100)}%` }}
           ></div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">Días por release</p>
+        <p className={`text-xs mt-2 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+        }`}>Días por release</p>
       </div>
 
       {/* Tasa de Éxito */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className={`rounded-lg shadow-sm p-6 ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border border-gray-700' 
+          : 'bg-white border border-gray-200'
+      }`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-green-100 rounded-lg">
-              <Target className="h-5 w-5 text-green-600" />
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' 
+                ? 'bg-green-900/30 text-green-400' 
+                : 'bg-green-100 text-green-600'
+            }`}>
+              <Target className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700">Tasa de Éxito</p>
-              <p className="text-2xl font-bold text-gray-900">{tasaExito}%</p>
+              <p className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>Tasa de Éxito</p>
+              <p className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>{tasaExito}%</p>
             </div>
           </div>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className={`w-full rounded-full h-2 ${
+          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+        }`}>
           <div 
             className="bg-green-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${tasaExito}%` }}
           ></div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">Releases a tiempo</p>
+        <p className={`text-xs mt-2 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+        }`}>Releases a tiempo</p>
       </div>
 
       {/* Tendencia */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className={`rounded-lg shadow-sm p-6 ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border border-gray-700' 
+          : 'bg-white border border-gray-200'
+      }`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
-              <BarChart3 className="h-5 w-5 text-purple-600" />
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' 
+                ? 'bg-purple-900/30 text-purple-400' 
+                : 'bg-purple-100 text-purple-600'
+            }`}>
+              <BarChart3 className="h-5 w-5" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-700">Tendencia</p>
-              <p className="text-2xl font-bold text-gray-900">{tendencia}%</p>
+              <p className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>Tendencia</p>
+              <p className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>{tendencia}%</p>
             </div>
           </div>
           {tendencia >= 70 ? (
@@ -275,7 +338,9 @@ const AdvancedMetrics = ({ releases, sprints }) => {
             <TrendingDown className="h-5 w-5 text-red-600" />
           )}
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className={`w-full rounded-full h-2 ${
+          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+        }`}>
           <div 
             className={`h-2 rounded-full transition-all duration-300 ${
               tendencia >= 70 ? 'bg-green-600' : tendencia >= 50 ? 'bg-yellow-600' : 'bg-red-600'
@@ -283,7 +348,9 @@ const AdvancedMetrics = ({ releases, sprints }) => {
             style={{ width: `${tendencia}%` }}
           ></div>
         </div>
-        <p className="text-xs text-gray-500 mt-2">Últimos 3 meses</p>
+        <p className={`text-xs mt-2 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+        }`}>Últimos 3 meses</p>
       </div>
     </div>
   );

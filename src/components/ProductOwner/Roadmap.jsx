@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   Calendar, 
   Target, 
@@ -40,6 +41,7 @@ const API_BASE_URL = config.API_URL || import.meta.env.VITE_API_URL || '';
 
 const Roadmap = () => {
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   
   // Estados locales
   const [releases, setReleases] = useState([]);
@@ -526,27 +528,41 @@ const Roadmap = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className={`rounded-lg shadow-sm p-6 ${
+        theme === 'dark'
+          ? 'bg-gradient-to-r from-gray-800 to-gray-900'
+          : 'bg-white'
+      }`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' ? 'bg-purple-900/30' : 'bg-purple-100'
+            }`}>
               <Calendar className="h-6 w-6 text-purple-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Roadmap</h1>
-              <p className="text-gray-600">Visualiza la hoja de ruta del producto</p>
+              <h1 className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Roadmap</h1>
+              <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+                Visualiza la hoja de ruta del producto
+              </p>
             </div>
           </div>
           
           <div className="flex items-center gap-3">
             {/* Selector de vista */}
-            <div className="flex rounded-lg border">
+            <div className={`flex rounded-lg border ${
+              theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+            }`}>
               <button
                 onClick={() => setViewMode('timeline')}
                 className={`px-3 py-2 text-sm font-medium rounded-l-lg ${
                   viewMode === 'timeline' 
                     ? 'bg-purple-600 text-white' 
-                    : 'text-gray-700 hover:bg-gray-50'
+                    : theme === 'dark'
+                      ? 'text-gray-300 hover:bg-gray-700'
+                      : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 Timeline
@@ -556,7 +572,9 @@ const Roadmap = () => {
                 className={`px-3 py-2 text-sm font-medium ${
                   viewMode === 'kanban' 
                     ? 'bg-purple-600 text-white' 
-                    : 'text-gray-700 hover:bg-gray-50'
+                    : theme === 'dark'
+                      ? 'text-gray-300 hover:bg-gray-700'
+                      : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 Kanban
@@ -566,7 +584,9 @@ const Roadmap = () => {
                 className={`px-3 py-2 text-sm font-medium rounded-r-lg ${
                   viewMode === 'dependencies' 
                     ? 'bg-purple-600 text-white' 
-                    : 'text-gray-700 hover:bg-gray-50'
+                    : theme === 'dark'
+                      ? 'text-gray-300 hover:bg-gray-700'
+                      : 'text-gray-700 hover:bg-gray-50'
                 }`}
               >
                 Dependencias
@@ -602,11 +622,17 @@ const Roadmap = () => {
 
         {/* Selector de producto */}
         <div className="flex items-center gap-4">
-          <label className="text-sm font-medium text-gray-700">Producto:</label>
+          <label className={`text-sm font-medium ${
+            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+          }`}>Producto:</label>
           <select
             value={selectedProduct}
             onChange={(e) => setSelectedProduct(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500"
+            className={`border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-500 ${
+              theme === 'dark'
+                ? 'bg-gray-700 border-gray-600 text-white'
+                : 'border-gray-300 bg-white text-gray-900'
+            }`}
           >
             <option value="">Seleccionar producto</option>
             {productos.map(producto => (
@@ -668,6 +694,7 @@ const Roadmap = () => {
               getEstadoColor={getEstadoColor}
               formatearFecha={formatearFecha}
               calcularProgresoReal={calcularProgresoReal}
+              theme={theme}
             />
           ) : (
             <DependencyView 
@@ -677,13 +704,19 @@ const Roadmap = () => {
           )}
         </>
       ) : (
-        <div className="bg-white rounded-lg shadow-sm p-12">
+        <div className={`rounded-lg shadow-sm p-12 ${
+          theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+        }`}>
           <div className="text-center max-w-md mx-auto">
-            <Calendar className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-            <h2 className="text-xl font-semibold text-gray-700 mb-2">
+            <Calendar className={`h-16 w-16 mx-auto mb-4 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+            <h2 className={`text-xl font-semibold mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-gray-700'
+            }`}>
               Selecciona un producto
             </h2>
-            <p className="text-gray-500">
+            <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
               Elige un producto del menú desplegable para ver su roadmap
             </p>
           </div>
@@ -743,7 +776,9 @@ const Roadmap = () => {
       {/* Modal de Burndown Chart */}
       {showBurndown && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto">
+          <div className={`rounded-lg shadow-xl max-w-6xl w-full max-h-[90vh] overflow-y-auto ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <div className="p-6">
               <BurndownChart 
                 sprintId={showBurndown}
@@ -760,61 +795,84 @@ const Roadmap = () => {
 // Componente TimelineView
 const TimelineView = ({ 
   releases, 
-  sprints,
+  sprints, 
   onEditRelease, 
   onDeleteRelease,
   onEditSprint,
   onSprintAction,
   getEstadoColor, 
   formatearFecha,
-  calcularProgresoReal
+  calcularProgresoReal,
+  theme
 }) => {
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-6">Vista Timeline</h3>
-      
-      <div className="space-y-8">
+    <div className={`rounded-lg shadow-sm p-6 ${
+      theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+    }`}>
+      <h3 className={`text-lg font-semibold mb-6 ${
+        theme === 'dark' ? 'text-white' : 'text-gray-900'
+      }`}>Vista Timeline</h3>      <div className="space-y-8">
         {releases.map(release => (
           <div key={release._id} className="border-l-4 border-purple-200 pl-6 relative">
             {/* Línea temporal */}
             <div className="absolute left-0 top-0 w-3 h-3 bg-purple-600 rounded-full -translate-x-1.5"></div>
             
             {/* Contenido del release */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+            <div className={`rounded-lg p-4 mb-4 ${
+              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+            }`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
-                  <h4 className="text-lg font-semibold text-gray-900">{release.nombre}</h4>
+                  <h4 className={`text-lg font-semibold ${
+                    theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  }`}>{release.nombre}</h4>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getEstadoColor(release.estado)}`}>
                     {release.estado.replace('_', ' ')}
                   </span>
-                  <span className="text-sm text-gray-500">v{release.version}</span>
+                  <span className={`text-sm ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                  }`}>v{release.version}</span>
                 </div>
                 
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => onEditRelease(release)}
-                    className="p-1 text-gray-600 hover:text-blue-600"
+                    className={`p-1 ${
+                      theme === 'dark'
+                        ? 'text-gray-400 hover:text-blue-400'
+                        : 'text-gray-600 hover:text-blue-600'
+                    }`}
                   >
                     <Edit size={16} />
                   </button>
                   <button
                     onClick={() => onDeleteRelease(release._id)}
-                    className="p-1 text-gray-600 hover:text-red-600"
+                    className={`p-1 ${
+                      theme === 'dark'
+                        ? 'text-gray-400 hover:text-red-400'
+                        : 'text-gray-600 hover:text-red-600'
+                    }`}
                   >
                     <Trash2 size={16} />
                   </button>
                 </div>
               </div>
               
-              <p className="text-gray-600 mb-3">{release.descripcion}</p>
+              <p className={`mb-3 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>{release.descripcion}</p>
               
               <div className="flex items-center gap-6 mb-3">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className={`flex items-center gap-2 text-sm ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <Calendar size={16} />
                   <span>Objetivo: {formatearFecha(release.fecha_objetivo)}</span>
                 </div>
                 {release.fecha_lanzamiento && (
-                  <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className={`flex items-center gap-2 text-sm ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
                     <CheckCircle size={16} />
                     <span>Lanzado: {formatearFecha(release.fecha_lanzamiento)}</span>
                   </div>
@@ -823,11 +881,15 @@ const TimelineView = ({
               
               {/* Barra de progreso */}
               <div className="mb-4">
-                <div className="flex justify-between text-sm text-gray-600 mb-1">
+                <div className={`flex justify-between text-sm mb-1 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   <span>Progreso</span>
                   <span>{calcularProgresoReal(release)}%</span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className={`w-full rounded-full h-2 ${
+                  theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
+                }`}>
                   <div 
                     className="bg-purple-600 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${calcularProgresoReal(release)}%` }}
@@ -849,6 +911,7 @@ const TimelineView = ({
                     onShowBurndown={setShowBurndown}
                     getEstadoColor={getEstadoColor}
                     formatearFecha={formatearFecha}
+                    theme={theme}
                   />
                 ))}
             </div>
@@ -859,8 +922,12 @@ const TimelineView = ({
         {sprints.filter(sprint => !releases.some(release => release.sprints?.includes(sprint._id))).length > 0 && (
           <div className="border-l-4 border-blue-200 pl-6 relative">
             <div className="absolute left-0 top-0 w-3 h-3 bg-blue-600 rounded-full -translate-x-1.5"></div>
-            <div className="bg-blue-50 rounded-lg p-4 mb-4">
-              <h4 className="text-lg font-semibold text-gray-900 mb-4">Sprints Independientes</h4>
+            <div className={`rounded-lg p-4 mb-4 ${
+              theme === 'dark' ? 'bg-blue-900/20 border border-blue-800' : 'bg-blue-50'
+            }`}>
+              <h4 className={`text-lg font-semibold mb-4 ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Sprints Independientes</h4>
               <div className="space-y-3">
                 {sprints
                   .filter(sprint => !releases.some(release => release.sprints?.includes(sprint._id)))
@@ -873,6 +940,7 @@ const TimelineView = ({
                       onShowBurndown={setShowBurndown}
                       getEstadoColor={getEstadoColor}
                       formatearFecha={formatearFecha}
+                      theme={theme}
                     />
                   ))}
               </div>
@@ -882,17 +950,29 @@ const TimelineView = ({
         
         {releases.length === 0 && sprints.length === 0 && (
           <div className="text-center py-12">
-            <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-500">No hay releases ni sprints creados aún</p>
+            <Target className={`h-12 w-12 mx-auto mb-4 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+            <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
+              No hay releases ni sprints creados aún
+            </p>
           </div>
         )}
         
         {releases.length === 0 && sprints.length > 0 && (
           <div className="text-center py-8">
-            <div className="border-l-4 border-blue-200 pl-6 relative max-w-2xl mx-auto">
-              <div className="absolute left-0 top-0 w-3 h-3 bg-blue-600 rounded-full -translate-x-1.5"></div>
-              <div className="bg-blue-50 rounded-lg p-4">
-                <h4 className="text-lg font-semibold text-gray-900 mb-4">Sprints Existentes</h4>
+            <div className={`border-l-4 pl-6 relative max-w-2xl mx-auto ${
+              theme === 'dark' ? 'border-blue-800' : 'border-blue-200'
+            }`}>
+              <div className={`absolute left-0 top-0 w-3 h-3 rounded-full -translate-x-1.5 ${
+                theme === 'dark' ? 'bg-blue-600' : 'bg-blue-600'
+              }`}></div>
+              <div className={`rounded-lg p-4 ${
+                theme === 'dark' ? 'bg-blue-900/20 border border-blue-800' : 'bg-blue-50'
+              }`}>
+                <h4 className={`text-lg font-semibold mb-4 ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>Sprints Existentes</h4>
                 <div className="space-y-3">
                   {sprints.map(sprint => (
                     <SprintCard 
@@ -903,6 +983,7 @@ const TimelineView = ({
                       onShowBurndown={setShowBurndown}
                       getEstadoColor={getEstadoColor}
                       formatearFecha={formatearFecha}
+                      theme={theme}
                     />
                   ))}
                 </div>
@@ -929,7 +1010,8 @@ const KanbanView = ({
   onShowBurndown,
   getEstadoColor, 
   formatearFecha,
-  calcularProgresoReal
+  calcularProgresoReal,
+  theme
 }) => {
   const estados = ['planificado', 'en_desarrollo', 'lanzado'];
   
@@ -960,13 +1042,21 @@ const KanbanView = ({
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-6">Vista Kanban</h3>
+    <div className={`rounded-lg shadow-sm p-6 ${
+      theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+    }`}>
+      <h3 className={`text-lg font-semibold mb-6 ${
+        theme === 'dark' ? 'text-white' : 'text-gray-900'
+      }`}>Vista Kanban</h3>
       
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {estados.map(estado => (
-          <div key={estado} className="bg-gray-50 rounded-lg p-4">
-            <h4 className="font-semibold text-gray-900 mb-4 capitalize">
+          <div key={estado} className={`rounded-lg p-4 ${
+            theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+          }`}>
+            <h4 className={`font-semibold mb-4 capitalize ${
+              theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
               {estado.replace('_', ' ')}
             </h4>
             
@@ -974,13 +1064,23 @@ const KanbanView = ({
               {releases
                 .filter(release => release.estado === estado)
                 .map(release => (
-                  <div key={release._id} className="bg-white rounded-lg p-4 shadow-sm border">
+                  <div key={release._id} className={`rounded-lg p-4 shadow-sm border ${
+                    theme === 'dark'
+                      ? 'bg-gray-800 border-gray-600'
+                      : 'bg-white border-gray-200'
+                  }`}>
                     <div className="flex items-center justify-between mb-2">
-                      <h5 className="font-semibold text-gray-900">{release.nombre}</h5>
+                      <h5 className={`font-semibold ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>{release.nombre}</h5>
                       <div className="flex items-center gap-1">
                         <button
                           onClick={() => onShowHistory && onShowHistory(release)}
-                          className="p-1 text-gray-600 hover:text-purple-600"
+                          className={`p-1 ${
+                            theme === 'dark'
+                              ? 'text-gray-400 hover:text-purple-400'
+                              : 'text-gray-600 hover:text-purple-600'
+                          }`}
                           title="Ver historial"
                         >
                           <History size={14} />
@@ -988,7 +1088,11 @@ const KanbanView = ({
                         {onShowVersionManager && (
                           <button
                             onClick={() => onShowVersionManager(release)}
-                            className="p-1 text-gray-600 hover:text-green-600"
+                            className={`p-1 ${
+                              theme === 'dark'
+                                ? 'text-gray-400 hover:text-green-400'
+                                : 'text-gray-600 hover:text-green-600'
+                            }`}
                             title="Gestionar versión"
                           >
                             {Tag ? <Tag size={14} /> : <Hash size={14} />}
@@ -996,14 +1100,22 @@ const KanbanView = ({
                         )}
                         <button
                           onClick={() => onEditRelease(release)}
-                          className="p-1 text-gray-600 hover:text-blue-600"
+                          className={`p-1 ${
+                            theme === 'dark'
+                              ? 'text-gray-400 hover:text-blue-400'
+                              : 'text-gray-600 hover:text-blue-600'
+                          }`}
                           title="Editar release"
                         >
                           <Edit size={14} />
                         </button>
                         <button
                           onClick={() => onDeleteRelease(release._id)}
-                          className="p-1 text-gray-600 hover:text-red-600"
+                          className={`p-1 ${
+                            theme === 'dark'
+                              ? 'text-gray-400 hover:text-red-400'
+                              : 'text-gray-600 hover:text-red-600'
+                          }`}
                           title="Eliminar release"
                         >
                           <Trash2 size={14} />
@@ -1011,15 +1123,23 @@ const KanbanView = ({
                       </div>
                     </div>
                     
-                    <p className="text-sm text-gray-600 mb-2">v{release.version}</p>
-                    <p className="text-xs text-gray-500 mb-3">{release.descripcion}</p>
+                    <p className={`text-sm mb-2 ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                    }`}>v{release.version}</p>
+                    <p className={`text-xs mb-3 ${
+                      theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                    }`}>{release.descripcion}</p>
                     
-                    <div className="flex items-center justify-between text-xs text-gray-500 mb-3">
+                    <div className={`flex items-center justify-between text-xs mb-3 ${
+                      theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                    }`}>
                       <span>{formatearFecha(release.fecha_objetivo)}</span>
                       <span>{calcularProgresoReal(release)}%</span>
                     </div>
                     
-                    <div className="w-full bg-gray-200 rounded-full h-1 mb-3">
+                    <div className={`w-full rounded-full h-1 mb-3 ${
+                      theme === 'dark' ? 'bg-gray-600' : 'bg-gray-200'
+                    }`}>
                       <div 
                         className="bg-purple-600 h-1 rounded-full"
                         style={{ width: `${calcularProgresoReal(release)}%` }}
@@ -1031,7 +1151,11 @@ const KanbanView = ({
                       {getEstadoAnterior(release.estado) && (
                         <button
                           onClick={() => onReleaseAction(release._id, getEstadoAnterior(release.estado))}
-                          className="flex-1 px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors"
+                          className={`flex-1 px-2 py-1 text-xs rounded transition-colors ${
+                            theme === 'dark'
+                              ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          }`}
                           title={getAccionTextoAnterior(getEstadoAnterior(release.estado))}
                         >
                           ← {getEstadoAnterior(release.estado).replace('_', ' ')}
@@ -1078,14 +1202,21 @@ const SprintCard = ({
   onAction,
   onShowBurndown, 
   getEstadoColor, 
-  formatearFecha 
+  formatearFecha,
+  theme
 }) => {
   return (
-    <div className="bg-white border rounded-lg p-4">
+    <div className={`border rounded-lg p-4 ${
+      theme === 'dark'
+        ? 'bg-gray-800 border-gray-600'
+        : 'bg-white border-gray-200'
+    }`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <GitBranch size={16} className="text-blue-600" />
-          <h5 className="font-medium text-gray-900">{sprint.nombre}</h5>
+          <h5 className={`font-medium ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>{sprint.nombre}</h5>
           <span className={`px-2 py-1 rounded-full text-xs font-medium ${getEstadoColor(sprint.estado)}`}>
             {sprint.estado}
           </span>
@@ -1121,16 +1252,24 @@ const SprintCard = ({
           )}
           <button
             onClick={() => onEdit(sprint)}
-            className="p-1 text-gray-600 hover:text-blue-600"
+            className={`p-1 ${
+              theme === 'dark'
+                ? 'text-gray-400 hover:text-blue-400'
+                : 'text-gray-600 hover:text-blue-600'
+            }`}
           >
             <Edit size={14} />
           </button>
         </div>
       </div>
       
-      <p className="text-sm text-gray-600 mb-3">{sprint.objetivo}</p>
+      <p className={`text-sm mb-3 ${
+        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+      }`}>{sprint.objetivo}</p>
       
-      <div className="flex items-center justify-between text-xs text-gray-500">
+      <div className={`flex items-center justify-between text-xs ${
+        theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+      }`}>
         <span>{formatearFecha(sprint.fecha_inicio)} - {formatearFecha(sprint.fecha_fin)}</span>
         <span>Velocidad: {sprint.velocidad_planificada}</span>
       </div>

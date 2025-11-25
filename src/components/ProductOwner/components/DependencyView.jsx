@@ -1,7 +1,9 @@
 import React from 'react';
 import { ArrowRight, Link, AlertTriangle } from 'lucide-react';
+import { useTheme } from '../../../context/ThemeContext';
 
 const DependencyView = ({ releases, sprints }) => {
+  const { theme } = useTheme();
   // Detectar dependencias automáticamente basadas en fechas y releases
   const detectarDependencias = () => {
     const dependencias = [];
@@ -84,37 +86,65 @@ const DependencyView = ({ releases, sprints }) => {
   const dependencias = detectarDependencias();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className={`rounded-lg shadow-sm p-6 ${
+      theme === 'dark' 
+        ? 'bg-gray-800 border border-gray-700' 
+        : 'bg-white border border-gray-200'
+    }`}>
       <div className="flex items-center gap-2 mb-6">
-        <Link className="h-5 w-5 text-purple-600" />
-        <h3 className="text-lg font-semibold text-gray-900">Mapa de Dependencias</h3>
+        <Link className={`h-5 w-5 ${
+          theme === 'dark' ? 'text-purple-400' : 'text-purple-600'
+        }`} />
+        <h3 className={`text-lg font-semibold ${
+          theme === 'dark' ? 'text-white' : 'text-gray-900'
+        }`}>Mapa de Dependencias</h3>
       </div>
       
       {dependencias.length === 0 ? (
         <div className="text-center py-8">
-          <Link className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-          <p className="text-gray-500">No hay dependencias detectadas</p>
+          <Link className={`h-12 w-12 mx-auto mb-4 ${
+            theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+          }`} />
+          <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
+            No hay dependencias detectadas
+          </p>
         </div>
       ) : (
         <div className="space-y-6">
           {/* Dependencias de Releases */}
           <div>
-            <h4 className="font-medium text-gray-700 mb-4">Dependencias entre Releases</h4>
+            <h4 className={`font-medium mb-4 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>Dependencias entre Releases</h4>
             <div className="space-y-3">
               {dependencias
                 .filter(d => d.type === 'release-sequence')
                 .map(dep => (
-                  <div key={dep.id} className="flex items-center gap-4 p-3 bg-purple-50 rounded-lg">
+                  <div key={dep.id} className={`flex items-center gap-4 p-3 rounded-lg ${
+                    theme === 'dark' 
+                      ? 'bg-purple-900/30 border border-purple-800' 
+                      : 'bg-purple-50 border border-purple-200'
+                  }`}>
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">{dep.from.nombre}</p>
-                      <p className="text-sm text-gray-600">v{dep.from.version}</p>
+                      <p className={`font-medium ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>{dep.from.nombre}</p>
+                      <p className={`text-sm ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>v{dep.from.version}</p>
                     </div>
                     
-                    <ArrowRight className="h-5 w-5 text-purple-600 flex-shrink-0" />
+                    <ArrowRight className={`h-5 w-5 flex-shrink-0 ${
+                      theme === 'dark' ? 'text-purple-400' : 'text-purple-600'
+                    }`} />
                     
                     <div className="flex-1">
-                      <p className="font-medium text-gray-900">{dep.to.nombre}</p>
-                      <p className="text-sm text-gray-600">v{dep.to.version}</p>
+                      <p className={`font-medium ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>{dep.to.nombre}</p>
+                      <p className={`text-sm ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>v{dep.to.version}</p>
                     </div>
                     
                     {/* Indicador de riesgo */}
@@ -140,36 +170,54 @@ const DependencyView = ({ releases, sprints }) => {
 
           {/* Dependencias de Sprints */}
           <div>
-            <h4 className="font-medium text-gray-700 mb-4">Secuencia de Sprints</h4>
+            <h4 className={`font-medium mb-4 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>Secuencia de Sprints</h4>
             <div className="space-y-3">
               {dependencias
                 .filter(d => d.type === 'sprint-sequence')
                 .map(dep => (
-                  <div key={dep.id} className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg">
+                  <div key={dep.id} className={`flex items-center gap-3 p-3 rounded-lg ${
+                    theme === 'dark' 
+                      ? 'bg-blue-900/30 border border-blue-800' 
+                      : 'bg-blue-50 border border-blue-200'
+                  }`}>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className={`text-sm font-medium truncate ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {dep.from.nombre}
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className={`text-xs ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                         {new Date(dep.from.fecha_inicio).toLocaleDateString()} - 
                         {new Date(dep.from.fecha_fin).toLocaleDateString()}
                       </p>
                     </div>
                     
-                    <ArrowRight className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                    <ArrowRight className={`h-4 w-4 flex-shrink-0 ${
+                      theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+                    }`} />
                     
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className={`text-sm font-medium truncate ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {dep.to.nombre}
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className={`text-xs ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                         {new Date(dep.to.fecha_inicio).toLocaleDateString()} - 
                         {new Date(dep.to.fecha_fin).toLocaleDateString()}
                       </p>
                     </div>
                     
                     {dep.diasEntre !== undefined && (
-                      <div className="text-xs text-gray-500">
+                      <div className={`text-xs ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
                         {dep.diasEntre > 0 ? `+${dep.diasEntre}d` : `${dep.diasEntre}d`}
                       </div>
                     )}
@@ -180,28 +228,44 @@ const DependencyView = ({ releases, sprints }) => {
 
           {/* Dependencias Sprint → Release */}
           <div>
-            <h4 className="font-medium text-gray-700 mb-4">Sprint → Release</h4>
+            <h4 className={`font-medium mb-4 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>Sprint → Release</h4>
             <div className="space-y-3">
               {dependencias
                 .filter(d => d.type === 'sprint-to-release')
                 .map(dep => (
-                  <div key={dep.id} className="flex items-center gap-3 p-3 bg-green-50 rounded-lg">
+                  <div key={dep.id} className={`flex items-center gap-3 p-3 rounded-lg ${
+                    theme === 'dark' 
+                      ? 'bg-green-900/30 border border-green-800' 
+                      : 'bg-green-50 border border-green-200'
+                  }`}>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className={`text-sm font-medium truncate ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {dep.from.nombre}
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className={`text-xs ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                         Sprint: {new Date(dep.from.fecha_fin).toLocaleDateString()}
                       </p>
                     </div>
                     
-                    <ArrowRight className="h-4 w-4 text-green-600 flex-shrink-0" />
+                    <ArrowRight className={`h-4 w-4 flex-shrink-0 ${
+                      theme === 'dark' ? 'text-green-400' : 'text-green-600'
+                    }`} />
                     
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900 truncate">
+                      <p className={`text-sm font-medium truncate ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {dep.to.nombre}
                       </p>
-                      <p className="text-xs text-gray-600">
+                      <p className={`text-xs ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                         Release: {new Date(dep.to.fecha_objetivo).toLocaleDateString()}
                       </p>
                     </div>

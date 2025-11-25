@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ModalProducto from '../modalproductowner/ModalProducto';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 import { apiService } from '../../services/apiService';
 import { 
   Package, 
@@ -17,6 +18,7 @@ import {
 
 const Productos = () => {
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   const [productos, setProductos] = useState([]);
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -38,10 +40,14 @@ const Productos = () => {
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
-  const estadoColors = {
-    activo: 'bg-green-100 text-green-800',
-    inactivo: 'bg-gray-100 text-gray-800',
-    completado: 'bg-blue-100 text-blue-800'
+  const estadoColors = theme === 'dark' ? {
+    activo: 'bg-green-900/30 text-green-400 border-green-800',
+    inactivo: 'bg-gray-700/30 text-gray-400 border-gray-600',
+    completado: 'bg-blue-900/30 text-blue-400 border-blue-800'
+  } : {
+    activo: 'bg-green-100 text-green-800 border-green-200',
+    inactivo: 'bg-gray-100 text-gray-800 border-gray-200',
+    completado: 'bg-blue-100 text-blue-800 border-blue-200'
   };
 
   const fetchProductos = async () => {
@@ -239,7 +245,9 @@ const Productos = () => {
       <div className="flex items-center justify-center min-h-96">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Cargando productos...</p>
+          <p className={`mt-4 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>Cargando productos...</p>
         </div>
       </div>
     );
@@ -248,15 +256,21 @@ const Productos = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-lg shadow-sm p-6">
+      <div className={`rounded-lg shadow-sm p-6 ${
+        theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+      }`}>
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-orange-100 rounded-lg">
               <Package className="h-6 w-6 text-orange-600" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Gestión de Productos</h1>
-              <p className="text-gray-600">Administra los productos de tu organización</p>
+              <h1 className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Gestión de Productos</h1>
+              <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+                Administra los productos de tu organización
+              </p>
             </div>
           </div>
           <button
@@ -271,11 +285,17 @@ const Productos = () => {
         {/* Búsqueda */}
         <div className="flex gap-4">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+            <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 ${
+              theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+            }`} size={20} />
             <input
               type="text"
               placeholder="Buscar productos..."
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500'
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+              }`}
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && fetchProductos()}
@@ -283,7 +303,11 @@ const Productos = () => {
           </div>
           <button
             onClick={fetchProductos}
-            className="flex items-center gap-2 bg-gray-100 text-gray-600 px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors"
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+              theme === 'dark'
+                ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+            }`}
           >
             <RefreshCw size={20} />
             Actualizar
@@ -295,8 +319,12 @@ const Productos = () => {
       {error && (
         <div className={`p-4 rounded-lg ${
           error.startsWith('success:')
-            ? 'bg-green-50 border border-green-200 text-green-700'
-            : 'bg-red-50 border border-red-200 text-red-700'
+            ? theme === 'dark'
+              ? 'bg-green-900/30 text-green-400 border border-green-800'
+              : 'bg-green-50 border border-green-200 text-green-700'
+            : theme === 'dark'
+              ? 'bg-red-900/30 text-red-400 border border-red-800'
+              : 'bg-red-50 border border-red-200 text-red-700'
         }`}>
           {error.startsWith('success:') ? error.replace('success:', '') : error}
         </div>
@@ -315,37 +343,61 @@ const Productos = () => {
       />
 
       {/* Lista de productos */}
-      <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className={`rounded-lg shadow-sm overflow-hidden ${
+        theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+      }`}>
+        <div className={`px-6 py-4 border-b ${
+          theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+        }`}>
+          <h2 className={`text-lg font-semibold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             Productos ({productos.length})
           </h2>
         </div>
 
         {productos.length === 0 ? (
           <div className="text-center py-12">
-            <Package className="mx-auto h-12 w-12 text-gray-400" />
-            <h3 className="mt-2 text-sm font-medium text-gray-900">No hay productos</h3>
-            <p className="mt-1 text-sm text-gray-500">
+            <Package className={`mx-auto h-12 w-12 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+            <h3 className={`mt-2 text-sm font-medium ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-900'
+            }`}>No hay productos</h3>
+            <p className={`mt-1 text-sm ${
+              theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+            }`}>
               Comienza creando tu primer producto
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className={`divide-y ${
+            theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'
+          }`}>
             {productos.map((producto) => (
-              <div key={producto._id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div key={producto._id} className={`p-6 transition-colors ${
+                theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+              }`}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="text-lg font-semibold text-gray-900">
+                      <h3 className={`text-lg font-semibold ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {producto.nombre}
                       </h3>
-                      <span className={`px-2 py-1 text-xs font-medium rounded-full ${estadoColors[producto.estado]}`}>
+                      <span className={`px-2 py-1 text-xs font-medium rounded-full border ${
+                        estadoColors[producto.estado]
+                      }`}>
                         {producto.estado}
                       </span>
                     </div>
-                    <p className="text-gray-600 mb-3">{producto.descripcion}</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm text-gray-500">
+                    <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+                      {producto.descripcion}
+                    </p>
+                    <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 text-sm mt-3 ${
+                      theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                    }`}>
                       <div className="flex items-center gap-1">
                         <User size={14} />
                         <span>{producto.responsable?.nombre_negocio || producto.responsable?.email || 'No asignado'}</span>
@@ -371,21 +423,33 @@ const Productos = () => {
                   <div className="flex items-center gap-2 ml-4">
                     <button
                       onClick={() => handleEdit(producto)}
-                      className="p-2 text-orange-600 hover:bg-orange-50 rounded-lg transition-colors"
+                      className={`p-2 rounded-lg transition-colors ${
+                        theme === 'dark'
+                          ? 'text-orange-400 hover:bg-gray-600'
+                          : 'text-orange-600 hover:bg-orange-50'
+                      }`}
                       title="Editar producto"
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(producto)}
-                      className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      className={`p-2 rounded-lg transition-colors ${
+                        theme === 'dark'
+                          ? 'text-red-400 hover:bg-gray-600'
+                          : 'text-red-600 hover:bg-red-50'
+                      }`}
                       title="Eliminar producto"
                     >
                       <Trash2 size={16} />
                     </button>
                     <button
                       onClick={() => handleViewDetails(producto)}
-                      className="p-2 text-gray-600 hover:bg-gray-50 rounded-lg transition-colors"
+                      className={`p-2 rounded-lg transition-colors ${
+                        theme === 'dark'
+                          ? 'text-gray-400 hover:bg-gray-600'
+                          : 'text-gray-600 hover:bg-gray-50'
+                      }`}
                       title="Ver detalles"
                     >
                       <Eye size={16} />
@@ -401,12 +465,20 @@ const Productos = () => {
       {/* Modal de detalles */}
       {showDetails && selectedProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto">
+          <div className={`rounded-lg p-6 w-full max-w-2xl mx-4 max-h-[90vh] overflow-y-auto ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-gray-900">Detalles del Producto</h3>
+              <h3 className={`text-xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Detalles del Producto</h3>
               <button
                 onClick={handleCloseDetails}
-                className="p-2 text-gray-400 hover:text-gray-600 rounded-lg transition-colors"
+                className={`p-2 rounded-lg transition-colors ${
+                  theme === 'dark'
+                    ? 'text-gray-400 hover:text-gray-300'
+                    : 'text-gray-400 hover:text-gray-600'
+                }`}
               >
                 ✕
               </button>
@@ -415,29 +487,46 @@ const Productos = () => {
             <div className="space-y-6">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Nombre</label>
-                  <p className="text-lg font-semibold text-gray-900">{selectedProduct.nombre}</p>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+                  }`}>Nombre</label>
+                  <p className={`text-lg font-semibold ${
+                    theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  }`}>{selectedProduct.nombre}</p>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Estado</label>
-                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${estadoColors[selectedProduct.estado] || 'bg-gray-100 text-gray-800'}`}>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+                  }`}>Estado</label>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium border ${
+                    estadoColors[selectedProduct.estado] || 
+                    (theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-800')
+                  }`}>
                     {selectedProduct.estado?.charAt(0).toUpperCase() + selectedProduct.estado?.slice(1)}
                   </span>
                 </div>
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Descripción</label>
-                <p className="text-gray-900 bg-gray-50 p-3 rounded-lg leading-relaxed">{selectedProduct.descripcion || 'Sin descripción disponible'}</p>
+                <label className={`block text-sm font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+                }`}>Descripción</label>
+                <p className={`p-3 rounded-lg leading-relaxed ${
+                  theme === 'dark'
+                    ? 'text-gray-300 bg-gray-700'
+                    : 'text-gray-900 bg-gray-50'
+                }`}>{selectedProduct.descripcion || 'Sin descripción disponible'}</p>
               </div>
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Responsable</label>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+                  }`}>Responsable</label>
                   <div className="flex items-center gap-2">
-                    <User size={16} className="text-gray-500" />
-                    <span className="text-gray-900">
+                    <User size={16} className={theme === 'dark' ? 'text-gray-500' : 'text-gray-500'} />
+                    <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}>
                       {selectedProduct.responsable?.nombre_negocio || 
                        selectedProduct.responsable?.email || 
                        'No asignado'}
@@ -446,10 +535,12 @@ const Productos = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Creado Por</label>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+                  }`}>Creado Por</label>
                   <div className="flex items-center gap-2">
                     <User size={16} className="text-blue-500" />
-                    <span className="text-gray-900">
+                    <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}>
                       {selectedProduct.created_by?.nombre_negocio || 
                        selectedProduct.created_by?.email || 
                        'Sistema'}
@@ -460,10 +551,12 @@ const Productos = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Inicio</label>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+                  }`}>Fecha de Inicio</label>
                   <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-gray-500" />
-                    <span className="text-gray-900">
+                    <Calendar size={16} className={theme === 'dark' ? 'text-gray-500' : 'text-gray-500'} />
+                    <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}>
                       {selectedProduct.fecha_inicio ? 
                         new Date(selectedProduct.fecha_inicio).toLocaleDateString('es-ES') : 
                         'No definida'}
@@ -472,10 +565,12 @@ const Productos = () => {
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Fin</label>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+                  }`}>Fecha de Fin</label>
                   <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-gray-500" />
-                    <span className="text-gray-900">
+                    <Calendar size={16} className={theme === 'dark' ? 'text-gray-500' : 'text-gray-500'} />
+                    <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}>
                       {selectedProduct.fecha_fin ? 
                         new Date(selectedProduct.fecha_fin).toLocaleDateString('es-ES') : 
                         'No definida'}
@@ -486,20 +581,24 @@ const Productos = () => {
               
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Fecha de Creación</label>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+                  }`}>Fecha de Creación</label>
                   <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-gray-500" />
-                    <span className="text-gray-900">
+                    <Calendar size={16} className={theme === 'dark' ? 'text-gray-500' : 'text-gray-500'} />
+                    <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}>
                       {new Date(selectedProduct.createdAt).toLocaleDateString('es-ES')}
                     </span>
                   </div>
                 </div>
                 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Última Actualización</label>
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-700'
+                  }`}>Última Actualización</label>
                   <div className="flex items-center gap-2">
-                    <Calendar size={16} className="text-gray-500" />
-                    <span className="text-gray-900">
+                    <Calendar size={16} className={theme === 'dark' ? 'text-gray-500' : 'text-gray-500'} />
+                    <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-900'}>
                       {new Date(selectedProduct.updatedAt).toLocaleDateString('es-ES')}
                     </span>
                   </div>
@@ -507,7 +606,9 @@ const Productos = () => {
               </div>
             </div>
             
-            <div className="flex justify-end gap-3 mt-6 pt-6 border-t border-gray-200">
+            <div className={`flex justify-end gap-3 mt-6 pt-6 border-t ${
+              theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+            }`}>
               <button
                 onClick={() => {
                   handleCloseDetails();
@@ -519,7 +620,11 @@ const Productos = () => {
               </button>
               <button
                 onClick={handleCloseDetails}
-                className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                className={`px-4 py-2 border rounded-lg transition-colors ${
+                  theme === 'dark'
+                    ? 'text-gray-300 border-gray-600 hover:bg-gray-700'
+                    : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+                }`}
               >
                 Cerrar
               </button>

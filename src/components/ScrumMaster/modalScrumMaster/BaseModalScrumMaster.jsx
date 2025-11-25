@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import { X, Calendar } from 'lucide-react';
+import { useTheme } from '../../../context/ThemeContext';
 
 const BaseModalScrumMaster = ({
   isOpen,
@@ -17,6 +18,7 @@ const BaseModalScrumMaster = ({
   maxWidth = 'sm:max-w-3xl',
   showDivider = false
 }) => {
+  const { theme } = useTheme();
   // Establecer fecha actual cuando se abre el modal para nuevo item
   useEffect(() => {
     if (isOpen && !editingItem && setFormData) {
@@ -42,7 +44,9 @@ const BaseModalScrumMaster = ({
         />
 
         {/* Modal */}
-        <div className={`inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full ${maxWidth} sm:align-middle`}>
+        <div className={`inline-block transform overflow-hidden rounded-lg text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full ${maxWidth} sm:align-middle ${
+          theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+        }`}>
           {/* Header del Modal */}
           <div className="bg-gradient-to-r from-blue-500 to-blue-600 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -82,11 +86,19 @@ const BaseModalScrumMaster = ({
               )}
 
               {/* Botones de Acción */}
-              <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-3">
+              <div className={`border-t px-6 py-4 flex justify-end gap-3 ${
+                theme === 'dark' 
+                  ? 'border-gray-700 bg-gray-900' 
+                  : 'border-gray-200 bg-gray-50'
+              }`}>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                  className={`px-4 py-2 border rounded-lg transition-colors ${
+                    theme === 'dark'
+                      ? 'border-gray-600 text-gray-300 hover:bg-gray-700'
+                      : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                  }`}
                 >
                   Cancelar
                 </button>
@@ -117,9 +129,13 @@ const BaseModalScrumMaster = ({
           {/* Mensaje de Error/Éxito */}
           {error && (
             <div className={`mx-6 mb-4 p-3 rounded-lg text-sm ${
-              error.startsWith('success:') 
-                ? 'bg-green-50 text-green-700 border border-green-200' 
-                : 'bg-red-50 text-red-700 border border-red-200'
+              error.startsWith('success:')
+                ? theme === 'dark'
+                  ? 'bg-green-900/30 text-green-400 border border-green-800'
+                  : 'bg-green-50 text-green-700 border border-green-200'
+                : theme === 'dark'
+                  ? 'bg-red-900/30 text-red-400 border border-red-800'
+                  : 'bg-red-50 text-red-700 border border-red-200'
             }`}>
               {error.startsWith('success:') ? error.replace('success:', '') : error}
             </div>
@@ -146,24 +162,38 @@ export const useAutoDate = (isOpen, editingItem, setFormData) => {
 };
 
 // Componente de campo de fecha reutilizable
-export const DateField = ({ label, value, onChange, required = false, min, help }) => (
-  <div>
-    <label className="block text-sm font-medium text-gray-700 mb-2">
-      {label} {required && '*'}
-    </label>
-    <div className="relative">
-      <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-      <input
-        type="date"
-        required={required}
-        className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
-        value={value || new Date().toISOString().split('T')[0]}
-        onChange={onChange}
-        min={min}
-      />
+export const DateField = ({ label, value, onChange, required = false, min, help }) => {
+  const { theme } = useTheme();
+  
+  return (
+    <div>
+      <label className={`block text-sm font-medium mb-2 ${
+        theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+      }`}>
+        {label} {required && '*'}
+      </label>
+      <div className="relative">
+        <Calendar className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${
+          theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+        }`} />
+        <input
+          type="date"
+          required={required}
+          className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+            theme === 'dark'
+              ? 'bg-gray-700 border-gray-600 text-white'
+              : 'bg-white border-gray-300 text-gray-900'
+          }`}
+          value={value || new Date().toISOString().split('T')[0]}
+          onChange={onChange}
+          min={min}
+        />
+      </div>
+      {help && <p className={`text-xs mt-1 ${
+        theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+      }`}>{help}</p>}
     </div>
-    {help && <p className="text-xs text-gray-500 mt-1">{help}</p>}
-  </div>
-);
+  );
+};
 
 export default BaseModalScrumMaster;

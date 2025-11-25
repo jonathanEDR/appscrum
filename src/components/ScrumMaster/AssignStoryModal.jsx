@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   X, 
   Plus, 
@@ -25,6 +26,7 @@ const AssignStoryModal = ({
   onStoryAssigned 
 }) => {
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   const [availableStories, setAvailableStories] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
@@ -41,17 +43,45 @@ const AssignStoryModal = ({
 
   // Configuraciones
   const prioridadConfig = {
-    muy_alta: { label: 'Muy Alta', color: 'bg-red-100 text-red-800', order: 1 },
-    alta: { label: 'Alta', color: 'bg-orange-100 text-orange-800', order: 2 },
-    media: { label: 'Media', color: 'bg-yellow-100 text-yellow-800', order: 3 },
-    baja: { label: 'Baja', color: 'bg-green-100 text-green-800', order: 4 }
+    muy_alta: { 
+      label: 'Muy Alta', 
+      color: theme === 'dark' ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-800', 
+      order: 1 
+    },
+    alta: { 
+      label: 'Alta', 
+      color: theme === 'dark' ? 'bg-orange-900/30 text-orange-400' : 'bg-orange-100 text-orange-800', 
+      order: 2 
+    },
+    media: { 
+      label: 'Media', 
+      color: theme === 'dark' ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-100 text-yellow-800', 
+      order: 3 
+    },
+    baja: { 
+      label: 'Baja', 
+      color: theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-800', 
+      order: 4 
+    }
   };
 
   const tipoConfig = {
-    historia: { label: 'Historia', color: 'bg-blue-100 text-blue-800' },
-    tarea: { label: 'Tarea', color: 'bg-green-100 text-green-800' },
-    bug: { label: 'Bug', color: 'bg-red-100 text-red-800' },
-    mejora: { label: 'Mejora', color: 'bg-purple-100 text-purple-800' }
+    historia: { 
+      label: 'Historia', 
+      color: theme === 'dark' ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-800' 
+    },
+    tarea: { 
+      label: 'Tarea', 
+      color: theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-800' 
+    },
+    bug: { 
+      label: 'Bug', 
+      color: theme === 'dark' ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-800' 
+    },
+    mejora: { 
+      label: 'Mejora', 
+      color: theme === 'dark' ? 'bg-purple-900/30 text-purple-400' : 'bg-purple-100 text-purple-800' 
+    }
   };
 
   // Establecer fechas automáticas
@@ -210,9 +240,13 @@ const AssignStoryModal = ({
       showDivider={true}
     >
       {/* Panel Izquierdo - Lista de Historias */}
-      <div className="flex-1 p-6 border-r border-gray-200">
+      <div className={`flex-1 p-6 border-r ${
+        theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+      }`}>
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <h3 className={`text-lg font-semibold flex items-center gap-2 ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             <Search className="h-5 w-5 text-blue-600" />
             Historias Disponibles
           </h3>
@@ -220,13 +254,19 @@ const AssignStoryModal = ({
           {/* Filtros y búsqueda */}
           <div className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className={`absolute left-3 top-3 h-4 w-4 ${
+                theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+              }`} />
               <input
                 type="text"
                 placeholder="Buscar historias por título o descripción..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors"
+                className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-500'
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
               />
             </div>
             
@@ -234,7 +274,11 @@ const AssignStoryModal = ({
               <select
                 value={filterPriority}
                 onChange={(e) => setFilterPriority(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors"
+                className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-gray-800 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="">🔍 Todas las prioridades</option>
                 {Object.entries(prioridadConfig).map(([key, config]) => (
@@ -245,7 +289,11 @@ const AssignStoryModal = ({
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors"
+                className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-gray-800 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="">📋 Todos los tipos</option>
                 {Object.entries(tipoConfig).map(([key, config]) => (
@@ -300,36 +348,48 @@ const AssignStoryModal = ({
                     key={story._id}
                     className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
                       selectedStory?._id === story._id
-                        ? 'border-blue-500 bg-blue-50 shadow-md'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? theme === 'dark'
+                          ? 'border-blue-600 bg-blue-900/20 shadow-md'
+                          : 'border-blue-500 bg-blue-50 shadow-md'
+                        : theme === 'dark'
+                          ? 'border-gray-700 hover:border-gray-600 bg-gray-800'
+                          : 'border-gray-200 hover:border-gray-300 bg-white'
                     }`}
                     onClick={() => setSelectedStory(story)}
                   >
                     <div className="flex items-start justify-between mb-2">
-                      <h4 className="font-medium text-gray-900">
+                      <h4 className={`font-medium ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {story.titulo}
                       </h4>
                       <div className="flex items-center gap-2">
-                        <span className={`px-2 py-1 rounded text-xs ${prioridadConfig[story.prioridad]?.color || 'bg-gray-100 text-gray-800'}`}>
+                        <span className={`px-2 py-1 rounded text-xs ${prioridadConfig[story.prioridad]?.color || (theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800')}`}>
                           {prioridadConfig[story.prioridad]?.label || story.prioridad}
                         </span>
-                        <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                        <span className={`text-xs px-2 py-1 rounded ${
+                          theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-500'
+                        }`}>
                           {story.puntos_historia} SP
                         </span>
                       </div>
                     </div>
                     
-                    <p className="text-sm text-gray-600 mb-2 line-clamp-2">
+                    <p className={`text-sm mb-2 line-clamp-2 ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
                       {story.descripcion}
                     </p>
                     
                     <div className="flex items-center gap-3 text-xs">
-                      <span className={`px-2 py-1 rounded ${tipoConfig[story.tipo]?.color || 'bg-gray-100 text-gray-800'}`}>
+                      <span className={`px-2 py-1 rounded ${tipoConfig[story.tipo]?.color || (theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800')}`}>
                         {tipoConfig[story.tipo]?.label || story.tipo}
                       </span>
                       
                       {story.asignado_a && (
-                        <div className="flex items-center gap-1 text-gray-500">
+                        <div className={`flex items-center gap-1 ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
                           <User className="h-3 w-3" />
                           <span>
                             {story.asignado_a.firstName} {story.asignado_a.lastName}
@@ -348,7 +408,9 @@ const AssignStoryModal = ({
       {/* Panel Derecho - Detalles de Asignación y Fechas */}
       <div className="flex-1 p-6">
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <h3 className={`text-lg font-semibold flex items-center gap-2 ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             <Target className="h-5 w-5 text-blue-600" />
             Detalles de Asignación
           </h3>
@@ -356,11 +418,19 @@ const AssignStoryModal = ({
           {selectedStory ? (
             <div className="space-y-4">
               {/* Historia seleccionada */}
-              <div className="bg-white p-4 rounded-lg border border-blue-200">
-                <h4 className="font-medium text-gray-900 mb-2">
+              <div className={`p-4 rounded-lg border ${
+                theme === 'dark'
+                  ? 'bg-gray-800 border-blue-700'
+                  : 'bg-white border-blue-200'
+              }`}>
+                <h4 className={`font-medium mb-2 ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>
                   📋 {selectedStory.titulo}
                 </h4>
-                <p className="text-sm text-gray-600 mb-3">
+                <p className={`text-sm mb-3 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   {selectedStory.descripcion}
                 </p>
                 
@@ -399,15 +469,23 @@ const AssignStoryModal = ({
               {/* Asignar a miembro del equipo */}
               {teamMembers.length > 0 && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Asignar a Desarrollador
                   </label>
                   <div className="relative">
-                    <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${
+                      theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                    }`} />
                     <select
                       value={assignedTo}
                       onChange={(e) => setAssignedTo(e.target.value)}
-                      className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors appearance-none bg-white"
+                      className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors appearance-none ${
+                        theme === 'dark'
+                          ? 'bg-gray-800 border-gray-600 text-white'
+                          : 'bg-white border-gray-300 text-gray-900'
+                      }`}
                     >
                       <option value="">Sin asignar (se asignará después)</option>
                       {teamMembers.map(member => (
@@ -440,22 +518,36 @@ const AssignStoryModal = ({
               </button>
             </div>
           ) : (
-            <div className="text-center py-8 text-gray-500">
-              <CheckCircle className="h-12 w-12 mx-auto mb-4 text-gray-300" />
+            <div className={`text-center py-8 ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+            }`}>
+              <CheckCircle className={`h-12 w-12 mx-auto mb-4 ${
+                theme === 'dark' ? 'text-gray-600' : 'text-gray-300'
+              }`} />
               <p>Selecciona una historia</p>
-              <p className="text-sm text-gray-400 mt-1">
+              <p className={`text-sm mt-1 ${
+                theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+              }`}>
                 Haz clic en una historia de la izquierda para asignarla
               </p>
             </div>
           )}
 
           {/* Info del sprint */}
-          <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-            <h4 className="font-medium text-blue-900 mb-2 flex items-center gap-2">
+          <div className={`p-4 rounded-lg border ${
+            theme === 'dark'
+              ? 'bg-blue-900/20 border-blue-700'
+              : 'bg-blue-50 border-blue-200'
+          }`}>
+            <h4 className={`font-medium mb-2 flex items-center gap-2 ${
+              theme === 'dark' ? 'text-blue-400' : 'text-blue-900'
+            }`}>
               <Calendar className="h-4 w-4" />
               Información del Sprint
             </h4>
-            <div className="text-sm text-blue-700 space-y-1">
+            <div className={`text-sm space-y-1 ${
+              theme === 'dark' ? 'text-blue-300' : 'text-blue-700'
+            }`}>
               <p><strong>Sprint:</strong> {sprint?.nombre}</p>
               <p><strong>Duración:</strong> {new Date(sprint?.fecha_inicio).toLocaleDateString()} - {new Date(sprint?.fecha_fin).toLocaleDateString()}</p>
               <p><strong>Equipo:</strong> {teamMembers.length} desarrolladores</p>

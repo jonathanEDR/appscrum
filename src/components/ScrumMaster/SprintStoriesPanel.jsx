@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   Target, 
   User, 
@@ -22,6 +23,7 @@ const SprintStoriesPanel = ({
   onStoryRemoved,
   onRefresh 
 }) => {
+  const { theme } = useTheme();
   const { getToken } = useAuth();
   const [expandedStories, setExpandedStories] = useState({});
   const [removing, setRemoving] = useState(null);
@@ -122,9 +124,15 @@ const SprintStoriesPanel = ({
 
   if (!sprint) {
     return (
-      <div className="bg-white rounded-lg border p-6 text-center">
-        <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-        <p className="text-gray-500">Selecciona un sprint para ver sus historias</p>
+      <div className={`rounded-lg border p-6 text-center ${
+        theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
+        <Target className={`h-12 w-12 mx-auto mb-4 ${
+          theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+        }`} />
+        <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
+          Selecciona un sprint para ver sus historias
+        </p>
       </div>
     );
   }
@@ -132,15 +140,21 @@ const SprintStoriesPanel = ({
   return (
     <div className="space-y-4">
       {/* Header con métricas */}
-      <div className="bg-white rounded-lg border p-6">
+      <div className={`rounded-lg border p-6 ${
+        theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-3">
             <Target className="h-6 w-6 text-blue-600" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className={`text-lg font-semibold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 Historias del Sprint: {sprint.nombre}
               </h3>
-              <p className="text-sm text-gray-600">{sprint.objetivo}</p>
+              <p className={`text-sm ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>{sprint.objetivo}</p>
             </div>
           </div>
           
@@ -158,32 +172,44 @@ const SprintStoriesPanel = ({
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
           <div className="text-center">
             <div className="text-2xl font-bold text-blue-600">{sprintItems.length}</div>
-            <div className="text-sm text-gray-600">Historias</div>
+            <div className={`text-sm ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>Historias</div>
           </div>
           
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600">{totalStoryPoints}</div>
-            <div className="text-sm text-gray-600">Story Points</div>
+            <div className={`text-sm ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>Story Points</div>
           </div>
           
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600">{completedStoryPoints}</div>
-            <div className="text-sm text-gray-600">Completados</div>
+            <div className={`text-sm ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>Completados</div>
           </div>
           
           <div className="text-center">
             <div className="text-2xl font-bold text-orange-600">{progressPercentage.toFixed(0)}%</div>
-            <div className="text-sm text-gray-600">Progreso</div>
+            <div className={`text-sm ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>Progreso</div>
           </div>
         </div>
 
         {/* Barra de progreso */}
         <div className="mt-4">
-          <div className="flex justify-between text-sm text-gray-600 mb-2">
+          <div className={`flex justify-between text-sm mb-2 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             <span>Progreso del Sprint</span>
             <span>{completedStoryPoints}/{totalStoryPoints} SP</span>
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-3">
+          <div className={`w-full rounded-full h-3 ${
+            theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+          }`}>
             <div 
               className="bg-gradient-to-r from-blue-500 to-green-500 h-3 rounded-full transition-all duration-300"
               style={{ width: `${Math.min(progressPercentage, 100)}%` }}
@@ -207,10 +233,16 @@ const SprintStoriesPanel = ({
 
       {/* Historias agrupadas por estado */}
       {sprintItems.length === 0 ? (
-        <div className="bg-white rounded-lg border p-8 text-center">
-          <Target className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h4 className="text-lg font-medium text-gray-400 mb-2">Sin historias asignadas</h4>
-          <p className="text-gray-500">
+        <div className={`rounded-lg border p-8 text-center ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
+          <Target className={`h-16 w-16 mx-auto mb-4 ${
+            theme === 'dark' ? 'text-gray-600' : 'text-gray-300'
+          }`} />
+          <h4 className={`text-lg font-medium mb-2 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-400'
+          }`}>Sin historias asignadas</h4>
+          <p className={theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}>
             Este sprint no tiene historias asignadas aún.
           </p>
           <p className="text-sm text-gray-400 mt-2">
@@ -227,14 +259,22 @@ const SprintStoriesPanel = ({
             const storyPoints = stories.reduce((sum, story) => sum + (story.puntos_historia || 0), 0);
 
             return (
-              <div key={estado} className="bg-white rounded-lg border">
-                <div className="p-4 border-b">
+              <div key={estado} className={`rounded-lg border ${
+                theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+              }`}>
+                <div className={`p-4 border-b ${
+                  theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+                }`}>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                       <Icon className="h-5 w-5" />
                       <div>
-                        <h4 className="font-medium text-gray-900">{config.label}</h4>
-                        <p className="text-sm text-gray-600">
+                        <h4 className={`font-medium ${
+                          theme === 'dark' ? 'text-white' : 'text-gray-900'
+                        }`}>{config.label}</h4>
+                        <p className={`text-sm ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                        }`}>
                           {stories.length} historias ({storyPoints} SP)
                         </p>
                       </div>
@@ -247,15 +287,21 @@ const SprintStoriesPanel = ({
 
                 <div className="p-4 space-y-3">
                   {stories.map(story => (
-                    <div key={story._id} className="border rounded-lg">
+                    <div key={story._id} className={`border rounded-lg ${
+                      theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+                    }`}>
                       <div 
-                        className="p-4 cursor-pointer hover:bg-gray-50"
+                        className={`p-4 cursor-pointer ${
+                          theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+                        }`}
                         onClick={() => toggleStoryExpanded(story._id)}
                       >
                         <div className="flex items-start justify-between">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <h5 className="font-medium text-gray-900">{story.titulo}</h5>
+                              <h5 className={`font-medium ${
+                                theme === 'dark' ? 'text-white' : 'text-gray-900'
+                              }`}>{story.titulo}</h5>
                               <span className={`px-2 py-1 rounded text-xs ${prioridadConfig[story.prioridad]?.color || 'bg-gray-100 text-gray-800'}`}>
                                 {prioridadConfig[story.prioridad]?.label || story.prioridad}
                               </span>
@@ -267,7 +313,9 @@ const SprintStoriesPanel = ({
                               </span>
                             </div>
                             
-                            <p className="text-sm text-gray-600 line-clamp-2">
+                            <p className={`text-sm line-clamp-2 ${
+                              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                            }`}>
                               {story.descripcion}
                             </p>
                             
@@ -306,17 +354,27 @@ const SprintStoriesPanel = ({
 
                       {/* Detalles expandidos */}
                       {expandedStories[story._id] && (
-                        <div className="px-4 pb-4 border-t bg-gray-50">
+                        <div className={`px-4 pb-4 border-t ${
+                          theme === 'dark' ? 'border-gray-700 bg-gray-900' : 'border-gray-200 bg-gray-50'
+                        }`}>
                           <div className="pt-4 space-y-3">
                             <div>
-                              <h6 className="text-sm font-medium text-gray-900 mb-1">Descripción completa:</h6>
-                              <p className="text-sm text-gray-600">{story.descripcion}</p>
+                              <h6 className={`text-sm font-medium mb-1 ${
+                                theme === 'dark' ? 'text-white' : 'text-gray-900'
+                              }`}>Descripción completa:</h6>
+                              <p className={`text-sm ${
+                                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                              }`}>{story.descripcion}</p>
                             </div>
                             
                             {story.criterios_aceptacion && (
                               <div>
-                                <h6 className="text-sm font-medium text-gray-900 mb-1">Criterios de aceptación:</h6>
-                                <p className="text-sm text-gray-600">{story.criterios_aceptacion}</p>
+                                <h6 className={`text-sm font-medium mb-1 ${
+                                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                }`}>Criterios de aceptación:</h6>
+                                <p className={`text-sm ${
+                                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                                }`}>{story.criterios_aceptacion}</p>
                               </div>
                             )}
                             

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { useAuth, useUser } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   Bug, 
   AlertCircle, 
@@ -18,6 +19,7 @@ import ScrumMasterBugDetail from './ScrumMasterBugDetail';
 
 // Componente para las estadísticas de bugs
 const BugStatsCard = ({ title, value, icon: Icon, color = 'primary', trend = null }) => {
+  const { theme } = useTheme();
   const colorClasses = {
     primary: 'bg-gradient-to-br from-blue-500 to-blue-600',
     success: 'bg-gradient-to-br from-green-500 to-green-600',
@@ -52,6 +54,7 @@ const BugStatsCard = ({ title, value, icon: Icon, color = 'primary', trend = nul
 
 // Componente para tarjeta individual de bug
 const BugCard = ({ bug, onClick }) => {
+  const { theme } = useTheme();
   const getStatusColor = (status) => {
     const colors = {
       'open': 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200',
@@ -174,6 +177,7 @@ const BugCard = ({ bug, onClick }) => {
 const ScrumMasterBugReports = () => {
   const { getToken } = useAuth();
   const { user } = useUser();
+  const { theme } = useTheme();
   const [bugs, setBugs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);

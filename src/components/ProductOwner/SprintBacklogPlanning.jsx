@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 import { DragDropContext, Droppable, Draggable } from '@hello-pangea/dnd';
 import {
   Target,
@@ -25,6 +26,7 @@ const API_BASE_URL = config.API_URL || import.meta.env.VITE_API_URL || '';
 
 const SprintBacklogPlanning = () => {
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   
   // Estados
   const [selectedProduct, setSelectedProduct] = useState('');
@@ -42,18 +44,28 @@ const SprintBacklogPlanning = () => {
   const { sprints, loading: loadingSprints } = useSprints(selectedProduct);
 
   // Configuración de prioridades
-  const prioridadConfig = {
+  const prioridadConfig = theme === 'dark' ? {
+    muy_alta: { label: 'Muy Alta', icon: '🔴', color: 'border-red-600 bg-red-900/30' },
+    alta: { label: 'Alta', icon: '🟠', color: 'border-orange-600 bg-orange-900/30' },
+    media: { label: 'Media', icon: '🟡', color: 'border-yellow-600 bg-yellow-900/30' },
+    baja: { label: 'Baja', icon: '🟢', color: 'border-green-600 bg-green-900/30' }
+  } : {
     muy_alta: { label: 'Muy Alta', icon: '🔴', color: 'border-red-500 bg-red-50' },
     alta: { label: 'Alta', icon: '🟠', color: 'border-orange-500 bg-orange-50' },
     media: { label: 'Media', icon: '🟡', color: 'border-yellow-500 bg-yellow-50' },
     baja: { label: 'Baja', icon: '🟢', color: 'border-green-500 bg-green-50' }
   };
 
-  const tipoColors = {
-    historia: 'bg-blue-100 text-blue-800',
-    tarea: 'bg-green-100 text-green-800',
-    bug: 'bg-red-100 text-red-800',
-    mejora: 'bg-purple-100 text-purple-800'
+  const tipoColors = theme === 'dark' ? {
+    historia: 'bg-blue-900/30 text-blue-400 border border-blue-800',
+    tarea: 'bg-green-900/30 text-green-400 border border-green-800',
+    bug: 'bg-red-900/30 text-red-400 border border-red-800',
+    mejora: 'bg-purple-900/30 text-purple-400 border border-purple-800'
+  } : {
+    historia: 'bg-blue-100 text-blue-800 border border-blue-200',
+    tarea: 'bg-green-100 text-green-800 border border-green-200',
+    bug: 'bg-red-100 text-red-800 border border-red-200',
+    mejora: 'bg-purple-100 text-purple-800 border border-purple-200'
   };
 
   // ✅ OPTIMIZADO: useCallback para cargarBacklogItems
@@ -267,9 +279,15 @@ const SprintBacklogPlanning = () => {
     }
 
     return (
-      <div className="mt-4 p-4 border rounded-lg bg-white">
+      <div className={`mt-4 p-4 border rounded-lg ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
         <div className="flex items-center justify-between mb-2">
-          <span className="text-sm font-medium text-gray-700">Capacidad del Sprint</span>
+          <span className={`text-sm font-medium ${
+            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+          }`}>Capacidad del Sprint</span>
           <div className="flex items-center gap-2">
             {icon}
             <span className={`text-lg font-bold ${
@@ -282,14 +300,18 @@ const SprintBacklogPlanning = () => {
           </div>
         </div>
 
-        <div className="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+        <div className={`w-full rounded-full h-3 overflow-hidden ${
+          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+        }`}>
           <div
             className={`h-full transition-all duration-300 ${colorClass}`}
             style={{ width: `${Math.min(percentage, 100)}%` }}
           />
         </div>
 
-        <div className="mt-2 grid grid-cols-3 gap-2 text-xs text-gray-600">
+        <div className={`mt-2 grid grid-cols-3 gap-2 text-xs ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+        }`}>
           <div>
             <span className="font-medium">Actual: </span>
             {capacityValidation.currentPoints} pts
@@ -331,31 +353,47 @@ const SprintBacklogPlanning = () => {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className={`p-6 space-y-6 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => window.history.back()}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft size={20} />
-          </button>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-              <Target className="text-blue-600" />
-              Planificación de Sprint
-            </h1>
-            <p className="text-gray-600 mt-1">Arrastra historias del backlog al sprint</p>
+      <div className={`rounded-lg shadow-sm p-6 ${
+        theme === 'dark' 
+          ? 'bg-gradient-to-r from-blue-800 to-blue-900 border border-blue-700' 
+          : 'bg-gradient-to-r from-blue-600 to-blue-700'
+      }`}>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => window.history.back()}
+              className={`p-2 rounded-lg transition-colors ${
+                theme === 'dark'
+                  ? 'hover:bg-blue-700/50 text-white'
+                  : 'hover:bg-blue-500/20 text-white'
+              }`}
+            >
+              <ArrowLeft size={20} />
+            </button>
+            <div>
+              <h1 className="text-2xl font-bold text-white flex items-center gap-2">
+                <Target />
+                Planificación de Sprint
+              </h1>
+              <p className="text-blue-100 mt-1">Arrastra historias del backlog al sprint</p>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Selectores */}
-      <div className="bg-white rounded-lg border p-4 space-y-4">
+      <div className={`rounded-lg border p-4 space-y-4 ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border-gray-700' 
+          : 'bg-white border-gray-200'
+      }`}>
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Producto
             </label>
             <select
@@ -365,7 +403,11 @@ const SprintBacklogPlanning = () => {
                 setSelectedSprint(null);
                 setPendingStories([]);
               }}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="">Seleccionar producto</option>
               {productos.map(producto => (
@@ -377,7 +419,9 @@ const SprintBacklogPlanning = () => {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Sprint
             </label>
             <select
@@ -388,7 +432,11 @@ const SprintBacklogPlanning = () => {
                 setPendingStories([]);
               }}
               disabled={!selectedProduct}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100"
+              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white disabled:bg-gray-800 disabled:text-gray-500'
+                  : 'bg-white border-gray-300 text-gray-900 disabled:bg-gray-100 disabled:text-gray-400'
+              }`}
             >
               <option value="">Seleccionar sprint</option>
               {sprints.map(sprint => (
@@ -401,24 +449,34 @@ const SprintBacklogPlanning = () => {
         </div>
 
         {selectedSprint && (
-          <div className="border-t pt-4 grid grid-cols-4 gap-4 text-sm">
+          <div className={`border-t pt-4 grid grid-cols-4 gap-4 text-sm ${
+            theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+          }`}>
             <div>
-              <span className="text-gray-600">Objetivo:</span>
-              <p className="font-medium">{selectedSprint.objetivo}</p>
+              <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Objetivo:</span>
+              <p className={`font-medium ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>{selectedSprint.objetivo}</p>
             </div>
             <div>
-              <span className="text-gray-600">Fechas:</span>
-              <p className="font-medium">
+              <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Fechas:</span>
+              <p className={`font-medium ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 {new Date(selectedSprint.fecha_inicio).toLocaleDateString()} - {new Date(selectedSprint.fecha_fin).toLocaleDateString()}
               </p>
             </div>
             <div>
-              <span className="text-gray-600">Capacidad:</span>
-              <p className="font-medium">{selectedSprint.capacidad_equipo} hrs</p>
+              <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Capacidad:</span>
+              <p className={`font-medium ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>{selectedSprint.capacidad_equipo} hrs</p>
             </div>
             <div>
-              <span className="text-gray-600">Historias actuales:</span>
-              <p className="font-medium">{sprintStories.length}</p>
+              <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Historias actuales:</span>
+              <p className={`font-medium ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>{sprintStories.length}</p>
             </div>
           </div>
         )}
@@ -426,14 +484,22 @@ const SprintBacklogPlanning = () => {
 
       {/* Mensajes */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-center gap-2 text-red-700">
+        <div className={`border rounded-lg p-4 flex items-center gap-2 ${
+          theme === 'dark'
+            ? 'bg-red-900/20 border-red-800 text-red-400'
+            : 'bg-red-50 border-red-200 text-red-700'
+        }`}>
           <AlertCircle size={20} />
           <span>{error}</span>
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2 text-green-700">
+        <div className={`border rounded-lg p-4 flex items-center gap-2 ${
+          theme === 'dark'
+            ? 'bg-green-900/20 border-green-800 text-green-400'
+            : 'bg-green-50 border-green-200 text-green-700'
+        }`}>
           <CheckCircle size={20} />
           <span>{success}</span>
         </div>
@@ -446,16 +512,24 @@ const SprintBacklogPlanning = () => {
             {/* Panel Izquierdo: Backlog Disponible */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
-                  <Package size={20} className="text-gray-600" />
+                <h2 className={`text-lg font-semibold flex items-center gap-2 ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>
+                  <Package size={20} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} />
                   Backlog Disponible
-                  <span className="text-sm font-normal text-gray-500">
+                  <span className={`text-sm font-normal ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
                     ({availableStories.length} historias)
                   </span>
                 </h2>
                 <button
                   onClick={cargarBacklogItems}
-                  className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className={`p-2 rounded-lg transition-colors ${
+                    theme === 'dark'
+                      ? 'hover:bg-gray-700 text-gray-400'
+                      : 'hover:bg-gray-100 text-gray-600'
+                  }`}
                   title="Actualizar"
                 >
                   <RefreshCw size={16} />
@@ -468,11 +542,15 @@ const SprintBacklogPlanning = () => {
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`min-h-[400px] border-2 border-dashed rounded-lg p-4 transition-colors ${
-                      snapshot.isDraggingOver ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50'
+                      snapshot.isDraggingOver 
+                        ? (theme === 'dark' ? 'border-blue-600 bg-blue-900/20' : 'border-blue-500 bg-blue-50')
+                        : (theme === 'dark' ? 'border-gray-700 bg-gray-800/50' : 'border-gray-300 bg-gray-50')
                     }`}
                   >
                     {availableStories.length === 0 ? (
-                      <div className="text-center py-12 text-gray-500">
+                      <div className={`text-center py-12 ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
                         <Package size={48} className="mx-auto mb-2 opacity-50" />
                         <p className="font-medium">No hay historias disponibles</p>
                         <p className="text-sm mt-1">
@@ -490,19 +568,27 @@ const SprintBacklogPlanning = () => {
                               ref={provided.innerRef}
                               {...provided.draggableProps}
                               {...provided.dragHandleProps}
-                              className={`mb-3 p-4 bg-white border-l-4 ${
+                              className={`mb-3 p-4 border-l-4 rounded-lg shadow-sm transition-all ${
                                 prioridadConfig[story.prioridad]?.color || 'border-gray-300'
-                              } rounded-lg shadow-sm transition-all ${
+                              } ${
                                 snapshot.isDragging ? 'shadow-lg rotate-2 scale-105' : 'hover:shadow-md'
                               } ${
                                 pendingStories.includes(story._id) ? 'opacity-50' : ''
+                              } ${
+                                theme === 'dark' ? 'bg-gray-800' : 'bg-white'
                               }`}
                             >
                               <div className="flex items-start justify-between mb-2">
-                                <h3 className="font-medium text-gray-900 flex-1">{story.titulo}</h3>
+                                <h3 className={`font-medium flex-1 ${
+                                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                }`}>{story.titulo}</h3>
                                 <div className="flex items-center gap-2 ml-2">
                                   {!isReadyForSprint(story) && (
-                                    <span className="text-xs bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded" title="Faltan criterios o puntos">
+                                    <span className={`text-xs px-2 py-0.5 rounded ${
+                                      theme === 'dark' 
+                                        ? 'bg-yellow-900/50 text-yellow-300' 
+                                        : 'bg-yellow-100 text-yellow-700'
+                                    }`} title="Faltan criterios o puntos">
                                       ⚠️ Incompleta
                                     </span>
                                   )}
@@ -513,20 +599,24 @@ const SprintBacklogPlanning = () => {
                               </div>
 
                               <div className="flex items-center gap-2 text-xs flex-wrap">
-                                <span className={`px-2 py-1 rounded ${tipoColors[story.tipo] || 'bg-gray-100'}`}>
+                                <span className={`px-2 py-1 rounded ${tipoColors[story.tipo] || (
+                                  theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'
+                                )}`}>
                                   {story.tipo}
                                 </span>
                                 <span className={`px-2 py-1 rounded font-medium ${
-                                  story.puntos_historia > 0 ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'
+                                  story.puntos_historia > 0 
+                                    ? (theme === 'dark' ? 'bg-blue-800/50 text-blue-300' : 'bg-blue-100 text-blue-800')
+                                    : (theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-600')
                                 }`}>
                                   {story.puntos_historia || 0} pts
                                 </span>
                                 {story.criterios_aceptacion?.length > 0 ? (
-                                  <span className="text-green-600">
+                                  <span className={theme === 'dark' ? 'text-green-400' : 'text-green-600'}>
                                     ✓ {story.criterios_aceptacion.length} criterios
                                   </span>
                                 ) : (
-                                  <span className="text-gray-400">
+                                  <span className={theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}>
                                     ⚠️ Sin criterios
                                   </span>
                                 )}
@@ -545,10 +635,14 @@ const SprintBacklogPlanning = () => {
             {/* Panel Derecho: Sprint */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+                <h2 className={`text-lg font-semibold flex items-center gap-2 ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>
                   <Target size={20} className="text-blue-600" />
                   {selectedSprint.nombre}
-                  <span className="text-sm font-normal text-gray-500">
+                  <span className={`text-sm font-normal ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
                     ({sprintStories.length + pendingStories.length} historias)
                   </span>
                 </h2>
@@ -560,24 +654,34 @@ const SprintBacklogPlanning = () => {
                     ref={provided.innerRef}
                     {...provided.droppableProps}
                     className={`min-h-[400px] border-2 border-dashed rounded-lg p-4 transition-colors ${
-                      snapshot.isDraggingOver ? 'border-green-500 bg-green-50' : 'border-blue-300 bg-blue-50'
+                      snapshot.isDraggingOver
+                        ? (theme === 'dark' ? 'border-green-600 bg-green-900/20' : 'border-green-500 bg-green-50')
+                        : (theme === 'dark' ? 'border-blue-700 bg-blue-900/20' : 'border-blue-300 bg-blue-50')
                     }`}
                   >
                     {/* Historias ya asignadas */}
                     {sprintStories.map((story) => (
                       <div
                         key={story._id}
-                        className="mb-3 p-4 bg-gray-100 border-l-4 border-gray-400 rounded-lg opacity-70"
+                        className={`mb-3 p-4 border-l-4 border-gray-400 rounded-lg opacity-70 ${
+                          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
+                        }`}
                       >
                         <div className="flex items-start justify-between">
-                          <h3 className="font-medium text-gray-700">{story.titulo}</h3>
-                          <span className="text-xs text-gray-500">Ya asignada</span>
+                          <h3 className={`font-medium ${
+                            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                          }`}>{story.titulo}</h3>
+                          <span className={`text-xs ${
+                            theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                          }`}>Ya asignada</span>
                         </div>
                         <div className="flex items-center gap-2 text-xs mt-2">
-                          <span className={`px-2 py-1 rounded ${tipoColors[story.tipo] || 'bg-gray-100'}`}>
+                          <span className={`px-2 py-1 rounded ${tipoColors[story.tipo] || (theme === 'dark' ? 'bg-gray-600 text-gray-300' : 'bg-gray-100 text-gray-800')}`}>
                             {story.tipo}
                           </span>
-                          <span className="px-2 py-1 bg-gray-200 text-gray-700 rounded">
+                          <span className={`px-2 py-1 rounded ${
+                            theme === 'dark' ? 'bg-gray-600 text-gray-300' : 'bg-gray-200 text-gray-700'
+                          }`}>
                             {story.puntos_historia || 0} pts
                           </span>
                         </div>
@@ -592,21 +696,31 @@ const SprintBacklogPlanning = () => {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             {...provided.dragHandleProps}
-                            className={`mb-3 p-4 bg-white border-l-4 border-green-500 rounded-lg shadow-sm transition-all ${
+                            className={`mb-3 p-4 border-l-4 border-green-500 rounded-lg shadow-sm transition-all ${
                               snapshot.isDragging ? 'shadow-lg' : 'hover:shadow-md'
+                            } ${
+                              theme === 'dark' ? 'bg-gray-800' : 'bg-white'
                             }`}
                           >
                             <div className="flex items-start justify-between mb-2">
-                              <h3 className="font-medium text-gray-900">{story.titulo}</h3>
-                              <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                              <h3 className={`font-medium ${
+                                theme === 'dark' ? 'text-white' : 'text-gray-900'
+                              }`}>{story.titulo}</h3>
+                              <span className={`text-xs px-2 py-1 rounded ${
+                                theme === 'dark' 
+                                  ? 'bg-green-800/50 text-green-300' 
+                                  : 'bg-green-100 text-green-700'
+                              }`}>
                                 Pendiente
                               </span>
                             </div>
                             <div className="flex items-center gap-2 text-xs">
-                              <span className={`px-2 py-1 rounded ${tipoColors[story.tipo] || 'bg-gray-100'}`}>
+                              <span className={`px-2 py-1 rounded ${tipoColors[story.tipo] || (theme === 'dark' ? 'bg-gray-600 text-gray-300' : 'bg-gray-100 text-gray-800')}`}>
                                 {story.tipo}
                               </span>
-                              <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded font-medium">
+                              <span className={`px-2 py-1 rounded font-medium ${
+                                theme === 'dark' ? 'bg-blue-900/30 text-blue-400 border border-blue-800' : 'bg-blue-100 text-blue-800'
+                              }`}>
                                 {story.puntos_historia || 0} pts
                               </span>
                             </div>
@@ -616,7 +730,9 @@ const SprintBacklogPlanning = () => {
                     ))}
 
                     {sprintStories.length === 0 && pendingStories.length === 0 && (
-                      <div className="text-center py-12 text-gray-500">
+                      <div className={`text-center py-12 ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
                         <Target size={48} className="mx-auto mb-2 opacity-50" />
                         <p>Arrastra historias aquí</p>
                         <p className="text-sm">Este sprint está vacío</p>
@@ -635,7 +751,14 @@ const SprintBacklogPlanning = () => {
                 <button
                   onClick={handleSaveAssignments}
                   disabled={saving}
-                  className="w-full bg-blue-600 text-white px-4 py-3 rounded-lg hover:bg-blue-700 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium"
+                  className={`w-full px-4 py-3 rounded-lg transition-colors flex items-center justify-center gap-2 font-medium ${
+                    saving
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : (theme === 'dark'
+                        ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                        : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      )
+                  }`}
                 >
                   {saving ? (
                     <>
@@ -656,14 +779,18 @@ const SprintBacklogPlanning = () => {
       )}
 
       {!selectedProduct && (
-        <div className="text-center py-12 text-gray-500">
+        <div className={`text-center py-12 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+        }`}>
           <Package size={48} className="mx-auto mb-2 opacity-50" />
           <p className="text-lg font-medium">Selecciona un producto para comenzar</p>
         </div>
       )}
 
       {selectedProduct && !selectedSprint && (
-        <div className="text-center py-12 text-gray-500">
+        <div className={`text-center py-12 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+        }`}>
           <Target size={48} className="mx-auto mb-2 opacity-50" />
           <p className="text-lg font-medium">Selecciona un sprint para planificar</p>
         </div>

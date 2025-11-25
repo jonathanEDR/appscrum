@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { X, Package, User, Calendar, FileText, Settings, Save } from 'lucide-react';
 
 const ModalProducto = ({
@@ -11,6 +12,8 @@ const ModalProducto = ({
   usuarios,
   error
 }) => {
+  const { theme } = useTheme();
+  
   // Establecer fecha actual cuando se abre el modal para nuevo producto
   useEffect(() => {
     if (isOpen && !editingProduct) {
@@ -35,7 +38,11 @@ const ModalProducto = ({
         ></div>
 
         {/* Modal */}
-        <div className="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle">
+        <div className={`inline-block transform overflow-hidden rounded-lg text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl sm:align-middle ${
+          theme === 'dark' 
+            ? 'bg-gray-800 border border-gray-700' 
+            : 'bg-white border border-gray-200'
+        }`}>
           {/* Header del Modal */}
           <div className="bg-gradient-to-r from-orange-500 to-orange-600 px-6 py-4">
             <div className="flex items-center justify-between">
@@ -65,24 +72,34 @@ const ModalProducto = ({
           <form onSubmit={handleSubmit}>
             <div className="flex">
               {/* Parte Izquierda - Información Principal */}
-              <div className="flex-1 p-6 border-r border-gray-200">
+              <div className={`flex-1 p-6 border-r ${
+                theme === 'dark' ? 'border-gray-600' : 'border-gray-200'
+              }`}>
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-4">
                     <FileText className="h-5 w-5 text-orange-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Información Principal</h3>
+                    <h3 className={`text-lg font-semibold ${
+                      theme === 'dark' ? 'text-white' : 'text-gray-900'
+                    }`}>Información Principal</h3>
                   </div>
 
                   <div className="space-y-4">
                     {/* Nombre del Producto */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className={`block text-sm font-medium mb-2 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         Nombre del Producto *
                       </label>
                       <input
                         type="text"
                         required
                         placeholder="Ej: Sistema de Gestión Empresarial"
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                        className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors ${
+                          theme === 'dark' 
+                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        }`}
                         value={formData.nombre}
                         onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
                       />
@@ -90,14 +107,20 @@ const ModalProducto = ({
 
                     {/* Descripción */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className={`block text-sm font-medium mb-2 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         Descripción *
                       </label>
                       <textarea
                         required
                         rows={4}
                         placeholder="Describe el objetivo y alcance del producto..."
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors resize-none"
+                        className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors resize-none ${
+                          theme === 'dark' 
+                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                        }`}
                         value={formData.descripcion}
                         onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                       />
@@ -105,14 +128,22 @@ const ModalProducto = ({
 
                     {/* Responsable */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className={`block text-sm font-medium mb-2 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         Responsable del Producto *
                       </label>
                       <div className="relative">
-                        <User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <User className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${
+                          theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                        }`} />
                         <select
                           required
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors appearance-none bg-white"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors appearance-none ${
+                            theme === 'dark' 
+                              ? 'bg-gray-700 border-gray-600 text-white' 
+                              : 'bg-white border-gray-300 text-gray-900'
+                          }`}
                           value={formData.responsable}
                           onChange={(e) => setFormData({ ...formData, responsable: e.target.value })}
                           disabled={usuarios.length === 0}
@@ -128,8 +159,12 @@ const ModalProducto = ({
                         </select>
                       </div>
                       {usuarios.length === 0 && (
-                        <p className="text-xs text-red-500 mt-2 flex items-center gap-1">
-                          <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                        <p className={`text-xs mt-2 flex items-center gap-1 ${
+                          theme === 'dark' ? 'text-red-400' : 'text-red-500'
+                        }`}>
+                          <span className={`w-1 h-1 rounded-full ${
+                            theme === 'dark' ? 'bg-red-400' : 'bg-red-500'
+                          }`}></span>
                           No hay colaboradores disponibles para asignar. Agrega colaboradores primero.
                         </p>
                       )}
@@ -143,20 +178,30 @@ const ModalProducto = ({
                 <div className="mb-6">
                   <div className="flex items-center gap-2 mb-4">
                     <Settings className="h-5 w-5 text-orange-600" />
-                    <h3 className="text-lg font-semibold text-gray-900">Configuración</h3>
+                    <h3 className={`text-lg font-semibold ${
+                      theme === 'dark' ? 'text-white' : 'text-gray-900'
+                    }`}>Configuración</h3>
                   </div>
 
                   <div className="space-y-4">
                     {/* Fecha de Inicio */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className={`block text-sm font-medium mb-2 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         Fecha de Inicio
                       </label>
                       <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <Calendar className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${
+                          theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                        }`} />
                         <input
                           type="date"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors ${
+                            theme === 'dark' 
+                              ? 'bg-gray-700 border-gray-600 text-white' 
+                              : 'bg-white border-gray-300 text-gray-900'
+                          }`}
                           value={formData.fecha_inicio || new Date().toISOString().split('T')[0]}
                           onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
                         />
@@ -165,31 +210,47 @@ const ModalProducto = ({
 
                     {/* Fecha de Finalización */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className={`block text-sm font-medium mb-2 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         Fecha de Finalización Estimada
                       </label>
                       <div className="relative">
-                        <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                        <Calendar className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${
+                          theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                        }`} />
                         <input
                           type="date"
-                          className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                          className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors ${
+                            theme === 'dark' 
+                              ? 'bg-gray-700 border-gray-600 text-white' 
+                              : 'bg-white border-gray-300 text-gray-900'
+                          }`}
                           value={formData.fecha_fin}
                           onChange={(e) => setFormData({ ...formData, fecha_fin: e.target.value })}
                           min={formData.fecha_inicio || new Date().toISOString().split('T')[0]}
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className={`text-xs mt-1 ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
                         La fecha no puede ser anterior a la fecha de inicio
                       </p>
                     </div>
 
                     {/* Estado */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className={`block text-sm font-medium mb-2 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         Estado del Producto
                       </label>
                       <select
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                        className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors ${
+                          theme === 'dark' 
+                            ? 'bg-gray-700 border-gray-600 text-white' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                        }`}
                         value={formData.estado}
                         onChange={(e) => setFormData({ ...formData, estado: e.target.value })}
                       >
@@ -201,11 +262,17 @@ const ModalProducto = ({
 
                     {/* Prioridad */}
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <label className={`block text-sm font-medium mb-2 ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
                         Prioridad
                       </label>
                       <select
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors"
+                        className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-colors ${
+                          theme === 'dark' 
+                            ? 'bg-gray-700 border-gray-600 text-white' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                        }`}
                         value={formData.prioridad || 'media'}
                         onChange={(e) => setFormData({ ...formData, prioridad: e.target.value })}
                       >
@@ -218,9 +285,17 @@ const ModalProducto = ({
                 </div>
 
                 {/* Información adicional */}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <h4 className="text-sm font-medium text-gray-700 mb-2">Información</h4>
-                  <div className="text-xs text-gray-600 space-y-1">
+                <div className={`rounded-lg p-4 ${
+                  theme === 'dark' 
+                    ? 'bg-gray-900/50 border border-gray-700' 
+                    : 'bg-gray-50 border border-gray-200'
+                }`}>
+                  <h4 className={`text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>Información</h4>
+                  <div className={`text-xs space-y-1 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
                     <p>• Todos los campos marcados con * son obligatorios</p>
                     <p>• La fecha actual se establece automáticamente</p>
                     <p>• El responsable recibirá notificaciones del producto</p>
@@ -230,11 +305,19 @@ const ModalProducto = ({
             </div>
 
             {/* Botones de Acción */}
-            <div className="border-t border-gray-200 px-6 py-4 bg-gray-50 flex justify-end gap-3">
+            <div className={`border-t px-6 py-4 flex justify-end gap-3 ${
+              theme === 'dark' 
+                ? 'border-gray-600 bg-gray-900/30' 
+                : 'border-gray-200 bg-gray-50'
+            }`}>
               <button
                 type="button"
                 onClick={onClose}
-                className="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors"
+                className={`px-4 py-2 border rounded-lg transition-colors ${
+                  theme === 'dark' 
+                    ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                    : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                }`}
               >
                 Cancelar
               </button>
@@ -251,10 +334,14 @@ const ModalProducto = ({
 
           {/* Mensaje de Error/Éxito */}
           {error && (
-            <div className={`mx-6 mb-4 p-3 rounded-lg text-sm ${
+            <div className={`mx-6 mb-4 p-3 rounded-lg text-sm border ${
               error.startsWith('success:') 
-                ? 'bg-green-50 text-green-700 border border-green-200' 
-                : 'bg-red-50 text-red-700 border border-red-200'
+                ? theme === 'dark' 
+                  ? 'bg-green-900/30 text-green-300 border-green-700' 
+                  : 'bg-green-50 text-green-700 border-green-200'
+                : theme === 'dark' 
+                  ? 'bg-red-900/30 text-red-300 border-red-700' 
+                  : 'bg-red-50 text-red-700 border-red-200'
             }`}>
               {error.startsWith('success:') ? error.replace('success:', '') : error}
             </div>

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
+import { useTheme } from '../../../context/ThemeContext';
 
 const SprintModal = ({ sprint, releases, onClose, onSave }) => {
+  const { theme } = useTheme();
   const [formData, setFormData] = useState({
     nombre: sprint?.nombre || '',
     objetivo: sprint?.objetivo || '',
@@ -21,33 +23,51 @@ const SprintModal = ({ sprint, releases, onClose, onSave }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
+      <div className={`rounded-lg p-6 w-full max-w-md ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border border-gray-700' 
+          : 'bg-white border border-gray-200'
+      }`}>
+        <h3 className={`text-lg font-semibold mb-4 ${
+          theme === 'dark' ? 'text-white' : 'text-gray-900'
+        }`}>
           {sprint ? 'Editar Sprint' : 'Nuevo Sprint'}
         </h3>
         
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Nombre
             </label>
             <input
               type="text"
               value={formData.nombre}
               onChange={(e) => setFormData({ ...formData, nombre: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'dark' 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+              }`}
               required
             />
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Objetivo
             </label>
             <textarea
               value={formData.objetivo}
               onChange={(e) => setFormData({ ...formData, objetivo: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'dark' 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+              }`}
               rows="3"
               required
             />
@@ -55,27 +75,39 @@ const SprintModal = ({ sprint, releases, onClose, onSave }) => {
           
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Fecha Inicio
               </label>
               <input
                 type="date"
                 value={formData.fecha_inicio}
                 onChange={(e) => setFormData({ ...formData, fecha_inicio: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
                 required
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Fecha Fin
               </label>
               <input
                 type="date"
                 value={formData.fecha_fin}
                 onChange={(e) => setFormData({ ...formData, fecha_fin: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
                 required
               />
             </div>
@@ -84,13 +116,19 @@ const SprintModal = ({ sprint, releases, onClose, onSave }) => {
           {/* NUEVOS CAMPOS - Release y Prioridad */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Release Asociado (Opcional)
               </label>
               <select
                 value={formData.release_id}
                 onChange={(e) => setFormData({ ...formData, release_id: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="">Sprint Independiente</option>
                 {releases?.map(release => (
@@ -102,13 +140,19 @@ const SprintModal = ({ sprint, releases, onClose, onSave }) => {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Prioridad
               </label>
               <select
                 value={formData.prioridad}
                 onChange={(e) => setFormData({ ...formData, prioridad: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="baja">🟢 Baja</option>
                 <option value="media">🟡 Media</option>
@@ -121,28 +165,40 @@ const SprintModal = ({ sprint, releases, onClose, onSave }) => {
           {/* Capacidad del Equipo y Progreso */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Capacidad Equipo (horas)
               </label>
               <input
                 type="number"
                 value={formData.capacidad_equipo}
                 onChange={(e) => setFormData({ ...formData, capacidad_equipo: parseInt(e.target.value) || 0 })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
                 min="0"
                 placeholder="160"
               />
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
+              <label className={`block text-sm font-medium mb-1 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Progreso (%)
               </label>
               <input
                 type="number"
                 value={formData.progreso}
                 onChange={(e) => setFormData({ ...formData, progreso: Math.min(100, Math.max(0, parseInt(e.target.value) || 0)) })}
-                className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
                 min="0"
                 max="100"
                 placeholder="0"
@@ -151,14 +207,20 @@ const SprintModal = ({ sprint, releases, onClose, onSave }) => {
           </div>
           
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className={`block text-sm font-medium mb-1 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Velocidad Planificada
             </label>
             <input
               type="number"
               value={formData.velocidad_planificada}
               onChange={(e) => setFormData({ ...formData, velocidad_planificada: parseInt(e.target.value) || 0 })}
-              className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className={`w-full border rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
+                theme === 'dark' 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+              }`}
               min="0"
             />
           </div>
@@ -167,13 +229,21 @@ const SprintModal = ({ sprint, releases, onClose, onSave }) => {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50"
+              className={`px-4 py-2 border rounded-lg ${
+                theme === 'dark' 
+                  ? 'text-gray-300 border-gray-600 hover:bg-gray-700' 
+                  : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+              }`}
             >
               Cancelar
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className={`px-4 py-2 rounded-lg text-white ${
+                theme === 'dark' 
+                  ? 'bg-blue-600 hover:bg-blue-700' 
+                  : 'bg-blue-600 hover:bg-blue-700'
+              }`}
             >
               {sprint ? 'Actualizar' : 'Crear'}
             </button>

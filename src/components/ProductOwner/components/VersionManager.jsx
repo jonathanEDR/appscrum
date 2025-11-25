@@ -1,10 +1,12 @@
 import React, { useState } from 'react';
 import { Tag, Plus, GitCommit, Calendar, CheckCircle, Hash } from 'lucide-react';
+import { useTheme } from '../../../context/ThemeContext';
 
 const VersionManager = ({ release, onVersionChange, onClose }) => {
   const [nuevaVersion, setNuevaVersion] = useState('');
   const [tipoVersion, setTipoVersion] = useState('minor'); // major, minor, patch
   const [notasVersion, setNotasVersion] = useState('');
+  const { theme } = useTheme();
 
   // Función para sugerir próxima versión
   const sugerirProximaVersion = () => {
@@ -64,27 +66,27 @@ const VersionManager = ({ release, onVersionChange, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-md mx-4">
+      <div className={`${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-xl p-6 w-full max-w-md mx-4`}>
         <div className="flex items-center gap-3 mb-6">
           {Tag ? <Tag className="h-6 w-6 text-purple-600" /> : <Hash className="h-6 w-6 text-purple-600" />}
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className={`text-xl font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             Gestionar Versión: {release.nombre}
           </h2>
         </div>
 
         {/* Información del Release Actual */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+        <div className={`${theme === 'dark' ? 'bg-gray-700/50' : 'bg-gray-50'} rounded-lg p-4 mb-6`}>
           <div className="flex items-center gap-2 mb-2">
-            <GitCommit className="h-4 w-4 text-gray-600" />
-            <span className="text-sm font-medium text-gray-700">Versión Actual</span>
+            <GitCommit className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`} />
+            <span className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>Versión Actual</span>
           </div>
-          <p className="text-lg font-bold text-gray-900">{release.version}</p>
-          <p className="text-sm text-gray-600">Estado: {release.estado}</p>
+          <p className={`text-lg font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{release.version}</p>
+          <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Estado: {release.estado}</p>
         </div>
 
         {/* Selección de Tipo de Versión */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-3">
+          <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-3`}>
             Tipo de Versión
           </label>
           <div className="space-y-3">
@@ -101,11 +103,11 @@ const VersionManager = ({ release, onVersionChange, onClose }) => {
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
                     <span className={`font-medium ${tipo.color}`}>{tipo.label}</span>
-                    <span className="text-sm text-gray-600">
+                    <span className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                       → {tipo.value === tipoVersion ? sugerirProximaVersion() : ''}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500">{tipo.description}</p>
+                  <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{tipo.description}</p>
                 </div>
               </label>
             ))}
@@ -114,7 +116,7 @@ const VersionManager = ({ release, onVersionChange, onClose }) => {
 
         {/* Versión Personalizada */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>
             Versión Personalizada (opcional)
           </label>
           <div className="flex gap-2">
@@ -123,11 +125,11 @@ const VersionManager = ({ release, onVersionChange, onClose }) => {
               value={nuevaVersion}
               onChange={(e) => setNuevaVersion(e.target.value)}
               placeholder={sugerirProximaVersion()}
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm"
+              className={`flex-1 px-3 py-2 border ${theme === 'dark' ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white'} rounded-md text-sm`}
             />
             <button
               onClick={handleSugerirVersion}
-              className="px-3 py-2 bg-purple-100 text-purple-700 rounded-md text-sm hover:bg-purple-200"
+              className={`px-3 py-2 ${theme === 'dark' ? 'bg-purple-800/50 text-purple-300 hover:bg-purple-700/50' : 'bg-purple-100 text-purple-700 hover:bg-purple-200'} rounded-md text-sm`}
             >
               Sugerir
             </button>
@@ -136,7 +138,7 @@ const VersionManager = ({ release, onVersionChange, onClose }) => {
 
         {/* Notas de Versión */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className={`block text-sm font-medium ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'} mb-2`}>
             Notas de Versión
           </label>
           <textarea
@@ -144,7 +146,7 @@ const VersionManager = ({ release, onVersionChange, onClose }) => {
             onChange={(e) => setNotasVersion(e.target.value)}
             rows={3}
             placeholder="Descripción de los cambios en esta versión..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md text-sm"
+            className={`w-full px-3 py-2 border ${theme === 'dark' ? 'border-gray-600 bg-gray-700 text-white placeholder-gray-400' : 'border-gray-300 bg-white'} rounded-md text-sm`}
           />
         </div>
 
@@ -152,13 +154,13 @@ const VersionManager = ({ release, onVersionChange, onClose }) => {
         <div className="flex gap-3">
           <button
             onClick={onClose}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50"
+            className={`flex-1 px-4 py-2 border ${theme === 'dark' ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md`}
           >
             Cancelar
           </button>
           <button
             onClick={handleCrearVersion}
-            className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 flex items-center justify-center gap-2"
+            className={`flex-1 px-4 py-2 ${theme === 'dark' ? 'bg-purple-700 hover:bg-purple-600' : 'bg-purple-600 hover:bg-purple-700'} text-white rounded-md flex items-center justify-center gap-2`}
           >
             <CheckCircle className="h-4 w-4" />
             Crear Versión

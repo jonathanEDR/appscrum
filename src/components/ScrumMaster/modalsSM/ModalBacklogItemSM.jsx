@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../../context/ThemeContext';
 import config from '../../../config/config';
 import { 
   X, 
@@ -27,6 +28,7 @@ const ModalBacklogItemSM = ({
   currentSprint = null // Nuevo prop para pre-seleccionar sprint actual
 }) => {
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -208,25 +210,41 @@ const ModalBacklogItemSM = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden">
+      <div className={`rounded-lg shadow-xl max-w-4xl w-full max-h-[90vh] overflow-hidden ${
+        theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+      }`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className={`flex items-center justify-between p-6 border-b ${
+          theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+        }`}>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <Package className="h-5 w-5 text-orange-600" />
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' ? 'bg-orange-900/30' : 'bg-orange-100'
+            }`}>
+              <Package className={`h-5 w-5 ${
+                theme === 'dark' ? 'text-orange-400' : 'text-orange-600'
+              }`} />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className={`text-xl font-semibold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 {editingItem ? 'Editar Item Técnico' : 'Nuevo Item Técnico'}
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className={`text-sm ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>
                 {editingItem ? 'Actualiza la información del item' : 'Crea una nueva tarea, bug o mejora'}
               </p>
             </div>
           </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className={`transition-colors ${
+              theme === 'dark'
+                ? 'text-gray-400 hover:text-gray-300'
+                : 'text-gray-400 hover:text-gray-600'
+            }`}
           >
             <X className="h-6 w-6" />
           </button>
@@ -237,7 +255,11 @@ const ModalBacklogItemSM = ({
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Error message */}
             {error && (
-              <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+              <div className={`border rounded-lg p-4 ${
+                theme === 'dark'
+                  ? 'bg-red-900/20 border-red-700'
+                  : 'bg-red-50 border-red-200'
+              }`}>
                 <div className="flex items-center">
                   <div className="flex-shrink-0">
                     <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
@@ -245,7 +267,9 @@ const ModalBacklogItemSM = ({
                     </svg>
                   </div>
                   <div className="ml-3">
-                    <p className="text-sm text-red-800">{error}</p>
+                    <p className={`text-sm ${
+                      theme === 'dark' ? 'text-red-400' : 'text-red-800'
+                    }`}>{error}</p>
                   </div>
                 </div>
               </div>
@@ -254,13 +278,19 @@ const ModalBacklogItemSM = ({
             {/* Información básica */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Título *
                 </label>
                 <input
                   type="text"
                   required
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                  }`}
                   placeholder="Ej: Optimizar consulta de base de datos..."
                   value={formData.titulo}
                   onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
@@ -268,13 +298,19 @@ const ModalBacklogItemSM = ({
               </div>
 
               <div className="md:col-span-2">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Descripción *
                 </label>
                 <textarea
                   required
                   rows={4}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                  }`}
                   placeholder="Describe detalladamente el item técnico..."
                   value={formData.descripcion}
                   onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
@@ -283,12 +319,18 @@ const ModalBacklogItemSM = ({
 
               {/* Tipo */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Tipo *
                 </label>
                 <select
                   required
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   value={formData.tipo}
                   onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
                 >
@@ -301,19 +343,27 @@ const ModalBacklogItemSM = ({
                     );
                   })}
                 </select>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className={`text-xs mt-1 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                }`}>
                   Como Scrum Master, puedes crear tareas técnicas, reportar bugs y planificar mejoras
                 </p>
               </div>
 
               {/* Prioridad */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Prioridad *
                 </label>
                 <select
                   required
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   value={formData.prioridad}
                   onChange={(e) => setFormData({ ...formData, prioridad: e.target.value })}
                 >
@@ -327,13 +377,19 @@ const ModalBacklogItemSM = ({
 
               {/* Producto */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   <Package className="h-4 w-4 inline mr-1" />
                   Producto *
                 </label>
                 <select
                   required
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   value={formData.producto}
                   onChange={(e) => setFormData({ ...formData, producto: e.target.value })}
                   disabled={productos.length === 0}
@@ -349,14 +405,20 @@ const ModalBacklogItemSM = ({
 
               {/* Puntos de Historia */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Puntos de Historia
                 </label>
                 <input
                   type="number"
                   min="1"
                   max="100"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                      : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                  }`}
                   placeholder="1-100"
                   value={formData.puntos_historia}
                   onChange={(e) => setFormData({ ...formData, puntos_historia: e.target.value })}
@@ -365,12 +427,18 @@ const ModalBacklogItemSM = ({
 
               {/* Asignado a */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   <User className="h-4 w-4 inline mr-1" />
                   Asignado a
                 </label>
                 <select
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   value={formData.asignado_a}
                   onChange={(e) => setFormData({ ...formData, asignado_a: e.target.value })}
                   disabled={usuarios.length === 0}
@@ -386,12 +454,18 @@ const ModalBacklogItemSM = ({
 
               {/* Sprint */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className={`block text-sm font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   <Calendar className="h-4 w-4 inline mr-1" />
                   Sprint
                 </label>
                 <select
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                   value={formData.sprint}
                   onChange={(e) => setFormData({ ...formData, sprint: e.target.value })}
                   disabled={sprints.length === 0}
@@ -409,7 +483,9 @@ const ModalBacklogItemSM = ({
             {/* Criterios de Aceptación */}
             <div>
               <div className="flex items-center justify-between mb-3">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className={`block text-sm font-medium ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   <CheckCircle className="h-4 w-4 inline mr-1" />
                   Criterios de Aceptación
                 </label>
@@ -429,7 +505,11 @@ const ModalBacklogItemSM = ({
                     <div className="flex-1">
                       <input
                         type="text"
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                          theme === 'dark'
+                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                            : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                        }`}
                         placeholder="Criterio de aceptación..."
                         value={criterio.descripcion}
                         onChange={(e) => updateCriterio(index, e.target.value)}
@@ -451,18 +531,26 @@ const ModalBacklogItemSM = ({
 
             {/* Etiquetas */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 <Tag className="h-4 w-4 inline mr-1" />
                 Etiquetas
               </label>
               <input
                 type="text"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className={`w-full p-3 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                }`}
                 placeholder="frontend, backend, api (separadas por comas)"
                 value={formData.etiquetas.join(', ')}
                 onChange={(e) => handleEtiquetaChange(e.target.value)}
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className={`text-xs mt-1 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+              }`}>
                 Separa las etiquetas con comas
               </p>
             </div>
@@ -470,12 +558,20 @@ const ModalBacklogItemSM = ({
         </div>
 
         {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200 bg-gray-50">
+        <div className={`flex items-center justify-end gap-3 p-6 border-t ${
+          theme === 'dark'
+            ? 'border-gray-700 bg-gray-900'
+            : 'border-gray-200 bg-gray-50'
+        }`}>
           <button
             type="button"
             onClick={handleClose}
             disabled={loading}
-            className="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+            className={`px-4 py-2 border rounded-lg transition-colors disabled:opacity-50 ${
+              theme === 'dark'
+                ? 'text-gray-300 border-gray-600 hover:bg-gray-800'
+                : 'text-gray-700 border-gray-300 hover:bg-gray-50'
+            }`}
           >
             Cancelar
           </button>

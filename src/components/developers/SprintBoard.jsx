@@ -15,8 +15,10 @@ import {
 } from 'lucide-react';
 import { useSprintBoard } from '../../hooks/useSprintBoard';
 import SprintSelector from './SprintSelector';
+import { useTheme } from '../../context/ThemeContext';
 
 const SprintBoard = () => {
+  const { theme } = useTheme();
   const {
     sprintData,
     loading,
@@ -41,7 +43,7 @@ const SprintBoard = () => {
       <div className="flex items-center justify-center h-96">
         <div className="flex flex-col items-center gap-4">
           <RefreshCw className="h-8 w-8 animate-spin text-primary-500" />
-          <p className="text-primary-600">Cargando Sprint Board...</p>
+          <p className={theme === 'dark' ? 'text-gray-300' : 'text-primary-600'}>Cargando Sprint Board...</p>
         </div>
       </div>
     );
@@ -54,7 +56,7 @@ const SprintBoard = () => {
         <div className="flex flex-col items-center gap-4 text-center">
           <AlertCircle className="h-12 w-12 text-red-500" />
           <p className="text-red-600 font-medium">Error al cargar el Sprint Board</p>
-          <p className="text-gray-600 text-sm">{error}</p>
+          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{error}</p>
           <button 
             onClick={refresh}
             className="bg-primary-500 text-white px-4 py-2 rounded-lg hover:bg-primary-600 transition-colors"
@@ -72,8 +74,8 @@ const SprintBoard = () => {
       <div className="flex items-center justify-center h-96">
         <div className="flex flex-col items-center gap-4 text-center">
           <Calendar className="h-12 w-12 text-gray-400" />
-          <p className="text-gray-600 font-medium">No hay sprint activo</p>
-          <p className="text-gray-500 text-sm">Contacta al Scrum Master para iniciar un sprint</p>
+          <p className={`font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>No hay sprint activo</p>
+          <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Contacta al Scrum Master para iniciar un sprint</p>
         </div>
       </div>
     );
@@ -157,8 +159,10 @@ const SprintBoard = () => {
   return (
     <div className="space-y-6">
       {/* Sprint Header Premium */}
-      <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-galaxy border-0 p-6 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 via-transparent to-accent-500/5"></div>
+      <div className={`rounded-xl shadow-galaxy border-0 p-6 overflow-hidden relative ${
+        theme === 'dark' ? 'bg-gray-800/90' : 'bg-white/80 backdrop-blur-lg'
+      }`}>
+        <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-gradient-to-r from-blue-900/20 via-transparent to-purple-900/20' : 'bg-gradient-to-r from-primary-500/5 via-transparent to-accent-500/5'}`}></div>
         <div className="relative z-10">
           <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
             <div className="flex items-center gap-4">
@@ -166,20 +170,26 @@ const SprintBoard = () => {
                 <Calendar className="h-6 w-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-primary-900">{sprint.name}</h1>
-                <p className="text-primary-600">
+                <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-primary-900'}`}>{sprint.name}</h1>
+                <p className={theme === 'dark' ? 'text-gray-300' : 'text-primary-600'}>
                   {filterMode === 'all' ? 'Todas mis tareas asignadas' : (sprint.goal || 'Sprint en progreso')}
                 </p>
-                <div className="flex items-center gap-4 mt-2 text-sm text-primary-500">
-                  <span className="bg-primary-50 px-3 py-1 rounded-full font-medium">
+                <div className="flex items-center gap-4 mt-2 text-sm">
+                  <span className={`px-3 py-1 rounded-full font-medium ${
+                    theme === 'dark' ? 'bg-blue-900/30 text-blue-300' : 'bg-primary-50 text-primary-500'
+                  }`}>
                     {new Date(sprint.startDate).toLocaleDateString()} - {new Date(sprint.endDate).toLocaleDateString()}
                   </span>
                   {isActive && (
-                    <span className="bg-green-50 text-green-600 px-3 py-1 rounded-full font-medium">
+                    <span className={`px-3 py-1 rounded-full font-medium ${
+                      theme === 'dark' ? 'bg-green-900/30 text-green-300' : 'bg-green-50 text-green-600'
+                    }`}>
                       Activo
                     </span>
                   )}
-                  <span className="bg-blue-50 text-blue-600 px-3 py-1 rounded-full font-medium">
+                  <span className={`px-3 py-1 rounded-full font-medium ${
+                    theme === 'dark' ? 'bg-blue-900/30 text-blue-300' : 'bg-blue-50 text-blue-600'
+                  }`}>
                     {tasks.length} tarea{tasks.length !== 1 ? 's' : ''} 
                     {filterMode === 'all' ? ' asignada' : ' del sprint'}{tasks.length !== 1 ? 's' : ''}
                   </span>
@@ -198,7 +208,11 @@ const SprintBoard = () => {
               />
               <button
                 onClick={refresh}
-                className="flex items-center gap-2 px-4 py-2 bg-primary-50 hover:bg-primary-100 text-primary-700 rounded-lg transition-colors"
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-200' 
+                    : 'bg-primary-50 hover:bg-primary-100 text-primary-700'
+                }`}
                 title="Actualizar datos"
               >
                 <RefreshCw className="h-4 w-4" />
@@ -208,36 +222,70 @@ const SprintBoard = () => {
           </div>
           
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 text-center mt-6">
-            <div className="bg-primary-50 p-3 rounded-xl">
-              <div className="text-2xl font-bold text-primary-600">{metrics.totalPoints || 0}</div>
-              <div className="text-xs text-primary-600">Story Points</div>
+            <div className={`p-3 rounded-xl ${
+              theme === 'dark' ? 'bg-blue-900/30' : 'bg-primary-50'
+            }`}>
+              <div className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-blue-300' : 'text-primary-600'
+              }`}>{metrics.totalPoints || 0}</div>
+              <div className={`text-xs ${
+                theme === 'dark' ? 'text-blue-400' : 'text-primary-600'
+              }`}>Story Points</div>
             </div>
-            <div className="bg-success-50 p-3 rounded-xl">
-              <div className="text-2xl font-bold text-success-600">{metrics.completedPoints || 0}</div>
-              <div className="text-xs text-success-600">Completados</div>
+            <div className={`p-3 rounded-xl ${
+              theme === 'dark' ? 'bg-green-900/30' : 'bg-success-50'
+            }`}>
+              <div className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-green-300' : 'text-success-600'
+              }`}>{metrics.completedPoints || 0}</div>
+              <div className={`text-xs ${
+                theme === 'dark' ? 'text-green-400' : 'text-success-600'
+              }`}>Completados</div>
             </div>
-            <div className="bg-warning-50 p-3 rounded-xl">
-              <div className="text-2xl font-bold text-warning-600">{metrics.inProgressTasks || 0}</div>
-              <div className="text-xs text-warning-600">En Progreso</div>
+            <div className={`p-3 rounded-xl ${
+              theme === 'dark' ? 'bg-yellow-900/30' : 'bg-warning-50'
+            }`}>
+              <div className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-yellow-300' : 'text-warning-600'
+              }`}>{metrics.inProgressTasks || 0}</div>
+              <div className={`text-xs ${
+                theme === 'dark' ? 'text-yellow-400' : 'text-warning-600'
+              }`}>En Progreso</div>
             </div>
-            <div className="bg-accent-50 p-3 rounded-xl">
-              <div className="text-2xl font-bold text-accent-600">{metrics.todoTasks || 0}</div>
-              <div className="text-xs text-accent-600">Pendientes</div>
+            <div className={`p-3 rounded-xl ${
+              theme === 'dark' ? 'bg-purple-900/30' : 'bg-accent-50'
+            }`}>
+              <div className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-purple-300' : 'text-accent-600'
+              }`}>{metrics.todoTasks || 0}</div>
+              <div className={`text-xs ${
+                theme === 'dark' ? 'text-purple-400' : 'text-accent-600'
+              }`}>Pendientes</div>
             </div>
-            <div className="bg-blue-50 p-3 rounded-xl">
-              <div className="text-2xl font-bold text-blue-600">{daysRemaining}</div>
-              <div className="text-xs text-blue-600">Días Restantes</div>
+            <div className={`p-3 rounded-xl ${
+              theme === 'dark' ? 'bg-blue-900/30' : 'bg-blue-50'
+            }`}>
+              <div className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-blue-300' : 'text-blue-600'
+              }`}>{daysRemaining}</div>
+              <div className={`text-xs ${
+                theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+              }`}>Días Restantes</div>
             </div>
           </div>
         </div>
 
         {/* Sprint Progress */}
         <div className="mt-6">
-          <div className="flex justify-between text-sm text-primary-600 mb-2">
+          <div className={`flex justify-between text-sm mb-2 ${
+            theme === 'dark' ? 'text-gray-300' : 'text-primary-600'
+          }`}>
             <span>Progreso del Sprint</span>
             <span className="font-medium">{Math.round(metrics.sprintProgress || 0)}%</span>
           </div>
-          <div className="w-full bg-primary-100 rounded-full h-3 shadow-inner">
+          <div className={`w-full rounded-full h-3 shadow-inner ${
+            theme === 'dark' ? 'bg-gray-700' : 'bg-primary-100'
+          }`}>
             <div 
               className="bg-gradient-to-r from-success-500 via-success-400 to-success-500 h-3 rounded-full transition-all duration-500 shadow-medium relative overflow-hidden" 
               style={{ width: `${metrics.sprintProgress || 0}%` }}
@@ -257,16 +305,24 @@ const SprintBoard = () => {
           return (
             <div 
               key={column.id} 
-              className={`bg-white/80 backdrop-blur-lg rounded-xl border-2 ${column.color} min-h-96 shadow-galaxy overflow-hidden`}
+              className={`rounded-xl border-2 ${column.color} min-h-96 shadow-galaxy overflow-hidden ${
+                theme === 'dark' ? 'bg-gray-800/90' : 'bg-white/80 backdrop-blur-lg'
+              }`}
               onDragOver={handleDragOver}
               onDrop={(e) => handleDrop(e, column.status)}
             >
-              <div className="p-4 bg-gradient-to-r from-white/50 to-transparent border-b border-primary-200/30">
+              <div className={`p-4 border-b ${
+                theme === 'dark' 
+                  ? 'bg-gradient-to-r from-gray-700/50 to-transparent border-gray-700' 
+                  : 'bg-gradient-to-r from-white/50 to-transparent border-primary-200/30'
+              }`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <StatusIcon className="h-5 w-5 text-primary-600" />
-                    <h3 className="font-semibold text-primary-900">{column.title}</h3>
-                    <span className="bg-primary-100 text-primary-600 text-xs px-2 py-1 rounded-full font-medium shadow-soft">
+                    <StatusIcon className={`h-5 w-5 ${theme === 'dark' ? 'text-blue-400' : 'text-primary-600'}`} />
+                    <h3 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-primary-900'}`}>{column.title}</h3>
+                    <span className={`text-xs px-2 py-1 rounded-full font-medium shadow-soft ${
+                      theme === 'dark' ? 'bg-blue-900/50 text-blue-300' : 'bg-primary-100 text-primary-600'
+                    }`}>
                       {columnTasks.length}
                     </span>
                   </div>
@@ -277,14 +333,22 @@ const SprintBoard = () => {
                 {columnTasks.map((task) => (
                   <div 
                     key={task._id} 
-                    className="bg-white/90 backdrop-blur-sm border border-primary-200 rounded-xl p-4 hover:shadow-large transition-all duration-300 cursor-move group overflow-hidden relative"
+                    className={`border rounded-xl p-4 hover:shadow-large transition-all duration-300 cursor-move group overflow-hidden relative ${
+                      theme === 'dark' ? 'bg-gray-700/90 border-gray-600' : 'bg-white/90 backdrop-blur-sm border-primary-200'
+                    }`}
                     draggable
                     onDragStart={(e) => handleDragStart(e, task)}
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-primary-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                    <div className={`absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+                      theme === 'dark' 
+                        ? 'bg-gradient-to-br from-blue-900/30 via-transparent to-purple-900/30'
+                        : 'bg-gradient-to-br from-white/50 via-transparent to-primary-50/30'
+                    }`}></div>
                     <div className="relative z-10">
                       <div className="flex items-start justify-between mb-3">
-                        <h4 className="font-medium text-primary-900 text-sm leading-tight group-hover:text-primary-700 transition-colors">
+                        <h4 className={`font-medium text-sm leading-tight group-hover:text-primary-700 transition-colors ${
+                          theme === 'dark' ? 'text-white' : 'text-primary-900'
+                        }`}>
                           {task.title}
                         </h4>
                         <span className={`text-xs px-2 py-1 rounded-full font-medium shadow-soft ${getPriorityColorLocal(task.priority)}`}>
@@ -293,21 +357,27 @@ const SprintBoard = () => {
                       </div>
                       
                       {task.description && (
-                        <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                        <p className={`text-xs mb-3 line-clamp-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                           {task.description}
                         </p>
                       )}
                       
-                      <div className="flex items-center justify-between text-xs text-primary-600">
+                      <div className={`flex items-center justify-between text-xs ${
+                        theme === 'dark' ? 'text-gray-300' : 'text-primary-600'
+                      }`}>
                         <div className="flex items-center gap-2">
                           <Users className="h-3 w-3" />
-                          <span className="bg-primary-50 px-2 py-1 rounded-full">
+                          <span className={`px-2 py-1 rounded-full ${
+                            theme === 'dark' ? 'bg-gray-600 text-gray-200' : 'bg-primary-50 text-primary-700'
+                          }`}>
                             {formatAssigneeName(task.assignee)}
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
                           <Target className="h-3 w-3" />
-                          <span className="bg-primary-50 px-2 py-1 rounded-full font-medium">
+                          <span className={`px-2 py-1 rounded-full font-medium ${
+                            theme === 'dark' ? 'bg-gray-600 text-gray-200' : 'bg-primary-50 text-primary-700'
+                          }`}>
                             {task.storyPoints || 0} pts
                           </span>
                         </div>
@@ -315,8 +385,12 @@ const SprintBoard = () => {
 
                       {task.dueDate && (
                         <div className="flex items-center gap-1 mt-2 text-xs">
-                          <Clock className="h-3 w-3 text-gray-400" />
-                          <span className={`${new Date(task.dueDate) < new Date() && task.status !== 'done' ? 'text-red-600' : 'text-gray-500'}`}>
+                          <Clock className={`h-3 w-3 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                          <span className={`${
+                            new Date(task.dueDate) < new Date() && task.status !== 'done' 
+                              ? 'text-red-600' 
+                              : theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                          }`}>
                             {new Date(task.dueDate).toLocaleDateString()}
                           </span>
                         </div>
@@ -326,7 +400,7 @@ const SprintBoard = () => {
                 ))}
                 
                 {columnTasks.length === 0 && (
-                  <div className="text-center text-primary-400 py-8">
+                  <div className={`text-center py-8 ${theme === 'dark' ? 'text-gray-500' : 'text-primary-400'}`}>
                     <StatusIcon className="h-8 w-8 mx-auto mb-2 opacity-50" />
                     <p className="text-sm">No hay tareas en esta columna</p>
                   </div>
@@ -338,33 +412,53 @@ const SprintBoard = () => {
       </div>
 
       {/* Team Performance Summary Premium */}
-      <div className="bg-white/80 backdrop-blur-lg rounded-xl shadow-galaxy border-0 p-6 overflow-hidden relative">
-        <div className="absolute inset-0 bg-gradient-to-r from-primary-500/5 via-transparent to-accent-500/5"></div>
+      <div className={`rounded-xl shadow-galaxy border-0 p-6 overflow-hidden relative ${
+        theme === 'dark' ? 'bg-gray-800/90' : 'bg-white/80 backdrop-blur-lg'
+      }`}>
+        <div className={`absolute inset-0 ${theme === 'dark' ? 'bg-gradient-to-r from-blue-900/20 via-transparent to-purple-900/20' : 'bg-gradient-to-r from-primary-500/5 via-transparent to-accent-500/5'}`}></div>
         <div className="relative z-10">
-          <h3 className="text-lg font-semibold text-primary-900 mb-4 flex items-center">
-            <BarChart3 className="h-5 w-5 mr-2 text-primary-600" />
+          <h3 className={`text-lg font-semibold mb-4 flex items-center ${theme === 'dark' ? 'text-white' : 'text-primary-900'}`}>
+            <BarChart3 className={`h-5 w-5 mr-2 ${theme === 'dark' ? 'text-blue-400' : 'text-primary-600'}`} />
             Resumen del Equipo
           </h3>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="text-center group">
-              <div className="bg-gradient-to-br from-primary-50 to-primary-100 p-4 rounded-xl shadow-soft group-hover:shadow-medium transition-shadow duration-300">
-                <div className="text-3xl font-bold text-primary-600 mb-1">{Math.round(metrics.sprintProgress || 0)}%</div>
-                <div className="text-sm text-primary-600 font-medium">Progreso General</div>
+              <div className={`p-4 rounded-xl shadow-soft group-hover:shadow-medium transition-shadow duration-300 ${
+                theme === 'dark' ? 'bg-blue-900/30' : 'bg-gradient-to-br from-primary-50 to-primary-100'
+              }`}>
+                <div className={`text-3xl font-bold mb-1 ${
+                  theme === 'dark' ? 'text-blue-300' : 'text-primary-600'
+                }`}>{Math.round(metrics.sprintProgress || 0)}%</div>
+                <div className={`text-sm font-medium ${
+                  theme === 'dark' ? 'text-blue-400' : 'text-primary-600'
+                }`}>Progreso General</div>
               </div>
             </div>
             <div className="text-center group">
-              <div className="bg-gradient-to-br from-success-50 to-success-100 p-4 rounded-xl shadow-soft group-hover:shadow-medium transition-shadow duration-300">
-                <div className="text-3xl font-bold text-success-600 mb-1">
+              <div className={`p-4 rounded-xl shadow-soft group-hover:shadow-medium transition-shadow duration-300 ${
+                theme === 'dark' ? 'bg-green-900/30' : 'bg-gradient-to-br from-success-50 to-success-100'
+              }`}>
+                <div className={`text-3xl font-bold mb-1 ${
+                  theme === 'dark' ? 'text-green-300' : 'text-success-600'
+                }`}>
                   {new Set(tasks.filter(t => t.assignee).map(t => formatAssigneeName(t.assignee))).size}
                 </div>
-                <div className="text-sm text-success-600 font-medium">Miembros Activos</div>
+                <div className={`text-sm font-medium ${
+                  theme === 'dark' ? 'text-green-400' : 'text-success-600'
+                }`}>Miembros Activos</div>
               </div>
             </div>
             <div className="text-center group">
-              <div className="bg-gradient-to-br from-warning-50 to-warning-100 p-4 rounded-xl shadow-soft group-hover:shadow-medium transition-shadow duration-300">
-                <div className="text-3xl font-bold text-warning-600 mb-1">{daysRemaining}</div>
-                <div className="text-sm text-warning-600 font-medium">Días Restantes</div>
+              <div className={`p-4 rounded-xl shadow-soft group-hover:shadow-medium transition-shadow duration-300 ${
+                theme === 'dark' ? 'bg-yellow-900/30' : 'bg-gradient-to-br from-warning-50 to-warning-100'
+              }`}>
+                <div className={`text-3xl font-bold mb-1 ${
+                  theme === 'dark' ? 'text-yellow-300' : 'text-warning-600'
+                }`}>{daysRemaining}</div>
+                <div className={`text-sm font-medium ${
+                  theme === 'dark' ? 'text-yellow-400' : 'text-warning-600'
+                }`}>Días Restantes</div>
               </div>
             </div>
           </div>

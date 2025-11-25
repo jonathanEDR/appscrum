@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import {
   ArrowLeft,
   Bug,
@@ -24,6 +25,7 @@ import { useAuth, useUser } from '@clerk/clerk-react';
 const ScrumMasterBugDetail = ({ bugId, onClose, onUpdate }) => {
   const { getToken } = useAuth();
   const { user } = useUser();
+  const { theme } = useTheme();
   const [bug, setBug] = useState(null);
   const [comments, setComments] = useState([]);
   const [loading, setLoading] = useState(true);

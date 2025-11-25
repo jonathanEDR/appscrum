@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import sprintService from '../../services/sprintService';
 import { useScrumMasterData } from '../../hooks/useScrumMasterData';
 import SprintTechnicalItems from './SprintTechnicalItems';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   Target, 
   Calendar, 
@@ -26,7 +27,7 @@ import {
 // ============================================================================
 
 // Componente para navegación por pestañas
-const SprintTabNavigation = ({ activeTab, onTabChange, sprintData }) => {
+const SprintTabNavigation = ({ activeTab, onTabChange, sprintData, theme }) => {
   const tabs = [
     {
       id: 'overview',
@@ -52,8 +53,8 @@ const SprintTabNavigation = ({ activeTab, onTabChange, sprintData }) => {
   ];
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm mb-6">
-      <div className="border-b border-gray-200">
+    <div className={`rounded-lg border shadow-sm mb-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+      <div className={`border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
         <nav className="flex space-x-8 px-6" aria-label="Tabs">
           {tabs.map((tab) => {
             const IconComponent = tab.icon;
@@ -66,12 +67,14 @@ const SprintTabNavigation = ({ activeTab, onTabChange, sprintData }) => {
                 className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
                   isActive
                     ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : theme === 'dark'
+                      ? 'border-transparent text-gray-400 hover:text-gray-300 hover:border-gray-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 <IconComponent
                   className={`mr-2 h-5 w-5 ${
-                    isActive ? 'text-orange-500' : 'text-gray-400 group-hover:text-gray-500'
+                    isActive ? 'text-orange-500' : theme === 'dark' ? 'text-gray-500 group-hover:text-gray-400' : 'text-gray-400 group-hover:text-gray-500'
                   }`}
                 />
                 <span className="mr-2">{tab.label}</span>
@@ -79,7 +82,7 @@ const SprintTabNavigation = ({ activeTab, onTabChange, sprintData }) => {
                   <span className={`inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none rounded-full ${
                     isActive 
                       ? 'bg-orange-100 text-orange-800' 
-                      : 'bg-gray-100 text-gray-800'
+                      : theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800'
                   }`}>
                     {tab.badge}
                   </span>
@@ -91,8 +94,8 @@ const SprintTabNavigation = ({ activeTab, onTabChange, sprintData }) => {
       </div>
       
       {/* Descripción de la pestaña activa */}
-      <div className="px-6 py-3 bg-gray-50">
-        <p className="text-sm text-gray-600">
+      <div className={`px-6 py-3 ${theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
           {tabs.find(tab => tab.id === activeTab)?.description}
         </p>
       </div>
@@ -101,7 +104,7 @@ const SprintTabNavigation = ({ activeTab, onTabChange, sprintData }) => {
 };
 
 // Componente para seleccionar sprints
-const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
+const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading, theme }) => {
   const [currentPage, setCurrentPage] = React.useState(0);
   const SPRINTS_PER_PAGE = 6;
   
@@ -119,17 +122,27 @@ const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+    <div className={`rounded-lg border p-6 mb-6 ${
+      theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+    }`}>
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-xl font-semibold text-gray-900">Sprints Disponibles</h3>
-          <p className="text-sm text-gray-500 mt-1">
+          <h3 className={`text-xl font-semibold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>Sprints Disponibles</h3>
+          <p className={`text-sm mt-1 ${
+            theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+          }`}>
             Mostrando {startIndex + 1}-{Math.min(endIndex, sprints.length)} de {sprints.length} sprints
           </p>
         </div>
         <button 
           onClick={() => window.location.reload()}
-          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+            theme === 'dark'
+              ? 'text-gray-300 bg-gray-700 border border-gray-600 hover:bg-gray-600'
+              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+          }`}
           disabled={loading}
         >
           <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
@@ -138,9 +151,15 @@ const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
       </div>
       
       {sprints.length === 0 ? (
-        <div className="text-center py-12 text-gray-500">
-          <Target className="h-16 w-16 mx-auto mb-4 text-gray-300" />
-          <h4 className="text-lg font-medium text-gray-400 mb-2">No hay sprints disponibles</h4>
+        <div className={`text-center py-12 ${
+          theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+        }`}>
+          <Target className={`h-16 w-16 mx-auto mb-4 ${
+            theme === 'dark' ? 'text-gray-600' : 'text-gray-300'
+          }`} />
+          <h4 className={`text-lg font-medium mb-2 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-400'
+          }`}>No hay sprints disponibles</h4>
           <p className="text-sm">Los sprints se crean desde el módulo Product Owner</p>
         </div>
       ) : (
@@ -163,7 +182,9 @@ const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
                   className={`group relative p-4 rounded-xl border-2 transition-all text-left ${
                     isActive
                       ? 'border-orange-500 bg-orange-50 shadow-md'
-                      : 'border-gray-200 hover:border-orange-300 hover:shadow-sm'
+                      : theme === 'dark'
+                        ? 'border-gray-700 bg-gray-700 hover:border-orange-500 hover:shadow-sm'
+                        : 'border-gray-200 hover:border-orange-300 hover:shadow-sm'
                   } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
                 >
                   {/* Badge de selección */}
@@ -186,13 +207,17 @@ const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
                   </div>
 
                   {/* Nombre del sprint */}
-                  <h4 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                  <h4 className={`font-semibold mb-2 line-clamp-2 ${
+                    theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  }`}>
                     {sprint.nombre || sprint.name}
                   </h4>
 
                   {/* Meta del sprint */}
                   {(sprint.meta || sprint.goal) && (
-                    <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                    <p className={`text-xs mb-3 line-clamp-2 ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
                       {sprint.meta || sprint.goal}
                     </p>
                   )}
@@ -239,11 +264,17 @@ const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
 
           {/* Paginación */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
+            <div className={`flex items-center justify-between mt-6 pt-6 border-t ${
+              theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+            }`}>
               <button
                 onClick={handlePrevPage}
                 disabled={currentPage === 0}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  theme === 'dark'
+                    ? 'text-gray-300 bg-gray-700 border border-gray-600 hover:bg-gray-600'
+                    : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                }`}
               >
                 <ChevronLeft className="h-4 w-4" />
                 Anterior
@@ -257,7 +288,9 @@ const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
                     className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
                       currentPage === i
                         ? 'bg-orange-500 text-white'
-                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                        : theme === 'dark'
+                          ? 'bg-gray-700 text-gray-300 border border-gray-600 hover:bg-gray-600'
+                          : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     {i + 1}
@@ -268,7 +301,11 @@ const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
               <button
                 onClick={handleNextPage}
                 disabled={currentPage === totalPages - 1}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                  theme === 'dark'
+                    ? 'text-gray-300 bg-gray-700 border border-gray-600 hover:bg-gray-600'
+                    : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+                }`}
               >
                 Siguiente
                 <ChevronRight className="h-4 w-4" />
@@ -282,7 +319,7 @@ const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
 };
 
 // Componente para mostrar historias del sprint
-const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggleDetails }) => {
+const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggleDetails, theme }) => {
   if (!sprintData?.backlogItems) {
     return null;
   }
@@ -312,13 +349,19 @@ const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggle
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200">
-      <div className="p-4 border-b border-gray-200">
+    <div className={`rounded-lg border ${
+      theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+    }`}>
+      <div className={`p-4 border-b ${
+        theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+      }`}>
         <button
           onClick={onToggleDetails}
           className="flex items-center justify-between w-full text-left"
         >
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className={`text-lg font-semibold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             Historias del Sprint ({sprintData.backlogItems?.length || 0})
           </h3>
           <Eye className={`h-5 w-5 text-gray-500 transition-transform ${showDetails ? 'rotate-180' : ''}`} />
@@ -328,9 +371,15 @@ const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggle
       {showDetails && (
         <div className="p-4">
           {sprintData.backlogItems?.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
-              <Target className="h-12 w-12 mx-auto mb-4 text-gray-300" />
-              <h4 className="text-lg font-medium text-gray-400 mb-2">No hay historias asignadas</h4>
+            <div className={`text-center py-8 ${
+              theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+            }`}>
+              <Target className={`h-12 w-12 mx-auto mb-4 ${
+                theme === 'dark' ? 'text-gray-600' : 'text-gray-300'
+              }`} />
+              <h4 className={`text-lg font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-400'
+              }`}>No hay historias asignadas</h4>
               <p className="text-sm">Este sprint no tiene historias del backlog asignadas aún.</p>
             </div>
           ) : (
@@ -338,12 +387,16 @@ const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggle
               {sprintData.backlogItems.map((story, index) => (
                 <div
                   key={story._id || index}
-                  className="border border-gray-200 rounded-lg p-4 hover:shadow-sm transition-shadow"
+                  className={`border rounded-lg p-4 hover:shadow-sm transition-shadow ${
+                    theme === 'dark' ? 'border-gray-700 bg-gray-700' : 'border-gray-200'
+                  }`}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h4 className="font-medium text-gray-900">
+                        <h4 className={`font-medium ${
+                          theme === 'dark' ? 'text-white' : 'text-gray-900'
+                        }`}>
                           {story.titulo || story.title || `Historia ${index + 1}`}
                         </h4>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(story.estado || story.status)}`}>
@@ -354,11 +407,15 @@ const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggle
                         </span>
                       </div>
                       
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className={`text-sm mb-3 ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                         {story.descripcion || story.description || 'Sin descripción disponible'}
                       </p>
                       
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <div className={`flex items-center gap-4 text-xs ${
+                        theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                      }`}>
                         <div className="flex items-center gap-1">
                           <User className="h-3 w-3" />
                           <span>
@@ -403,6 +460,7 @@ const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggle
 };
 
 const SprintManagement = () => {
+  const { theme } = useTheme();
   const { getToken } = useAuth();
   const navigate = useNavigate();
   
@@ -552,7 +610,11 @@ const SprintManagement = () => {
     <div className="space-y-6">
       {/* Mensaje de error/información */}
       {error && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className={`border rounded-lg p-4 ${
+          theme === 'dark'
+            ? 'bg-blue-900/30 border-blue-800'
+            : 'bg-blue-50 border-blue-200'
+        }`}>
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
@@ -560,8 +622,12 @@ const SprintManagement = () => {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">Información</h3>
-              <p className="text-sm text-blue-700 mt-1">{error}</p>
+              <h3 className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-blue-300' : 'text-blue-800'
+              }`}>Información</h3>
+              <p className={`text-sm mt-1 ${
+                theme === 'dark' ? 'text-blue-400' : 'text-blue-700'
+              }`}>{error}</p>
             </div>
           </div>
         </div>
@@ -570,12 +636,18 @@ const SprintManagement = () => {
       {/* Si no hay sprint seleccionado, mostrar solo selector */}
       {!sprintData && (
         <div className="space-y-6">
-          <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
-            <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <div className={`rounded-lg border p-6 text-center ${
+            theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <Target className={`h-12 w-12 mx-auto mb-4 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+            <h3 className={`text-lg font-semibold mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
               Selecciona un Sprint
             </h3>
-            <p className="text-gray-600">
+            <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
               Elige un sprint de la lista para ver sus detalles e items técnicos
             </p>
           </div>
@@ -586,6 +658,7 @@ const SprintManagement = () => {
             activeSprint={activeSprint}
             onSelectSprint={handleSelectSprint}
             loading={isLoading}
+            theme={theme}
           />
         </div>
       )}
@@ -673,6 +746,7 @@ const SprintManagement = () => {
             activeTab={activeTab}
             onTabChange={handleTabChange}
             sprintData={sprintData}
+            theme={theme}
           />
 
           {/* Contenido según la pestaña activa */}
@@ -684,6 +758,7 @@ const SprintManagement = () => {
                 activeSprint={activeSprint}
                 onSelectSprint={handleSelectSprint}
                 loading={isLoading}
+                theme={theme}
               />
 
               {/* Items Técnicos del Sprint */}

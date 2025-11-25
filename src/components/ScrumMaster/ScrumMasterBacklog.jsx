@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import config from '../../config/config';
 import ModalBacklogItem from './modalsSM/ModalBacklogItemSM';
+import { useTheme } from '../../context/ThemeContext';
 // ✅ OPTIMIZADO: Importar hooks con caché
 import { useProducts } from '../../hooks/useProducts';
 import { useUsers } from '../../hooks/useUsers';
@@ -26,6 +27,7 @@ import {
 
 const ScrumMasterBacklog = () => {
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   
   // ✅ OPTIMIZADO: Usar hooks con caché en lugar de estados locales
   const { products: productos, loading: loadingProducts } = useProducts();
@@ -211,8 +213,12 @@ const ScrumMasterBacklog = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestión Técnica del Backlog</h1>
-          <p className="text-gray-600">Administra tareas técnicas, bugs y mejoras del proyecto</p>
+          <h1 className={`text-2xl font-bold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>Gestión Técnica del Backlog</h1>
+          <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+            Administra tareas técnicas, bugs y mejoras del proyecto
+          </p>
         </div>
         <button
           onClick={handleCreateItem}
@@ -225,26 +231,40 @@ const ScrumMasterBacklog = () => {
 
       {/* Mensaje de éxito */}
       {successMessage && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+        <div className={`rounded-lg p-4 border ${
+          theme === 'dark' 
+            ? 'bg-green-900/30 border-green-800' 
+            : 'bg-green-50 border-green-200'
+        }`}>
           <div className="flex items-center">
             <CheckCircle className="h-5 w-5 text-green-600 mr-2" />
-            <span className="text-green-800">{successMessage}</span>
+            <span className={theme === 'dark' ? 'text-green-300' : 'text-green-800'}>
+              {successMessage}
+            </span>
           </div>
         </div>
       )}
 
       {/* Mensaje de error */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+        <div className={`rounded-lg p-4 border ${
+          theme === 'dark' 
+            ? 'bg-red-900/30 border-red-800' 
+            : 'bg-red-50 border-red-200'
+        }`}>
           <div className="flex items-center">
             <AlertTriangle className="h-5 w-5 text-red-600 mr-2" />
-            <span className="text-red-800">{error}</span>
+            <span className={theme === 'dark' ? 'text-red-300' : 'text-red-800'}>
+              {error}
+            </span>
           </div>
         </div>
       )}
 
       {/* Filtros */}
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
+      <div className={`rounded-lg border p-6 ${
+        theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
           {/* Búsqueda */}
           <div className="lg:col-span-2">
@@ -253,7 +273,11 @@ const ScrumMasterBacklog = () => {
               <input
                 type="text"
                 placeholder="Buscar por título o descripción..."
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
@@ -263,7 +287,11 @@ const ScrumMasterBacklog = () => {
           {/* Filtro por Tipo */}
           <div>
             <select
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
               value={filtroTipo}
               onChange={(e) => setFiltroTipo(e.target.value)}
             >
@@ -277,7 +305,11 @@ const ScrumMasterBacklog = () => {
           {/* Filtro por Producto */}
           <div>
             <select
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
               value={filtroProducto}
               onChange={(e) => setFiltroProducto(e.target.value)}
             >
@@ -293,7 +325,11 @@ const ScrumMasterBacklog = () => {
           {/* Filtro por Estado */}
           <div>
             <select
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
               value={filtroEstado}
               onChange={(e) => setFiltroEstado(e.target.value)}
             >
@@ -308,7 +344,11 @@ const ScrumMasterBacklog = () => {
           {/* Filtro por Prioridad */}
           <div>
             <select
-              className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
               value={filtroPrioridad}
               onChange={(e) => setFiltroPrioridad(e.target.value)}
             >
@@ -325,7 +365,11 @@ const ScrumMasterBacklog = () => {
         <div className="mt-4 flex justify-end">
           <button
             onClick={clearFilters}
-            className="text-sm text-gray-600 hover:text-gray-800 transition-colors"
+            className={`text-sm transition-colors ${
+              theme === 'dark'
+                ? 'text-gray-400 hover:text-gray-200'
+                : 'text-gray-600 hover:text-gray-800'
+            }`}
           >
             Limpiar filtros
           </button>
@@ -334,77 +378,123 @@ const ScrumMasterBacklog = () => {
 
       {/* Resumen */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className={`rounded-lg border p-4 ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg">
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' ? 'bg-green-900/30' : 'bg-green-100'
+            }`}>
               <Wrench className="h-5 w-5 text-green-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Tareas</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>Tareas</p>
+              <p className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 {items.filter(item => item.tipo === 'tarea').length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className={`rounded-lg border p-4 ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <div className="flex items-center">
-            <div className="p-2 bg-red-100 rounded-lg">
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' ? 'bg-red-900/30' : 'bg-red-100'
+            }`}>
               <Bug className="h-5 w-5 text-red-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Bugs</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>Bugs</p>
+              <p className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 {items.filter(item => item.tipo === 'bug').length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className={`rounded-lg border p-4 ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg">
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' ? 'bg-purple-900/30' : 'bg-purple-100'
+            }`}>
               <Zap className="h-5 w-5 text-purple-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Mejoras</p>
-              <p className="text-2xl font-bold text-gray-900">
+              <p className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>Mejoras</p>
+              <p className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 {items.filter(item => item.tipo === 'mejora').length}
               </p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-gray-200 p-4">
+        <div className={`rounded-lg border p-4 ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <div className="flex items-center">
-            <div className="p-2 bg-orange-100 rounded-lg">
-              <Target className="h-5 w-5 text-orange-600" />
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' ? 'bg-blue-900/30' : 'bg-blue-100'
+            }`}>
+              <Target className="h-5 w-5 text-blue-600" />
             </div>
             <div className="ml-3">
-              <p className="text-sm font-medium text-gray-600">Total</p>
-              <p className="text-2xl font-bold text-gray-900">{items.length}</p>
+              <p className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>Total Items</p>
+              <p className={`text-2xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>{items.length}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Lista de Items */}
-      <div className="bg-white rounded-lg border border-gray-200">
-        <div className="p-6 border-b border-gray-200">
-          <h2 className="text-lg font-semibold text-gray-900">
+      <div className={`rounded-lg border ${
+        theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
+        <div className={`p-6 border-b ${
+          theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+        }`}>
+          <h2 className={`text-lg font-semibold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             Items Técnicos ({filteredItems.length})
           </h2>
         </div>
 
-        <div className="divide-y divide-gray-200">
+        <div className={`divide-y ${
+          theme === 'dark' ? 'divide-gray-700' : 'divide-gray-200'
+        }`}>
           {filteredItems.length === 0 ? (
             <div className="text-center py-12">
-              <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <Package className={`h-12 w-12 mx-auto mb-4 ${
+                theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+              }`} />
+              <h3 className={`text-lg font-medium mb-2 ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 No hay items técnicos
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className={`mb-4 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>
                 Comienza creando tareas, reportando bugs o planificando mejoras
               </p>
               <button
@@ -417,7 +507,9 @@ const ScrumMasterBacklog = () => {
             </div>
           ) : (
             filteredItems.map((item) => (
-              <div key={item._id} className="p-6 hover:bg-gray-50 transition-colors">
+              <div key={item._id} className={`p-6 transition-colors ${
+                theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+              }`}>
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-2">
@@ -441,15 +533,21 @@ const ScrumMasterBacklog = () => {
                       )}
                     </div>
 
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">
+                    <h3 className={`text-lg font-medium mb-2 ${
+                      theme === 'dark' ? 'text-white' : 'text-gray-900'
+                    }`}>
                       {item.titulo}
                     </h3>
                     
-                    <p className="text-gray-600 mb-3">
+                    <p className={`mb-3 ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
                       {item.descripcion}
                     </p>
 
-                    <div className="flex items-center gap-6 text-sm text-gray-500">
+                    <div className={`flex items-center gap-6 text-sm ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                    }`}>
                       <div className="flex items-center gap-1">
                         <Package className="h-4 w-4" />
                         <span>{item.producto?.nombre || 'Sin producto'}</span>
@@ -477,12 +575,18 @@ const ScrumMasterBacklog = () => {
 
                     {item.etiquetas && item.etiquetas.length > 0 && (
                       <div className="flex items-center gap-2 mt-3">
-                        <Tag className="h-4 w-4 text-gray-400" />
+                        <Tag className={`h-4 w-4 ${
+                          theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                        }`} />
                         <div className="flex gap-1">
                           {item.etiquetas.map((etiqueta, index) => (
                             <span
                               key={index}
-                              className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs"
+                              className={`inline-flex items-center px-2 py-1 rounded-md text-xs ${
+                                theme === 'dark'
+                                  ? 'bg-gray-700 text-gray-300'
+                                  : 'bg-gray-100 text-gray-600'
+                              }`}
                             >
                               {etiqueta}
                             </span>
@@ -495,7 +599,11 @@ const ScrumMasterBacklog = () => {
                   <div className="ml-4">
                     <button
                       onClick={() => handleEditItem(item)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className={`transition-colors ${
+                        theme === 'dark'
+                          ? 'text-gray-500 hover:text-gray-300'
+                          : 'text-gray-400 hover:text-gray-600'
+                      }`}
                     >
                       <svg className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />

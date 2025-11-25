@@ -14,8 +14,10 @@ import {
 } from 'lucide-react';
 import { useTimeTracking } from '../../hooks/useTimeTracking';
 import { useDeveloperTasks } from '../../hooks/useDeveloperTasks';
+import { useTheme } from '../../context/ThemeContext';
 
 const TimeTracking = () => {
+  const { theme } = useTheme();
   const [timeFilter, setTimeFilter] = useState('today');
   const { 
     entries, 
@@ -116,9 +118,9 @@ const TimeTracking = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className={`rounded-xl shadow-sm border p-12 text-center ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <RefreshCw className="h-8 w-8 text-blue-600 mx-auto mb-4 animate-spin" />
-          <p className="text-gray-600">Cargando datos de time tracking...</p>
+          <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Cargando datos de time tracking...</p>
         </div>
       </div>
     );
@@ -127,10 +129,10 @@ const TimeTracking = () => {
   if (error) {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className={`rounded-xl shadow-sm border p-12 text-center ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <AlertTriangle className="h-8 w-8 text-red-600 mx-auto mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">Error al cargar datos</h3>
-          <p className="text-gray-600 mb-4">{error}</p>
+          <h3 className={`text-lg font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Error al cargar datos</h3>
+          <p className={`mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{error}</p>
           <button 
             onClick={() => {
               refresh();
@@ -148,14 +150,14 @@ const TimeTracking = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 flex items-center">
+            <h1 className={`text-2xl font-bold flex items-center ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
               <Clock className="h-6 w-6 mr-3 text-blue-600" />
               Time Tracking
             </h1>
-            <p className="text-gray-600 mt-1">Controla y registra el tiempo dedicado a tus tareas</p>
+            <p className={`mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Controla y registra el tiempo dedicado a tus tareas</p>
           </div>
           
           {/* Timer actual */}
@@ -188,64 +190,66 @@ const TimeTracking = () => {
 
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center justify-between">
-            <div className="bg-blue-100 p-3 rounded-lg">
+            <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
               <Clock className="h-6 w-6 text-blue-600" />
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-600">Hoy</p>
-              <p className="text-2xl font-bold text-gray-900">{formatTime(stats?.todayMinutes || 0)}</p>
+              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Hoy</p>
+              <p className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(stats?.todayMinutes || 0)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center justify-between">
-            <div className="bg-green-100 p-3 rounded-lg">
+            <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-green-900/30' : 'bg-green-100'}`}>
               <Calendar className="h-6 w-6 text-green-600" />
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-600">Esta Semana</p>
-              <p className="text-2xl font-bold text-gray-900">{formatTime(stats?.weekMinutes || 0)}</p>
+              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Esta Semana</p>
+              <p className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(stats?.weekMinutes || 0)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center justify-between">
-            <div className="bg-yellow-100 p-3 rounded-lg">
+            <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-yellow-900/30' : 'bg-yellow-100'}`}>
               <TrendingUp className="h-6 w-6 text-yellow-600" />
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-600">Promedio Diario</p>
-              <p className="text-2xl font-bold text-gray-900">{formatTime(stats?.averageDailyMinutes || 0)}</p>
+              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Promedio Diario</p>
+              <p className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{formatTime(stats?.averageDailyMinutes || 0)}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center justify-between">
-            <div className="bg-purple-100 p-3 rounded-lg">
+            <div className={`p-3 rounded-lg ${theme === 'dark' ? 'bg-purple-900/30' : 'bg-purple-100'}`}>
               <Target className="h-6 w-6 text-purple-600" />
             </div>
             <div className="text-right">
-              <p className="text-sm font-medium text-gray-600">Sesiones Activas</p>
-              <p className="text-2xl font-bold text-gray-900">{stats?.activeSessions || 0}</p>
+              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Sesiones Activas</p>
+              <p className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{stats?.activeSessions || 0}</p>
             </div>
           </div>
         </div>
       </div>
 
       {/* Task Time Tracking */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="p-6 border-b border-gray-200">
+      <div className={`rounded-xl shadow-sm border ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+        <div className={`p-6 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex items-center justify-between">
-            <h3 className="text-lg font-semibold text-gray-900">Tareas Activas</h3>
+            <h3 className={`text-lg font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Tareas Activas</h3>
             <select
               value={timeFilter}
               onChange={(e) => setTimeFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`px-3 py-2 border rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-200' : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="today">Hoy</option>
               <option value="week">Esta Semana</option>
@@ -258,8 +262,8 @@ const TimeTracking = () => {
           {tasks.length === 0 ? (
             <div className="text-center py-12">
               <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No hay tareas disponibles</h3>
-              <p className="text-gray-600">No tienes tareas asignadas para hacer tracking de tiempo.</p>
+              <h3 className={`text-lg font-medium mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>No hay tareas disponibles</h3>
+              <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>No tienes tareas asignadas para hacer tracking de tiempo.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -273,12 +277,14 @@ const TimeTracking = () => {
                     className={`relative border-2 rounded-xl overflow-hidden transition-all duration-300 ${
                       isTaskTracking 
                         ? 'border-blue-500 bg-blue-50 shadow-lg' 
-                        : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                        : theme === 'dark'
+                          ? 'border-gray-700 bg-gray-700 hover:border-gray-600 hover:shadow-md'
+                          : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
                     }`}
                   >
                     {/* Barra superior con estado y badge activo */}
                     <div className={`px-4 py-2 flex items-center justify-between ${
-                      isTaskTracking ? 'bg-blue-100' : 'bg-gray-50'
+                      isTaskTracking ? 'bg-blue-100' : theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
                     }`}>
                       <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
                         task.estado === 'en_progreso' || task.status === 'in_progress' ? 'bg-blue-500 text-white' :
@@ -300,44 +306,60 @@ const TimeTracking = () => {
                     {/* Contenido principal */}
                     <div className="p-4">
                       {/* Título de la tarea */}
-                      <h4 className="font-semibold text-gray-900 text-lg mb-3">{task.titulo || task.title}</h4>
+                      <h4 className={`font-semibold text-lg mb-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{task.titulo || task.title}</h4>
                       
                       {/* Grid de tiempos */}
                       <div className="grid grid-cols-3 gap-3 mb-4">
                         {/* Total */}
-                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
+                        <div className={`rounded-lg p-3 border ${
+                          theme === 'dark' 
+                            ? 'bg-purple-900/30 border-purple-800' 
+                            : 'bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200'
+                        }`}>
                           <div className="flex items-center gap-2 mb-1">
                             <Clock className="h-4 w-4 text-purple-600" />
-                            <span className="text-xs font-medium text-purple-700">Total</span>
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-purple-400' : 'text-purple-700'}`}>Total</span>
                           </div>
-                          <p className="text-lg font-bold text-purple-900">{formatTime(totalTime)}</p>
+                          <p className={`text-lg font-bold ${theme === 'dark' ? 'text-purple-300' : 'text-purple-900'}`}>{formatTime(totalTime)}</p>
                         </div>
 
                         {/* Hoy */}
-                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
+                        <div className={`rounded-lg p-3 border ${
+                          theme === 'dark' 
+                            ? 'bg-blue-900/30 border-blue-800' 
+                            : 'bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200'
+                        }`}>
                           <div className="flex items-center gap-2 mb-1">
                             <Clock className="h-4 w-4 text-blue-600" />
-                            <span className="text-xs font-medium text-blue-700">Hoy</span>
+                            <span className={`text-xs font-medium ${theme === 'dark' ? 'text-blue-400' : 'text-blue-700'}`}>Hoy</span>
                           </div>
-                          <p className="text-lg font-bold text-blue-900">{formatTime(todayTime)}</p>
+                          <p className={`text-lg font-bold ${theme === 'dark' ? 'text-blue-300' : 'text-blue-900'}`}>{formatTime(todayTime)}</p>
                         </div>
 
                         {/* Tiempo en progreso (solo si está activa) */}
                         {isTaskTracking ? (
-                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
+                          <div className={`rounded-lg p-3 border ${
+                            theme === 'dark' 
+                              ? 'bg-green-900/30 border-green-800' 
+                              : 'bg-gradient-to-br from-green-50 to-green-100 border-green-200'
+                          }`}>
                             <div className="flex items-center gap-2 mb-1">
                               <Clock className="h-4 w-4 text-green-600" />
-                              <span className="text-xs font-medium text-green-700">En Curso</span>
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-green-400' : 'text-green-700'}`}>En Curso</span>
                             </div>
-                            <p className="text-lg font-bold text-green-900">{formattedTimerTime}</p>
+                            <p className={`text-lg font-bold ${theme === 'dark' ? 'text-green-300' : 'text-green-900'}`}>{formattedTimerTime}</p>
                           </div>
                         ) : (
-                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
+                          <div className={`rounded-lg p-3 border ${
+                            theme === 'dark' 
+                              ? 'bg-gray-700 border-gray-600' 
+                              : 'bg-gradient-to-br from-gray-50 to-gray-100 border-gray-200'
+                          }`}>
                             <div className="flex items-center gap-2 mb-1">
-                              <Clock className="h-4 w-4 text-gray-500" />
-                              <span className="text-xs font-medium text-gray-600">Sesión</span>
+                              <Clock className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
+                              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Sesión</span>
                             </div>
-                            <p className="text-lg font-bold text-gray-700">--</p>
+                            <p className={`text-lg font-bold ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>--</p>
                           </div>
                         )}
                       </div>
@@ -383,9 +405,9 @@ const TimeTracking = () => {
       </div>
 
       {/* Weekly Overview */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-          <BarChart3 className="h-5 w-5 mr-2 text-gray-600" />
+      <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
+        <h3 className={`text-lg font-semibold mb-4 flex items-center ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
+          <BarChart3 className={`h-5 w-5 mr-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
           Resumen Semanal
         </h3>
         
@@ -394,33 +416,33 @@ const TimeTracking = () => {
             <div className="text-2xl font-bold text-blue-600 mb-1">
               {Math.round((stats?.weekMinutes || 0) / 60 * 10) / 10}h
             </div>
-            <div className="text-sm text-gray-600">Total de Horas</div>
+            <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total de Horas</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-green-600 mb-1">
               {Math.round((stats?.averageDailyMinutes || 0) / 60 * 10) / 10}h
             </div>
-            <div className="text-sm text-gray-600">Promedio Diario</div>
+            <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Promedio Diario</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-yellow-600 mb-1">
               {entries.length}
             </div>
-            <div className="text-sm text-gray-600">Sesiones Totales</div>
+            <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Sesiones Totales</div>
           </div>
           <div className="text-center">
             <div className="text-2xl font-bold text-purple-600 mb-1">
               {stats?.activeSessions || 0}
             </div>
-            <div className="text-sm text-gray-600">Sesiones Activas</div>
+            <div className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Sesiones Activas</div>
           </div>
         </div>
 
         {/* Weekly Chart Placeholder */}
-        <div className="mt-6 bg-gray-50 rounded-lg p-8 text-center">
+        <div className={`mt-6 rounded-lg p-8 text-center ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'}`}>
           <BarChart3 className="h-12 w-12 text-gray-400 mx-auto mb-2" />
-          <p className="text-gray-600">Gráfico de productividad semanal</p>
-          <p className="text-sm text-gray-500 mt-1">Próximamente disponible</p>
+          <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}>Gráfico de productividad semanal</p>
+          <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Próximamente disponible</p>
         </div>
       </div>
     </div>

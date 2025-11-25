@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../../context/ThemeContext';
 import config from '../../../config/config';
 import { 
   X, 
@@ -22,6 +23,7 @@ const ModalBacklogItem = ({
   onSuccess 
 }) => {
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [formData, setFormData] = useState({
@@ -197,27 +199,47 @@ const ModalBacklogItem = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto">
+      <div className={`rounded-lg shadow-xl w-full max-w-4xl max-h-[90vh] overflow-y-auto ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border border-gray-700' 
+          : 'bg-white border border-gray-200'
+      }`}>
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className={`flex items-center justify-between p-6 border-b ${
+          theme === 'dark' 
+            ? 'border-gray-700' 
+            : 'border-gray-200'
+        }`}>
           <div className="flex items-center gap-3">
-            <div className="p-2 bg-blue-100 rounded-lg">
-              <Package className="h-6 w-6 text-blue-600" />
+            <div className={`p-2 rounded-lg ${
+              theme === 'dark' 
+                ? 'bg-blue-900/30 text-blue-400' 
+                : 'bg-blue-100 text-blue-600'
+            }`}>
+              <Package className="h-6 w-6" />
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-gray-900">
+              <h2 className={`text-xl font-semibold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 {editingItem ? 'Editar Item del Backlog' : 'Nuevo Item del Backlog'}
               </h2>
-              <p className="text-sm text-gray-500">
+              <p className={`text-sm ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+              }`}>
                 {editingItem ? 'Actualiza la información del item' : 'Agrega un nuevo item al product backlog'}
               </p>
             </div>
           </div>
           <button 
             onClick={handleClose}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            className={`p-2 rounded-lg transition-colors ${
+              theme === 'dark' 
+                ? 'hover:bg-gray-700 text-gray-400' 
+                : 'hover:bg-gray-100 text-gray-500'
+            }`}
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -225,36 +247,52 @@ const ModalBacklogItem = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <p className="text-red-800 text-sm">{error}</p>
+            <div className={`border rounded-lg p-4 ${
+              theme === 'dark' 
+                ? 'bg-red-900/30 border-red-800 text-red-300' 
+                : 'bg-red-50 border-red-200 text-red-800'
+            }`}>
+              <p className="text-sm">{error}</p>
             </div>
           )}
 
           {/* Título y Descripción */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Título *
               </label>
               <input
                 type="text"
                 value={formData.titulo}
                 onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
                 placeholder="Ej: Como usuario, quiero poder..."
                 required
               />
             </div>
 
             <div className="lg:col-span-2">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Descripción *
               </label>
               <textarea
                 value={formData.descripcion}
                 onChange={(e) => setFormData({ ...formData, descripcion: e.target.value })}
                 rows={4}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
                 placeholder="Describe detalladamente el item del backlog..."
                 required
               />
@@ -264,13 +302,19 @@ const ModalBacklogItem = ({
           {/* Tipo, Prioridad y Puntos */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Tipo *
               </label>
               <select
                 value={formData.tipo}
                 onChange={(e) => setFormData({ ...formData, tipo: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 {tipoOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -281,13 +325,19 @@ const ModalBacklogItem = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Prioridad *
               </label>
               <select
                 value={formData.prioridad}
                 onChange={(e) => setFormData({ ...formData, prioridad: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 {prioridadOptions.map(option => (
                   <option key={option.value} value={option.value}>
@@ -298,7 +348,9 @@ const ModalBacklogItem = ({
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 Puntos de Historia
               </label>
               <input
@@ -307,7 +359,11 @@ const ModalBacklogItem = ({
                 max="100"
                 value={formData.puntos_historia}
                 onChange={(e) => setFormData({ ...formData, puntos_historia: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                }`}
                 placeholder="1-100"
               />
             </div>
@@ -316,14 +372,20 @@ const ModalBacklogItem = ({
           {/* Producto y Sprint */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 <Package className="h-4 w-4 inline mr-1" />
                 Producto *
               </label>
               <select
                 value={formData.producto}
                 onChange={(e) => setFormData({ ...formData, producto: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
                 required
               >
                 <option value="">Seleccionar producto</option>
@@ -334,21 +396,29 @@ const ModalBacklogItem = ({
                 ))}
               </select>
               {(!productos || productos.length === 0) && (
-                <p className="text-xs text-amber-600 mt-1">
+                <p className={`text-xs mt-1 ${
+                  theme === 'dark' ? 'text-amber-400' : 'text-amber-600'
+                }`}>
                   ⚠️ No se han cargado productos. Recargando...
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className={`block text-sm font-medium mb-2 ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 <Calendar className="h-4 w-4 inline mr-1" />
                 Sprint
               </label>
               <select
                 value={formData.sprint}
                 onChange={(e) => setFormData({ ...formData, sprint: e.target.value })}
-                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 border-gray-600 text-white' 
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="">Sin asignar</option>
                 {(sprints || []).map(sprint => (
@@ -363,14 +433,20 @@ const ModalBacklogItem = ({
           {/* Criterios de Aceptación */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className={`block text-sm font-medium ${
+                theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+              }`}>
                 <Target className="h-4 w-4 inline mr-1" />
                 Criterios de Aceptación
               </label>
               <button
                 type="button"
                 onClick={addCriterio}
-                className="flex items-center gap-1 px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                className={`flex items-center gap-1 px-3 py-1 text-sm rounded-lg transition-colors ${
+                  theme === 'dark' 
+                    ? 'bg-blue-900/30 text-blue-300 hover:bg-blue-800/40' 
+                    : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                }`}
               >
                 <Plus className="h-4 w-4" />
                 Agregar
@@ -379,19 +455,29 @@ const ModalBacklogItem = ({
             <div className="space-y-3">
               {formData.criterios_aceptacion.map((criterio, index) => (
                 <div key={index} className="flex items-center gap-3">
-                  <CheckCircle className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                  <CheckCircle className={`h-4 w-4 flex-shrink-0 ${
+                    theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                  }`} />
                   <input
                     type="text"
                     value={criterio.descripcion}
                     onChange={(e) => updateCriterio(index, e.target.value)}
-                    className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`flex-1 px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                    }`}
                     placeholder="Criterio de aceptación..."
                   />
                   {formData.criterios_aceptacion.length > 1 && (
                     <button
                       type="button"
                       onClick={() => removeCriterio(index)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      className={`p-2 rounded-lg transition-colors ${
+                        theme === 'dark' 
+                          ? 'text-red-400 hover:bg-red-900/30' 
+                          : 'text-red-500 hover:bg-red-50'
+                      }`}
                     >
                       <Minus className="h-4 w-4" />
                     </button>
@@ -403,7 +489,9 @@ const ModalBacklogItem = ({
 
           {/* Etiquetas */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               <Tag className="h-4 w-4 inline mr-1" />
               Etiquetas
             </label>
@@ -411,20 +499,32 @@ const ModalBacklogItem = ({
               type="text"
               value={formData.etiquetas.join(', ')}
               onChange={(e) => handleEtiquetaChange(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                theme === 'dark' 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+              }`}
               placeholder="frontend, backend, api (separadas por comas)"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className={`text-xs mt-1 ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+            }`}>
               Separa las etiquetas con comas
             </p>
           </div>
 
           {/* Botones */}
-          <div className="flex items-center justify-end gap-3 pt-6 border-t border-gray-200">
+          <div className={`flex items-center justify-end gap-3 pt-6 border-t ${
+            theme === 'dark' ? 'border-gray-600' : 'border-gray-200'
+          }`}>
             <button
               type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+              className={`px-4 py-2 rounded-lg transition-colors ${
+                theme === 'dark' 
+                  ? 'text-gray-300 bg-gray-700 hover:bg-gray-600' 
+                  : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+              }`}
               disabled={loading}
             >
               Cancelar

@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Search, Filter, X, SlidersHorizontal } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
+  const { theme } = useTheme();
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [searchText, setSearchText] = useState('');
 
@@ -60,7 +62,9 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 space-y-4">
+    <div className={`rounded-xl shadow-sm border p-4 space-y-4 ${
+      theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+    }`}>
       {/* Barra de búsqueda y botones principales */}
       <div className="flex flex-col md:flex-row gap-3">
         {/* Búsqueda */}
@@ -71,7 +75,11 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
             value={searchText}
             onChange={handleSearchChange}
             placeholder="Buscar por título o descripción..."
-            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+            className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all ${
+              theme === 'dark' 
+                ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
           />
           {searchText && (
             <button
@@ -93,7 +101,9 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
             className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
               showAdvanced
                 ? 'bg-blue-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : theme === 'dark'
+                  ? 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
             }`}
           >
             <SlidersHorizontal className="h-4 w-4" />
@@ -103,7 +113,11 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
           {hasActiveFilters() && (
             <button
               onClick={clearFilters}
-              className="px-4 py-2 bg-red-100 text-red-700 rounded-lg font-medium hover:bg-red-200 transition-all flex items-center gap-2"
+              className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2 ${
+                theme === 'dark'
+                  ? 'bg-red-900/40 text-red-300 hover:bg-red-900/60'
+                  : 'bg-red-100 text-red-700 hover:bg-red-200'
+              }`}
             >
               <X className="h-4 w-4" />
               Limpiar
@@ -119,7 +133,9 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
           className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
             filters.status === 'open'
               ? 'bg-red-500 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : theme === 'dark'
+                ? 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           🔴 Abiertos
@@ -130,7 +146,9 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
           className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
             filters.status === 'in_progress'
               ? 'bg-blue-500 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : theme === 'dark'
+                ? 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           🔵 En Progreso
@@ -141,7 +159,9 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
           className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
             filters.priority === 'critical'
               ? 'bg-red-500 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : theme === 'dark'
+                ? 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           🔴 Críticos
@@ -152,7 +172,9 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
           className={`px-3 py-1 rounded-full text-sm font-medium transition-all ${
             filters.assignedToMe
               ? 'bg-purple-500 text-white'
-              : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              : theme === 'dark'
+                ? 'bg-gray-700 text-gray-200 hover:bg-gray-600'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
           }`}
         >
           👤 Asignados a mí
@@ -161,16 +183,24 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
 
       {/* Filtros avanzados (colapsable) */}
       {showAdvanced && (
-        <div className="pt-4 border-t border-gray-200 grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className={`pt-4 border-t grid grid-cols-1 md:grid-cols-3 gap-4 ${
+          theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+        }`}>
           {/* Estado */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Estado
             </label>
             <select
               value={filters.status || ''}
               onChange={(e) => handleFilterChange('status', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               {statusOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -182,13 +212,19 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
 
           {/* Prioridad */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Prioridad
             </label>
             <select
               value={filters.priority || ''}
               onChange={(e) => handleFilterChange('priority', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               {priorityOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -200,13 +236,19 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
 
           {/* Severidad */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className={`block text-sm font-medium mb-2 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Severidad
             </label>
             <select
               value={filters.severity || ''}
               onChange={(e) => handleFilterChange('severity', e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+              className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               {severityOptions.map((option) => (
                 <option key={option.value} value={option.value}>
@@ -220,8 +262,12 @@ const BugReportFilters = ({ onFilterChange, onSearchChange, filters }) => {
 
       {/* Indicador de filtros activos */}
       {hasActiveFilters() && (
-        <div className="pt-3 border-t border-gray-200">
-          <p className="text-sm text-gray-600">
+        <div className={`pt-3 border-t ${
+          theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+        }`}>
+          <p className={`text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             <Filter className="inline h-4 w-4 mr-1" />
             Filtros activos: 
             {searchText && <span className="ml-1 text-blue-600 font-medium">Búsqueda</span>}

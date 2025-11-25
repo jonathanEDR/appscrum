@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 import config from '../../config/config';
 import AssignStoryModal from './AssignStoryModal';
 import SprintStoriesPanel from './SprintStoriesPanel';
@@ -31,6 +32,7 @@ import {
 } from 'lucide-react';
 
 const SprintPlanning = () => {
+  const { theme } = useTheme();
   const { getToken } = useAuth();
   
   // ✅ OPTIMIZADO: Usar hooks con caché en lugar de estados locales
@@ -68,39 +70,56 @@ const SprintPlanning = () => {
     });
   }, [allSprints, selectedProduct]);
 
-  // Configuración de prioridades con colores y iconos
+  // Configuración de prioridades con colores y iconos adaptados al tema
   const prioridadConfig = {
     muy_alta: {
       label: 'Muy Alta',
-      color: 'bg-red-100 text-red-800 border-red-200',
-      bgColor: 'bg-red-50',
+      color: theme === 'dark' 
+        ? 'bg-red-900/30 text-red-400 border-red-800'
+        : 'bg-red-100 text-red-800 border-red-200',
+      bgColor: theme === 'dark' ? 'bg-gray-800' : 'bg-red-50',
+      borderColor: theme === 'dark' ? 'border-gray-700' : 'border-red-200',
       icon: Zap,
       order: 1
     },
     alta: {
       label: 'Alta', 
-      color: 'bg-orange-100 text-orange-800 border-orange-200',
-      bgColor: 'bg-orange-50',
+      color: theme === 'dark'
+        ? 'bg-orange-900/30 text-orange-400 border-orange-800'
+        : 'bg-orange-100 text-orange-800 border-orange-200',
+      bgColor: theme === 'dark' ? 'bg-gray-800' : 'bg-orange-50',
+      borderColor: theme === 'dark' ? 'border-gray-700' : 'border-orange-200',
       icon: Flag,
       order: 2
     },
     media: {
       label: 'Media',
-      color: 'bg-yellow-100 text-yellow-800 border-yellow-200', 
-      bgColor: 'bg-yellow-50',
+      color: theme === 'dark'
+        ? 'bg-yellow-900/30 text-yellow-400 border-yellow-800'
+        : 'bg-yellow-100 text-yellow-800 border-yellow-200', 
+      bgColor: theme === 'dark' ? 'bg-gray-800' : 'bg-yellow-50',
+      borderColor: theme === 'dark' ? 'border-gray-700' : 'border-yellow-200',
       icon: BarChart3,
       order: 3
     },
     baja: {
       label: 'Baja',
-      color: 'bg-green-100 text-green-800 border-green-200',
-      bgColor: 'bg-green-50', 
+      color: theme === 'dark'
+        ? 'bg-green-900/30 text-green-400 border-green-800'
+        : 'bg-green-100 text-green-800 border-green-200',
+      bgColor: theme === 'dark' ? 'bg-gray-800' : 'bg-green-50',
+      borderColor: theme === 'dark' ? 'border-gray-700' : 'border-green-200', 
       icon: TrendingUp,
       order: 4
     }
   };
 
-  const tipoColors = {
+  const tipoColors = theme === 'dark' ? {
+    historia: 'bg-blue-900/30 text-blue-400',
+    tarea: 'bg-green-900/30 text-green-400',
+    bug: 'bg-red-900/30 text-red-400',
+    mejora: 'bg-purple-900/30 text-purple-400'
+  } : {
     historia: 'bg-blue-100 text-blue-800',
     tarea: 'bg-green-100 text-green-800',
     bug: 'bg-red-100 text-red-800',
@@ -290,7 +309,9 @@ const SprintPlanning = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-gray-600">Cargando Sprint Planning...</span>
+        <span className={`ml-2 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+        }`}>Cargando Sprint Planning...</span>
       </div>
     );
   }
@@ -332,31 +353,53 @@ const SprintPlanning = () => {
         <>
           {/* Resumen de métricas */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="bg-white p-4 rounded-lg border shadow-sm">
+            <div className={`p-4 rounded-lg border shadow-sm ${
+              theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
               <div className="text-2xl font-bold text-blue-600">{filteredAvailableItems.length}</div>
-              <div className="text-sm text-gray-600">Items Disponibles</div>
+              <div className={`text-sm ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>Items Disponibles</div>
             </div>
-            <div className="bg-white p-4 rounded-lg border shadow-sm">
+            <div className={`p-4 rounded-lg border shadow-sm ${
+              theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
               <div className="text-2xl font-bold text-green-600">{totalStoryPoints}</div>
-              <div className="text-sm text-gray-600">Story Points Total</div>
+              <div className={`text-sm ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>Story Points Total</div>
             </div>
-            <div className="bg-white p-4 rounded-lg border shadow-sm">
+            <div className={`p-4 rounded-lg border shadow-sm ${
+              theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
               <div className="text-2xl font-bold text-purple-600">{sprintItems.length}</div>
-              <div className="text-sm text-gray-600">Items en Sprint</div>
+              <div className={`text-sm ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>Items en Sprint</div>
             </div>
-            <div className="bg-white p-4 rounded-lg border shadow-sm">
+            <div className={`p-4 rounded-lg border shadow-sm ${
+              theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
               <div className="text-2xl font-bold text-orange-600">{sprintStoryPoints}</div>
-              <div className="text-sm text-gray-600">Puntos Asignados</div>
+              <div className={`text-sm ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>Puntos Asignados</div>
             </div>
           </div>
 
           {/* Filtros */}
-          <div className="bg-white rounded-lg border p-4">
+          <div className={`rounded-lg border p-4 ${
+            theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <select
                 value={selectedProduct}
                 onChange={(e) => handleProductChange(e.target.value)}
-                className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="">Todos los productos</option>
                 {productos.map(producto => (
@@ -369,7 +412,11 @@ const SprintPlanning = () => {
               <select
                 value={filtroProducto}
                 onChange={(e) => setFiltroProducto(e.target.value)}
-                className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="">Filtro Backlog</option>
                 {productos.map(producto => (
@@ -382,7 +429,11 @@ const SprintPlanning = () => {
               <select
                 value={filtroPrioridad}
                 onChange={(e) => setFiltroPrioridad(e.target.value)}
-                className="px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
+                className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="">Todas las prioridades</option>
                 <option value="muy_alta">Muy Alta</option>
@@ -406,18 +457,26 @@ const SprintPlanning = () => {
             {/* Selección de Sprint */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Seleccionar Sprint</h3>
+                <h3 className={`text-lg font-semibold ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>Seleccionar Sprint</h3>
                 {selectedProduct && (
-                  <div className="text-sm text-gray-600">
+                  <div className={`text-sm ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
                     {productos.find(p => p._id === selectedProduct)?.nombre || 'Producto'}
                   </div>
                 )}
               </div>
               
               {sprints.length === 0 ? (
-                <div className="bg-white p-6 rounded-lg border text-center">
-                  <PlayCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">
+                <div className={`p-6 rounded-lg border text-center ${
+                  theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                }`}>
+                  <PlayCircle className={`h-12 w-12 mx-auto mb-4 ${
+                    theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+                  }`} />
+                  <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
                     {selectedProduct 
                       ? 'No hay sprints disponibles para este producto'
                       : 'No hay sprints disponibles para planificación'
@@ -437,22 +496,40 @@ const SprintPlanning = () => {
                       key={sprint._id}
                       className={`p-4 border rounded-lg cursor-pointer transition-all hover:shadow-md ${
                         selectedSprint?._id === sprint._id 
-                          ? 'border-blue-500 bg-blue-50 shadow-md' 
-                          : 'border-gray-200 bg-white hover:border-gray-300'
+                          ? theme === 'dark'
+                            ? 'border-blue-500 bg-blue-900/20 shadow-md'
+                            : 'border-blue-500 bg-blue-50 shadow-md'
+                          : theme === 'dark'
+                            ? 'border-gray-700 bg-gray-800 hover:border-gray-600'
+                            : 'border-gray-200 bg-white hover:border-gray-300'
                       }`}
                       onClick={() => handleSelectSprint(sprint)}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex-1">
-                          <div className="font-medium text-gray-900">{sprint.nombre}</div>
-                          <div className="text-sm text-gray-600">{sprint.objetivo}</div>
-                          <div className="text-xs text-gray-400 mt-1 flex items-center gap-2">
+                          <div className={`font-medium ${
+                            selectedSprint?._id === sprint._id && theme === 'dark'
+                              ? 'text-blue-400'
+                              : selectedSprint?._id === sprint._id
+                              ? 'text-blue-700'
+                              : theme === 'dark' 
+                              ? 'text-white' 
+                              : 'text-gray-900'
+                          }`}>{sprint.nombre}</div>
+                          <div className={`text-sm ${
+                            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                          }`}>{sprint.objetivo}</div>
+                          <div className={`text-xs mt-1 flex items-center gap-2 ${
+                            theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                          }`}>
                             <Calendar className="h-3 w-3" />
                             {new Date(sprint.fecha_inicio).toLocaleDateString()} - 
                             {new Date(sprint.fecha_fin).toLocaleDateString()}
                           </div>
                           {sprint.producto && (
-                            <div className="text-xs text-blue-600 mt-1 flex items-center gap-1">
+                            <div className={`text-xs mt-1 flex items-center gap-1 ${
+                              theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+                            }`}>
                               <Package className="h-3 w-3" />
                               {sprint.producto.nombre}
                             </div>
@@ -480,8 +557,12 @@ const SprintPlanning = () => {
 
               {/* Información del Equipo */}
               {teamMembers.length > 0 && (
-                <div className="bg-white p-4 rounded-lg border">
-                  <h4 className="font-medium text-gray-900 mb-3 flex items-center gap-2">
+                <div className={`p-4 rounded-lg border ${
+                  theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                }`}>
+                  <h4 className={`font-medium mb-3 flex items-center gap-2 ${
+                    theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  }`}>
                     <Users className="h-4 w-4" />
                     Estado del Equipo ({teamMembers.length} miembros)
                   </h4>
@@ -503,12 +584,18 @@ const SprintPlanning = () => {
                       return (
                         <div key={member._id || member.id} className="flex items-center justify-between text-sm">
                           <div className="flex items-center gap-2">
-                            <div className="w-6 h-6 bg-gray-200 rounded-full flex items-center justify-center text-xs font-medium">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium ${
+                              theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+                            }`}>
                               {(member.nombre_negocio || member.name || member.email || '?').charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <div className="font-medium text-gray-900">{member.nombre_negocio || member.name || member.email || 'Usuario'}</div>
-                              <div className="text-xs text-gray-500">{member.role || 'developer'}</div>
+                              <div className={`font-medium ${
+                                theme === 'dark' ? 'text-white' : 'text-gray-900'
+                              }`}>{member.nombre_negocio || member.name || member.email || 'Usuario'}</div>
+                              <div className={`text-xs ${
+                                theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                              }`}>{member.role || 'developer'}</div>
                             </div>
                           </div>
                           <div className="text-right">
@@ -535,12 +622,20 @@ const SprintPlanning = () => {
 
             {/* Backlog por Prioridades */}
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold text-gray-900">Product Backlog</h3>
+              <h3 className={`text-lg font-semibold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Product Backlog</h3>
               
               {filteredAvailableItems.length === 0 ? (
-                <div className="bg-white p-6 rounded-lg border text-center">
-                  <Package className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <p className="text-gray-500">No hay items en el backlog</p>
+                <div className={`p-6 rounded-lg border text-center ${
+                  theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                }`}>
+                  <Package className={`h-12 w-12 mx-auto mb-4 ${
+                    theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+                  }`} />
+                  <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
+                    No hay items en el backlog
+                  </p>
                   <p className="text-sm text-gray-400 mt-2">Crea items en el backlog para planificar sprints</p>
                 </div>
               ) : (
@@ -552,16 +647,22 @@ const SprintPlanning = () => {
                     const totalPoints = items.reduce((sum, item) => sum + (item.puntos_historia || 0), 0);
                     
                     return (
-                      <div key={prioridad} className={`border rounded-lg ${config.bgColor}`}>
+                      <div key={prioridad} className={`border rounded-lg ${config.bgColor} ${config.borderColor}`}>
                         <div 
                           className="flex items-center justify-between p-4 cursor-pointer"
                           onClick={() => toggleSection(prioridad)}
                         >
                           <div className="flex items-center gap-3">
-                            <Icon className="h-5 w-5" />
+                            <Icon className={`h-5 w-5 ${
+                              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                            }`} />
                             <div>
-                              <h4 className="font-medium text-gray-900">{config.label}</h4>
-                              <p className="text-sm text-gray-600">
+                              <h4 className={`font-medium ${
+                                theme === 'dark' ? 'text-white' : 'text-gray-900'
+                              }`}>{config.label}</h4>
+                              <p className={`text-sm ${
+                                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                              }`}>
                                 {items.length} items ({totalPoints} pts)
                               </p>
                             </div>
@@ -573,16 +674,26 @@ const SprintPlanning = () => {
                         </div>
                         
                         {expandedSections[prioridad] && (
-                          <div className="border-t p-4 space-y-2">
+                          <div className={`p-4 space-y-2 border-t ${
+                            theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+                          }`}>
                             {items.length === 0 ? (
-                              <p className="text-gray-500 text-sm text-center py-4">
+                              <p className={`text-sm text-center py-4 ${
+                                theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                              }`}>
                                 No hay items con esta prioridad
                               </p>
                             ) : (
                               items.map(item => (
-                                <div key={item._id} className="p-3 bg-white border rounded-lg">
-                                  <h5 className="font-medium text-gray-900">{item.titulo}</h5>
-                                  <p className="text-sm text-gray-600 mt-1">{item.descripcion}</p>
+                                <div key={item._id} className={`p-3 border rounded-lg ${
+                                  theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'
+                                }`}>
+                                  <h5 className={`font-medium ${
+                                    theme === 'dark' ? 'text-white' : 'text-gray-900'
+                                  }`}>{item.titulo}</h5>
+                                  <p className={`text-sm mt-1 ${
+                                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                                  }`}>{item.descripcion}</p>
                                   <div className="flex items-center gap-2 mt-2">
                                     <span className={`px-2 py-1 rounded text-xs ${tipoColors[item.tipo] || 'bg-gray-100 text-gray-800'}`}>
                                       {item.tipo}

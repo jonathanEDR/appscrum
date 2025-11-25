@@ -5,8 +5,10 @@ import BugReportCard from './BugReportCard';
 import BugReportFilters from './BugReportFilters';
 import BugReportModal from './BugReportModal';
 import BugReportDetail from './BugReportDetail';
+import { useTheme } from '../../context/ThemeContext';
 
 const BugReports = () => {
+  const { theme } = useTheme();
   const [showModal, setShowModal] = useState(false);
   const [selectedBugId, setSelectedBugId] = useState(null);
   const [filters, setFilters] = useState({
@@ -106,11 +108,11 @@ const BugReports = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+          <h1 className={`text-3xl font-bold flex items-center gap-3 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             <Bug className="h-8 w-8 text-red-500" />
             Bug Reports
           </h1>
-          <p className="text-gray-600 mt-1">
+          <p className={`mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             Gestiona y reporta bugs del sistema • {filteredBugs.length} resultado{filteredBugs.length !== 1 ? 's' : ''}
           </p>
         </div>
@@ -125,49 +127,49 @@ const BugReports = () => {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Total</p>
-              <p className="text-3xl font-bold text-gray-900 mt-1">{bugStats.total}</p>
+              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Total</p>
+              <p className={`text-3xl font-bold mt-1 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{bugStats.total}</p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-gray-100 flex items-center justify-center">
-              <Bug className="h-6 w-6 text-gray-600" />
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'}`}>
+              <Bug className={`h-6 w-6 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Abiertos</p>
+              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Abiertos</p>
               <p className="text-3xl font-bold text-red-600 mt-1">{bugStats.open}</p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-red-100 flex items-center justify-center">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-red-900/30' : 'bg-red-100'}`}>
               <AlertCircle className="h-6 w-6 text-red-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">En Progreso</p>
+              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>En Progreso</p>
               <p className="text-3xl font-bold text-blue-600 mt-1">{bugStats.inProgress}</p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
               <Clock className="h-6 w-6 text-blue-600" />
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className={`rounded-xl shadow-sm border p-6 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm font-medium text-gray-600">Resueltos</p>
+              <p className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Resueltos</p>
               <p className="text-3xl font-bold text-green-600 mt-1">{bugStats.resolved}</p>
             </div>
-            <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+            <div className={`w-12 h-12 rounded-full flex items-center justify-center ${theme === 'dark' ? 'bg-green-900/30' : 'bg-green-100'}`}>
               <CheckCircle className="h-6 w-6 text-green-600" />
             </div>
           </div>
@@ -183,15 +185,15 @@ const BugReports = () => {
 
       {/* Lista de Bugs */}
       {loading ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className={`rounded-xl shadow-sm border p-12 text-center ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <Loader className="h-12 w-12 text-blue-500 mx-auto mb-4 animate-spin" />
-          <p className="text-gray-600">Cargando bug reports...</p>
+          <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Cargando bug reports...</p>
         </div>
       ) : error ? (
-        <div className="bg-red-50 border-2 border-red-200 rounded-xl p-8 text-center">
+        <div className={`border-2 rounded-xl p-8 text-center ${theme === 'dark' ? 'bg-red-900/30 border-red-800' : 'bg-red-50 border-red-200'}`}>
           <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-red-900 mb-2">Error al cargar bugs</h3>
-          <p className="text-red-700">{error}</p>
+          <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-red-300' : 'text-red-900'}`}>Error al cargar bugs</h3>
+          <p className={theme === 'dark' ? 'text-red-400' : 'text-red-700'}>{error}</p>
           <button
             onClick={refresh}
             className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors"
@@ -200,12 +202,12 @@ const BugReports = () => {
           </button>
         </div>
       ) : filteredBugs.length === 0 ? (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
+        <div className={`rounded-xl shadow-sm border p-12 text-center ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'}`}>
           <Bug className="h-16 w-16 text-gray-300 mx-auto mb-4" />
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">
+          <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             {bugReports.length === 0 ? 'No hay bug reports' : 'No se encontraron resultados'}
           </h3>
-          <p className="text-gray-600 mb-4">
+          <p className={`mb-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             {bugReports.length === 0 
               ? 'Aún no hay bugs reportados. ¡Crea el primero!' 
               : 'Intenta ajustar los filtros de búsqueda'}

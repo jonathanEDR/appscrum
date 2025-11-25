@@ -16,9 +16,20 @@ import {
 } from 'lucide-react';
 import apiService from '../../services/apiService';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 
 const ImpedimentCard = ({ impediment, onEdit, onDelete, onStatusChange }) => {
+  const { theme } = useTheme();
+  
   const getStatusColor = (status) => {
+    if (theme === 'dark') {
+      const colors = {
+        open: 'bg-red-900/40 text-red-300 border-red-800',
+        in_progress: 'bg-yellow-900/40 text-yellow-300 border-yellow-800',
+        resolved: 'bg-green-900/40 text-green-300 border-green-800'
+      };
+      return colors[status] || colors.open;
+    }
     const colors = {
       open: 'bg-red-100 text-red-800 border-red-200',
       in_progress: 'bg-yellow-100 text-yellow-800 border-yellow-200',
@@ -49,13 +60,17 @@ const ImpedimentCard = ({ impediment, onEdit, onDelete, onStatusChange }) => {
   const StatusIcon = getStatusIcon(impediment.status);
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+    <div className={`rounded-lg border shadow-sm hover:shadow-md transition-shadow ${
+      theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+    }`}>
       <div className="p-6">
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
               <StatusIcon className={`h-5 w-5 ${getPriorityColor(impediment.priority)}`} />
-              <h3 className="text-lg font-semibold text-gray-900">{impediment.title}</h3>
+              <h3 className={`text-lg font-semibold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>{impediment.title}</h3>
               <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusColor(impediment.status)}`}>
                 {impediment.status === 'open' && 'Abierto'}
                 {impediment.status === 'in_progress' && 'En Progreso'}
@@ -63,9 +78,13 @@ const ImpedimentCard = ({ impediment, onEdit, onDelete, onStatusChange }) => {
               </span>
             </div>
             
-            <p className="text-gray-600 mb-4 leading-relaxed">{impediment.description}</p>
+            <p className={`mb-4 leading-relaxed ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-600'
+            }`}>{impediment.description}</p>
             
-            <div className="flex items-center gap-6 text-sm text-gray-500">
+            <div className={`flex items-center gap-6 text-sm ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+            }`}>
               <div className="flex items-center gap-1">
                 <User className="h-4 w-4" />
                 <span>{impediment.responsible}</span>
@@ -84,17 +103,25 @@ const ImpedimentCard = ({ impediment, onEdit, onDelete, onStatusChange }) => {
           </div>
           
           <div className="relative">
-            <button className="p-2 hover:bg-gray-100 rounded-lg">
+            <button className={`p-2 rounded-lg ${
+              theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-100'
+            }`}>
               <MoreHorizontal className="h-5 w-5 text-gray-400" />
             </button>
           </div>
         </div>
         
-        <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+        <div className={`flex items-center justify-between mt-4 pt-4 border-t ${
+          theme === 'dark' ? 'border-gray-700' : 'border-gray-100'
+        }`}>
           <div className="flex gap-2">
             <button 
               onClick={() => onEdit(impediment)}
-              className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-blue-600 hover:text-blue-700 hover:bg-blue-50 rounded-md transition-colors"
+              className={`inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                theme === 'dark'
+                  ? 'text-blue-400 hover:text-blue-300 hover:bg-blue-900/30'
+                  : 'text-blue-600 hover:text-blue-700 hover:bg-blue-50'
+              }`}
             >
               <Edit className="h-4 w-4" />
               Editar
@@ -102,7 +129,11 @@ const ImpedimentCard = ({ impediment, onEdit, onDelete, onStatusChange }) => {
             {impediment.status !== 'resolved' && (
               <button 
                 onClick={() => onStatusChange(impediment.id, 'resolved')}
-                className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-green-600 hover:text-green-700 hover:bg-green-50 rounded-md transition-colors"
+                className={`inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md transition-colors ${
+                  theme === 'dark'
+                    ? 'text-green-400 hover:text-green-300 hover:bg-green-900/30'
+                    : 'text-green-600 hover:text-green-700 hover:bg-green-50'
+                }`}
               >
                 <CheckCircle className="h-4 w-4" />
                 Resolver
@@ -111,7 +142,11 @@ const ImpedimentCard = ({ impediment, onEdit, onDelete, onStatusChange }) => {
           </div>
           <button 
             onClick={() => onDelete(impediment.id)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-red-600 hover:text-red-700 hover:bg-red-50 rounded-md transition-colors"
+            className={`inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-md transition-colors ${
+              theme === 'dark'
+                ? 'text-red-400 hover:text-red-300 hover:bg-red-900/30'
+                : 'text-red-600 hover:text-red-700 hover:bg-red-50'
+            }`}
           >
             <Trash2 className="h-4 w-4" />
             Eliminar
@@ -126,6 +161,7 @@ const ImpedimentCard = ({ impediment, onEdit, onDelete, onStatusChange }) => {
 import ImpedimentModal from "./modalScrumMaster/modalImpediments";
 
 const Impediments = () => {
+  const { theme } = useTheme();
   const [impediments, setImpediments] = useState([]);
   const [filteredImpediments, setFilteredImpediments] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -296,7 +332,9 @@ const Impediments = () => {
     return (
       <div className="flex items-center justify-center p-8">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-        <span className="ml-2 text-gray-600">Cargando impedimentos...</span>
+        <span className={`ml-2 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+        }`}>Cargando impedimentos...</span>
       </div>
     );
   }
@@ -307,7 +345,9 @@ const Impediments = () => {
       <div className="flex items-center justify-center p-8">
         <div className="text-center">
           <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <p className="text-gray-600 mb-4">{error}</p>
+          <p className={`mb-4 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>{error}</p>
           <button
             onClick={loadImpediments}
             className="px-4 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700"
@@ -324,13 +364,21 @@ const Impediments = () => {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Gestión de Impedimentos</h1>
-          <p className="text-gray-600">Registra y da seguimiento a los impedimentos del equipo</p>
+          <h1 className={`text-2xl font-bold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>Gestión de Impedimentos</h1>
+          <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+            Registra y da seguimiento a los impedimentos del equipo
+          </p>
         </div>
         <div className="flex gap-3">
           <button
             onClick={handleExportReport}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+              theme === 'dark'
+                ? 'text-gray-300 bg-gray-800 border border-gray-600 hover:bg-gray-700'
+                : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+            }`}
           >
             <Download className="h-4 w-4" />
             Exportar
@@ -347,26 +395,46 @@ const Impediments = () => {
 
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
-          <div className="text-2xl font-bold text-gray-900">{counts.total}</div>
-          <div className="text-sm text-gray-600">Total</div>
+        <div className={`p-4 rounded-lg border ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
+          <div className={`text-2xl font-bold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>{counts.total}</div>
+          <div className={`text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>Total</div>
         </div>
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <div className={`p-4 rounded-lg border ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <div className="text-2xl font-bold text-red-600">{counts.open}</div>
-          <div className="text-sm text-gray-600">Abiertos</div>
+          <div className={`text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>Abiertos</div>
         </div>
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <div className={`p-4 rounded-lg border ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <div className="text-2xl font-bold text-yellow-600">{counts.in_progress}</div>
-          <div className="text-sm text-gray-600">En Progreso</div>
+          <div className={`text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>En Progreso</div>
         </div>
-        <div className="bg-white p-4 rounded-lg border border-gray-200">
+        <div className={`p-4 rounded-lg border ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <div className="text-2xl font-bold text-green-600">{counts.resolved}</div>
-          <div className="text-sm text-gray-600">Resueltos</div>
+          <div className={`text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>Resueltos</div>
         </div>
       </div>
 
       {/* Filters */}
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
+      <div className={`p-4 rounded-lg border ${
+        theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="flex flex-col sm:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -376,7 +444,11 @@ const Impediments = () => {
                 placeholder="Buscar impedimentos..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               />
             </div>
           </div>
@@ -385,7 +457,11 @@ const Impediments = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="all">Todos los estados</option>
               <option value="open">Abiertos</option>
@@ -409,10 +485,18 @@ const Impediments = () => {
             />
           ))
         ) : (
-          <div className="bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay impedimentos</h3>
-            <p className="text-gray-600 mb-4">
+          <div className={`rounded-lg border p-12 text-center ${
+            theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <AlertTriangle className={`h-12 w-12 mx-auto mb-4 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+            <h3 className={`text-lg font-medium mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>No hay impedimentos</h3>
+            <p className={`mb-4 ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               {searchTerm || statusFilter !== 'all' 
                 ? 'No se encontraron impedimentos con los filtros aplicados.'
                 : 'No hay impedimentos registrados en este momento.'

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 import sprintService from '../../services/sprintService';
 // ✅ OPTIMIZADO: Importar hook con caché
 import { useScrumMasterData } from '../../hooks/useScrumMasterData';
@@ -24,7 +25,18 @@ import {
 } from 'lucide-react';
 
 const TeamMemberCard = ({ member, onEdit, onMessage }) => {
+  const { theme } = useTheme();
+  
   const getStatusColor = (status) => {
+    if (theme === 'dark') {
+      const colors = {
+        active: 'bg-success-900/40 text-success-300 border-success-800',
+        busy: 'bg-warning-900/40 text-warning-300 border-warning-800',
+        on_leave: 'bg-primary-900/40 text-primary-300 border-primary-800',
+        inactive: 'bg-error-900/40 text-error-300 border-error-800'
+      };
+      return colors[status] || colors.active;
+    }
     const colors = {
       active: 'bg-success-100 text-success-800 border-success-200',
       busy: 'bg-warning-100 text-warning-800 border-warning-200',
@@ -53,8 +65,14 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
   };
 
   return (
-    <div className="bg-white/80 backdrop-blur-lg rounded-xl border-0 shadow-galaxy hover:shadow-large transition-all duration-300 overflow-hidden relative group">
-      <div className="absolute inset-0 bg-gradient-to-br from-white/50 via-transparent to-primary-50/30 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+    <div className={`backdrop-blur-lg rounded-xl border-0 shadow-galaxy hover:shadow-large transition-all duration-300 overflow-hidden relative group ${
+      theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'
+    }`}>
+      <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+        theme === 'dark' 
+          ? 'from-gray-700/50 via-transparent to-primary-900/30'
+          : 'from-white/50 via-transparent to-primary-50/30'
+      }`}></div>
       <div className="relative z-10 p-6">
         <div className="flex items-start justify-between">
           <div className="flex items-center space-x-4">
@@ -64,11 +82,19 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
               </span>
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-primary-900 group-hover:text-primary-700 transition-colors">
+              <h3 className={`text-lg font-semibold transition-colors ${
+                theme === 'dark' 
+                  ? 'text-white group-hover:text-gray-200'
+                  : 'text-primary-900 group-hover:text-primary-700'
+              }`}>
                 {member.user?.firstName} {member.user?.lastName}
               </h3>
               <div className="flex items-center gap-2">
-                <span className="text-sm text-primary-600 bg-primary-50 px-2 py-1 rounded-full font-medium">{getRoleIcon(member.role)} {member.role.replace('_', ' ')}</span>
+                <span className={`text-sm px-2 py-1 rounded-full font-medium ${
+                  theme === 'dark'
+                    ? 'text-primary-300 bg-primary-900/40'
+                    : 'text-primary-600 bg-primary-50'
+                }`}>{getRoleIcon(member.role)} {member.role.replace('_', ' ')}</span>
                 <span className={`px-2 py-1 rounded-full text-xs font-medium border shadow-soft ${getStatusColor(member.status)}`}>
                   {member.status.replace('_', ' ')}
                 </span>
@@ -77,7 +103,9 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
           </div>
           
           <div className="relative">
-            <button className="p-2 hover:bg-primary-100 rounded-xl transition-all duration-300 hover:scale-110">
+            <button className={`p-2 rounded-xl transition-all duration-300 hover:scale-110 ${
+              theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-primary-100'
+            }`}>
               <MoreHorizontal className="h-5 w-5 text-primary-400" />
             </button>
           </div>
@@ -85,12 +113,16 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
         
         {/* Información de contacto */}
         <div className="mt-4 space-y-2">
-          <div className="flex items-center gap-2 text-sm text-primary-600">
+          <div className={`flex items-center gap-2 text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-primary-600'
+          }`}>
             <Mail className="h-4 w-4" />
             <span>{member.user?.email}</span>
           </div>
           {member.user?.phone && (
-            <div className="flex items-center gap-2 text-sm text-primary-600">
+            <div className={`flex items-center gap-2 text-sm ${
+              theme === 'dark' ? 'text-gray-400' : 'text-primary-600'
+            }`}>
               <Phone className="h-4 w-4" />
               <span>{member.user.phone}</span>
             </div>
@@ -100,12 +132,16 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
         {/* Carga de trabajo */}
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
-            <span className="text-sm font-medium text-primary-700">Carga de trabajo</span>
+            <span className={`text-sm font-medium ${
+              theme === 'dark' ? 'text-gray-300' : 'text-primary-700'
+            }`}>Carga de trabajo</span>
             <span className={`text-sm font-semibold ${getWorkloadColor(member.workloadPercentage)}`}>
               {member.workloadPercentage}%
             </span>
           </div>
-          <div className="w-full bg-primary-100 rounded-full h-2 shadow-inner">
+          <div className={`w-full rounded-full h-2 shadow-inner ${
+            theme === 'dark' ? 'bg-gray-700' : 'bg-primary-100'
+          }`}>
             <div 
               className={`h-2 rounded-full transition-all duration-500 shadow-soft ${
                 member.workloadPercentage > 100 ? 'bg-gradient-to-r from-error-500 to-error-600' :
@@ -114,7 +150,9 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
               style={{ width: `${Math.min(member.workloadPercentage, 100)}%` }}
             />
           </div>
-          <div className="flex justify-between text-xs text-primary-500 mt-1">
+          <div className={`flex justify-between text-xs mt-1 ${
+            theme === 'dark' ? 'text-gray-500' : 'text-primary-500'
+          }`}>
             <span>{member.workload?.currentStoryPoints || 0} SP actuales</span>
             <span>{member.workload?.maxStoryPoints || 0} SP máx</span>
           </div>
@@ -127,12 +165,20 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
         
         {/* Información del Sprint Activo */}
         {member.sprintInfo?.currentSprint && (
-          <div className="mt-4 p-3 bg-orange-50 border border-orange-200 rounded-lg">
+          <div className={`mt-4 p-3 border rounded-lg ${
+            theme === 'dark'
+              ? 'bg-orange-900/30 border-orange-800'
+              : 'bg-orange-50 border-orange-200'
+          }`}>
             <div className="flex items-center gap-2 mb-2">
               <Target className="h-4 w-4 text-orange-600" />
-              <span className="text-sm font-medium text-orange-800">Sprint Activo</span>
+              <span className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-orange-300' : 'text-orange-800'
+              }`}>Sprint Activo</span>
             </div>
-            <div className="text-xs text-orange-700">
+            <div className={`text-xs ${
+              theme === 'dark' ? 'text-orange-400' : 'text-orange-700'
+            }`}>
               <div>{member.sprintInfo.assignedItems} items asignados</div>
               <div>{member.sprintInfo.completedItems} items completados</div>
             </div>
@@ -142,18 +188,28 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
         {/* Habilidades */}
         {member.skills && member.skills.length > 0 && (
           <div className="mt-4">
-            <span className="text-sm font-medium text-primary-700">Habilidades</span>
+            <span className={`text-sm font-medium ${
+              theme === 'dark' ? 'text-gray-300' : 'text-primary-700'
+            }`}>Habilidades</span>
             <div className="flex flex-wrap gap-1 mt-2">
               {member.skills.slice(0, 4).map((skill, index) => (
                 <span 
                   key={index}
-                  className="px-2 py-1 bg-primary-100 text-primary-800 text-xs rounded-md shadow-soft"
+                  className={`px-2 py-1 text-xs rounded-md shadow-soft ${
+                    theme === 'dark'
+                      ? 'bg-primary-900/40 text-primary-300'
+                      : 'bg-primary-100 text-primary-800'
+                  }`}
                 >
                   {skill.name}
                 </span>
               ))}
               {member.skills.length > 4 && (
-                <span className="px-2 py-1 bg-accent-100 text-accent-600 text-xs rounded-md shadow-soft">
+                <span className={`px-2 py-1 text-xs rounded-md shadow-soft ${
+                  theme === 'dark'
+                    ? 'bg-accent-900/40 text-accent-300'
+                    : 'bg-accent-100 text-accent-600'
+                }`}>
                   +{member.skills.length - 4} más
                 </span>
               )}
@@ -163,28 +219,42 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
         
         {/* Disponibilidad */}
         <div className="mt-4">
-          <div className="flex items-center gap-2 text-sm text-primary-600">
+          <div className={`flex items-center gap-2 text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-primary-600'
+          }`}>
             <Activity className="h-4 w-4" />
             <span>Disponibilidad: {member.availability}%</span>
           </div>
-          <div className="flex items-center gap-2 text-sm text-primary-500 mt-1">
+          <div className={`flex items-center gap-2 text-sm mt-1 ${
+            theme === 'dark' ? 'text-gray-500' : 'text-primary-500'
+          }`}>
             <Clock className="h-4 w-4" />
             <span>Última actividad: {new Date(member.lastActiveDate).toLocaleDateString()}</span>
           </div>
         </div>
         
         {/* Acciones */}
-        <div className="flex gap-2 mt-4 pt-4 border-t border-primary-100">
+        <div className={`flex gap-2 mt-4 pt-4 border-t ${
+          theme === 'dark' ? 'border-gray-700' : 'border-primary-100'
+        }`}>
           <button 
             onClick={() => onEdit(member)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-primary-600 hover:text-primary-700 hover:bg-primary-50 rounded-xl transition-all duration-300 font-medium shadow-soft hover:shadow-medium"
+            className={`inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-xl transition-all duration-300 font-medium shadow-soft hover:shadow-medium ${
+              theme === 'dark'
+                ? 'text-primary-400 hover:text-primary-300 hover:bg-primary-900/30'
+                : 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
+            }`}
           >
             <Edit className="h-4 w-4" />
             Editar
           </button>
           <button 
             onClick={() => onMessage(member)}
-            className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-accent-600 hover:text-accent-700 hover:bg-accent-50 rounded-xl transition-all duration-300 font-medium shadow-soft hover:shadow-medium"
+            className={`inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-xl transition-all duration-300 font-medium shadow-soft hover:shadow-medium ${
+              theme === 'dark'
+                ? 'text-accent-400 hover:text-accent-300 hover:bg-accent-900/30'
+                : 'text-accent-600 hover:text-accent-700 hover:bg-accent-50'
+            }`}
           >
             <MessageSquare className="h-4 w-4" />
             Mensaje
@@ -196,6 +266,7 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
 };
 
 const TeamOverview = () => {
+  const { theme } = useTheme();
   const { getToken } = useAuth();
   
   // ✅ OPTIMIZADO: Usar hook con caché
@@ -352,14 +423,22 @@ const TeamOverview = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-primary-900">Resumen del Equipo</h1>
-          <p className="text-primary-600">Gestiona y supervisa el estado del equipo de desarrollo</p>
+          <h1 className={`text-2xl font-bold ${
+            theme === 'dark' ? 'text-white' : 'text-primary-900'
+          }`}>Resumen del Equipo</h1>
+          <p className={theme === 'dark' ? 'text-gray-400' : 'text-primary-600'}>
+            Gestiona y supervisa el estado del equipo de desarrollo
+          </p>
         </div>
         <div className="flex gap-2">
           <button 
             onClick={handleRefresh}
             disabled={loading}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-700 bg-white border border-primary-300 rounded-xl hover:bg-primary-50 transition-all duration-300 disabled:opacity-50 shadow-soft hover:shadow-medium"
+            className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-xl transition-all duration-300 disabled:opacity-50 shadow-soft hover:shadow-medium ${
+              theme === 'dark'
+                ? 'text-gray-300 bg-gray-800 border border-gray-600 hover:bg-gray-700'
+                : 'text-primary-700 bg-white border border-primary-300 hover:bg-primary-50'
+            }`}
           >
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Actualizar
@@ -376,7 +455,11 @@ const TeamOverview = () => {
 
       {/* Mensaje de información */}
       {error && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+        <div className={`border rounded-lg p-4 ${
+          theme === 'dark'
+            ? 'bg-blue-900/30 border-blue-800'
+            : 'bg-blue-50 border-blue-200'
+        }`}>
           <div className="flex items-start">
             <div className="flex-shrink-0">
               <svg className="h-5 w-5 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
@@ -384,8 +467,12 @@ const TeamOverview = () => {
               </svg>
             </div>
             <div className="ml-3">
-              <h3 className="text-sm font-medium text-blue-800">Modo Demostración</h3>
-              <p className="text-sm text-blue-700 mt-1">{error}</p>
+              <h3 className={`text-sm font-medium ${
+                theme === 'dark' ? 'text-blue-300' : 'text-blue-800'
+              }`}>Modo Demostración</h3>
+              <p className={`text-sm mt-1 ${
+                theme === 'dark' ? 'text-blue-400' : 'text-blue-700'
+              }`}>{error}</p>
             </div>
           </div>
         </div>
@@ -404,11 +491,17 @@ const TeamOverview = () => {
           };
           
           return (
-            <div key={index} className="bg-white p-6 rounded-lg border border-gray-200">
+            <div key={index} className={`p-6 rounded-lg border ${
+              theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">{stat.title}</p>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className={`text-sm font-medium ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>{stat.title}</p>
+                  <p className={`text-2xl font-bold ${
+                    theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  }`}>{stat.value}</p>
                 </div>
                 <div className={`p-3 rounded-lg ${colorClasses[stat.color]}`}>
                   <Icon className="h-6 w-6" />
@@ -419,7 +512,9 @@ const TeamOverview = () => {
         })}
       </div>
 
-      <div className="bg-white p-4 rounded-lg border border-gray-200">
+      <div className={`p-4 rounded-lg border ${
+        theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="flex-1">
             <div className="relative">
@@ -429,7 +524,11 @@ const TeamOverview = () => {
                 placeholder="Buscar miembros del equipo..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className={`w-full pl-10 pr-4 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               />
             </div>
           </div>
@@ -440,7 +539,11 @@ const TeamOverview = () => {
               <select
                 value={statusFilter}
                 onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 border-gray-600 text-white'
+                    : 'bg-white border-gray-300 text-gray-900'
+                }`}
               >
                 <option value="all">Todos los estados</option>
                 <option value="active">Activo</option>
@@ -453,7 +556,11 @@ const TeamOverview = () => {
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+              className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                theme === 'dark'
+                  ? 'bg-gray-700 border-gray-600 text-white'
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="all">Todos los roles</option>
               <option value="scrum_master">Scrum Master</option>
@@ -478,10 +585,18 @@ const TeamOverview = () => {
             />
           ))
         ) : (
-          <div className="col-span-full bg-white rounded-lg border border-gray-200 p-12 text-center">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay miembros del equipo</h3>
-            <p className="text-gray-600 mb-4">
+          <div className={`col-span-full rounded-lg border p-12 text-center ${
+            theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+          }`}>
+            <Users className={`h-12 w-12 mx-auto mb-4 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+            <h3 className={`text-lg font-medium mb-2 ${
+              theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>No hay miembros del equipo</h3>
+            <p className={`mb-4 ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               {searchTerm || statusFilter !== 'all' || roleFilter !== 'all' 
                 ? 'No se encontraron miembros con los filtros aplicados.'
                 : 'No hay miembros del equipo registrados en este momento.'

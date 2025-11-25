@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   Target, 
   Bug, 
@@ -22,7 +23,7 @@ import AssignUserToTechnicalItemModal from './AssignUserToTechnicalItemModal';
 import ModalBacklogItemSM from './modalsSM/ModalBacklogItemSM';
 
 // Componente para mostrar items técnicos sin asignar
-const UnassignedTechnicalItems = ({ items, onAssignUser, onViewDetails }) => {
+const UnassignedTechnicalItems = ({ items, onAssignUser, onViewDetails, theme }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const getItemIcon = (type) => {
@@ -66,8 +67,12 @@ const UnassignedTechnicalItems = ({ items, onAssignUser, onViewDetails }) => {
   if (items.length === 0) return null;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
-      <div className="p-4 border-b border-gray-100">
+    <div className={`border rounded-lg shadow-sm ${
+      theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+    }`}>
+      <div className={`p-4 border-b ${
+        theme === 'dark' ? 'border-gray-700' : 'border-gray-100'
+      }`}>
         <button
           onClick={() => setIsExpanded(!isExpanded)}
           className="flex items-center gap-3 w-full text-left group"
@@ -76,7 +81,9 @@ const UnassignedTechnicalItems = ({ items, onAssignUser, onViewDetails }) => {
             <ChevronDown className="h-5 w-5 text-gray-500 group-hover:text-gray-700" /> :
             <ChevronRight className="h-5 w-5 text-gray-500 group-hover:text-gray-700" />
           }
-          <h3 className="text-lg font-semibold text-gray-900">
+          <h3 className={`text-lg font-semibold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             Items Técnicos Sin Asignar
           </h3>
           <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-sm font-medium">
@@ -94,7 +101,9 @@ const UnassignedTechnicalItems = ({ items, onAssignUser, onViewDetails }) => {
       {isExpanded && (
         <div className="p-4 space-y-3">
           {items.map(item => (
-            <div key={item._id} className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+            <div key={item._id} className={`border rounded-lg p-4 ${
+              theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
+            }`}>
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-3 flex-1">
                   <div className={`p-2 rounded-lg ${getItemColor(item.tipo)}`}>
@@ -103,7 +112,9 @@ const UnassignedTechnicalItems = ({ items, onAssignUser, onViewDetails }) => {
                   
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="font-medium text-gray-900 truncate">
+                      <span className={`font-medium truncate ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>
                         {item.titulo}
                       </span>
                       <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(item.estado)}`}>
@@ -164,6 +175,7 @@ const UnassignedTechnicalItems = ({ items, onAssignUser, onViewDetails }) => {
 // Componente principal para mostrar historias con items técnicos
 const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   const [hierarchicalData, setHierarchicalData] = useState({
     historias: [],
     items_sin_historia: [],
@@ -462,22 +474,42 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
   const stats = getSummaryStats();
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+    <div className={`rounded-xl border shadow-sm ${
+      theme === 'dark'
+        ? 'bg-gray-800 border-gray-700'
+        : 'bg-white border-gray-200'
+    }`}>
       {/* Header */}
-      <div className="p-6 border-b border-gray-200">
+      <div className={`p-6 border-b ${
+        theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+      }`}>
         <div className="flex items-center justify-between">
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className="flex items-center gap-3 text-left group"
           >
             {isExpanded ? 
-              <ChevronDown className="h-5 w-5 text-gray-500 group-hover:text-gray-700" /> :
-              <ChevronRight className="h-5 w-5 text-gray-500 group-hover:text-gray-700" />
+              <ChevronDown className={`h-5 w-5 ${
+                theme === 'dark'
+                  ? 'text-gray-400 group-hover:text-gray-300'
+                  : 'text-gray-500 group-hover:text-gray-700'
+              }`} /> :
+              <ChevronRight className={`h-5 w-5 ${
+                theme === 'dark'
+                  ? 'text-gray-400 group-hover:text-gray-300'
+                  : 'text-gray-500 group-hover:text-gray-700'
+              }`} />
             }
-            <h3 className="text-xl font-semibold text-gray-900">
+            <h3 className={`text-xl font-semibold ${
+              theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
               Historias y Items Técnicos del Sprint
             </h3>
-            <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">
+            <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+              theme === 'dark'
+                ? 'bg-blue-900/30 text-blue-400'
+                : 'bg-blue-100 text-blue-800'
+            }`}>
               {stats.totalHistorias} historias
             </span>
           </button>
@@ -488,8 +520,12 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
               disabled={loading}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
                 loading 
-                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                  : 'hover:bg-green-50 border-green-200 text-green-700'
+                  ? theme === 'dark'
+                    ? 'bg-gray-700 text-gray-500 border-gray-600 cursor-not-allowed'
+                    : 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
+                  : theme === 'dark'
+                    ? 'border-green-700 text-green-400 hover:bg-green-900/20'
+                    : 'hover:bg-green-50 border-green-200 text-green-700'
               }`}
               title="Actualizar datos del sprint"
             >
@@ -506,7 +542,11 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
             
             <button
               onClick={handleCreateTechnicalItem}
-              className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                theme === 'dark'
+                  ? 'bg-orange-600 text-white hover:bg-orange-700'
+                  : 'bg-orange-600 text-white hover:bg-orange-700'
+              }`}
               title="Crear nuevo item técnico para este sprint"
             >
               <Plus className="h-4 w-4" />
@@ -516,7 +556,13 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
             <button
               onClick={() => setShowFilters(!showFilters)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
-                showFilters ? 'bg-blue-50 border-blue-200 text-blue-700' : 'hover:bg-gray-50'
+                showFilters 
+                  ? theme === 'dark'
+                    ? 'bg-blue-900/30 border-blue-700 text-blue-400'
+                    : 'bg-blue-50 border-blue-200 text-blue-700'
+                  : theme === 'dark'
+                    ? 'border-gray-700 hover:bg-gray-700'
+                    : 'border-gray-200 hover:bg-gray-50'
               }`}
             >
               <Filter className="h-4 w-4" />
@@ -527,7 +573,9 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
 
         {/* Stats resumidas */}
         {isExpanded && (
-          <div className="flex items-center gap-6 mt-4 text-sm text-gray-600">
+          <div className={`flex items-center gap-6 mt-4 text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             <div className="flex items-center gap-2">
               <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
               <span>Historias: {stats.totalHistorias}</span>
@@ -558,17 +606,27 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
         <>
           {/* Filtros */}
           {showFilters && (
-            <div className="p-6 bg-gray-50 border-b border-gray-200">
+            <div className={`p-6 border-b ${
+              theme === 'dark'
+                ? 'bg-gray-900 border-gray-700'
+                : 'bg-gray-50 border-gray-200'
+            }`}>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Filtro por producto */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Producto
                   </label>
                   <select
                     value={filters.producto}
                     onChange={(e) => handleFilterChange('producto', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                      theme === 'dark'
+                        ? 'bg-gray-800 border-gray-600 text-white'
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   >
                     <option value="todos">Todos los productos</option>
                     {products.map(product => (
@@ -581,13 +639,19 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
 
                 {/* Filtro por estado */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Estado
                   </label>
                   <select
                     value={filters.estado}
                     onChange={(e) => handleFilterChange('estado', e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                    className={`w-full p-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                      theme === 'dark'
+                        ? 'bg-gray-800 border-gray-600 text-white'
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   >
                     <option value="todos">Todos los estados</option>
                     <option value="pendiente">Pendiente</option>
@@ -599,17 +663,25 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
 
                 {/* Búsqueda */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className={`block text-sm font-medium mb-2 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Búsqueda
                   </label>
                   <div className="relative">
-                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                    <Search className={`absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 ${
+                      theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                    }`} />
                     <input
                       type="text"
                       value={filters.search}
                       onChange={(e) => handleFilterChange('search', e.target.value)}
                       placeholder="Buscar historias..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                      className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 ${
+                        theme === 'dark'
+                          ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-500'
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'
+                      }`}
                     />
                   </div>
                 </div>
@@ -626,8 +698,12 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
             ) : error ? (
               <div className="text-center py-12">
                 <AlertTriangle className="h-12 w-12 text-red-400 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 mb-2">Error al cargar datos</h4>
-                <p className="text-gray-500 mb-4">{error}</p>
+                <h4 className={`text-lg font-medium mb-2 ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>Error al cargar datos</h4>
+                <p className={`mb-4 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                }`}>{error}</p>
                 <button
                   onClick={fetchHierarchicalData}
                   className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700"
@@ -637,11 +713,17 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
               </div>
             ) : filteredHistorias.length === 0 && filteredUnassigned.length === 0 ? (
               <div className="text-center py-12">
-                <Target className="h-12 w-12 text-gray-300 mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-400 mb-2">
+                <Target className={`h-12 w-12 mx-auto mb-4 ${
+                  theme === 'dark' ? 'text-gray-600' : 'text-gray-300'
+                }`} />
+                <h4 className={`text-lg font-medium mb-2 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-400'
+                }`}>
                   No hay historias ni items técnicos
                 </h4>
-                <p className="text-sm text-gray-500">
+                <p className={`text-sm ${
+                  theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                }`}>
                   {(hierarchicalData?.historias?.length || 0) === 0 
                     ? 'Este sprint no tiene historias asignadas aún.'
                     : 'No hay items que coincidan con los filtros seleccionados.'
@@ -657,6 +739,7 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
                     storyData={storyData}
                     onViewDetails={handleViewDetails}
                     onAssignUser={handleAssignUserToItem}
+                    theme={theme}
                   />
                 ))}
 
@@ -666,6 +749,7 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
                     items={filteredUnassigned}
                     onAssignUser={handleAssignUserToItem}
                     onViewDetails={handleViewDetails}
+                    theme={theme}
                   />
                 )}
               </div>

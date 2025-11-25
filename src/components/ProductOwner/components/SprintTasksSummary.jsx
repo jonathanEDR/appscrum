@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useTheme } from '../../../context/ThemeContext';
 import { 
   ChevronDown, 
   ChevronRight, 
@@ -41,6 +42,7 @@ const SprintTasksSummary = ({
   },
   compact = false 
 }) => {
+  const { theme } = useTheme();
   const [isExpanded, setIsExpanded] = useState(false);
   const [selectedStatus, setSelectedStatus] = useState('all'); // 'all', 'todo', 'in_progress', etc.
 
@@ -49,35 +51,45 @@ const SprintTasksSummary = ({
     todo: {
       label: 'Por Hacer',
       icon: Clock,
-      color: 'bg-gray-100 text-gray-700 border-gray-300',
+      color: theme === 'dark' 
+        ? 'bg-gray-800/50 text-gray-300 border-gray-600' 
+        : 'bg-gray-100 text-gray-700 border-gray-300',
       badgeColor: 'bg-gray-500',
       tasks: tasksByStatus.todo || []
     },
     in_progress: {
       label: 'En Progreso',
       icon: Zap,
-      color: 'bg-blue-100 text-blue-700 border-blue-300',
+      color: theme === 'dark' 
+        ? 'bg-blue-800/50 text-blue-300 border-blue-600' 
+        : 'bg-blue-100 text-blue-700 border-blue-300',
       badgeColor: 'bg-blue-500',
       tasks: tasksByStatus.in_progress || []
     },
     code_review: {
       label: 'Code Review',
       icon: Filter,
-      color: 'bg-purple-100 text-purple-700 border-purple-300',
+      color: theme === 'dark' 
+        ? 'bg-purple-800/50 text-purple-300 border-purple-600' 
+        : 'bg-purple-100 text-purple-700 border-purple-300',
       badgeColor: 'bg-purple-500',
       tasks: tasksByStatus.code_review || []
     },
     testing: {
       label: 'Testing',
       icon: Target,
-      color: 'bg-yellow-100 text-yellow-700 border-yellow-300',
+      color: theme === 'dark' 
+        ? 'bg-yellow-800/50 text-yellow-300 border-yellow-600' 
+        : 'bg-yellow-100 text-yellow-700 border-yellow-300',
       badgeColor: 'bg-yellow-500',
       tasks: tasksByStatus.testing || []
     },
     done: {
       label: 'Completado',
       icon: CheckCircle,
-      color: 'bg-green-100 text-green-700 border-green-300',
+      color: theme === 'dark' 
+        ? 'bg-green-800/50 text-green-300 border-green-600' 
+        : 'bg-green-100 text-green-700 border-green-300',
       badgeColor: 'bg-green-500',
       tasks: tasksByStatus.done || []
     }
@@ -88,13 +100,23 @@ const SprintTasksSummary = ({
 
   // Obtener prioridad color
   const getPriorityColor = (priority) => {
-    const colors = {
-      critical: 'bg-red-100 text-red-800 border-red-300',
-      high: 'bg-orange-100 text-orange-800 border-orange-300',
-      medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
-      low: 'bg-green-100 text-green-800 border-green-300'
-    };
-    return colors[priority] || colors.medium;
+    if (theme === 'dark') {
+      const colors = {
+        critical: 'bg-red-900/30 text-red-400 border-red-800',
+        high: 'bg-orange-900/30 text-orange-400 border-orange-800',
+        medium: 'bg-yellow-900/30 text-yellow-400 border-yellow-800',
+        low: 'bg-green-900/30 text-green-400 border-green-800'
+      };
+      return colors[priority] || colors.medium;
+    } else {
+      const colors = {
+        critical: 'bg-red-100 text-red-800 border-red-300',
+        high: 'bg-orange-100 text-orange-800 border-orange-300',
+        medium: 'bg-yellow-100 text-yellow-800 border-yellow-300',
+        low: 'bg-green-100 text-green-800 border-green-300'
+      };
+      return colors[priority] || colors.medium;
+    }
   };
 
   // Formatear nombre de assignee
@@ -109,8 +131,12 @@ const SprintTasksSummary = ({
   // Si no hay tareas, mostrar mensaje
   if (totalTasks === 0) {
     return (
-      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-        <div className="flex items-center gap-2 text-gray-500 text-sm">
+      <div className={`rounded-lg p-3 border ${
+        theme === 'dark' 
+          ? 'bg-gray-800 border-gray-600 text-gray-400' 
+          : 'bg-gray-50 border-gray-200 text-gray-500'
+      }`}>
+        <div className="flex items-center gap-2 text-sm">
           <AlertCircle size={16} />
           <span>No hay tareas asignadas a este sprint</span>
         </div>
@@ -156,16 +182,33 @@ const SprintTasksSummary = ({
 
   // Vista expandible con detalle
   return (
-    <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+    <div className={`rounded-lg border shadow-sm overflow-hidden ${
+      theme === 'dark' 
+        ? 'bg-gray-800 border-gray-700' 
+        : 'bg-white border-gray-200'
+    }`}>
       {/* Header colapsable */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="w-full px-4 py-3 bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100 transition-colors flex items-center justify-between"
+        className={`w-full px-4 py-3 transition-colors flex items-center justify-between ${
+          theme === 'dark' 
+            ? 'bg-gradient-to-r from-indigo-900/30 to-blue-900/30 hover:from-indigo-900/50 hover:to-blue-900/50' 
+            : 'bg-gradient-to-r from-indigo-50 to-blue-50 hover:from-indigo-100 hover:to-blue-100'
+        }`}
       >
         <div className="flex items-center gap-3">
-          {isExpanded ? <ChevronDown size={18} className="text-gray-600" /> : <ChevronRight size={18} className="text-gray-600" />}
-          <span className="font-medium text-gray-900">📋 Tareas del Sprint</span>
-          <span className="px-2 py-1 bg-indigo-100 text-indigo-700 rounded-full text-xs font-medium">
+          {isExpanded ? 
+            <ChevronDown size={18} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} /> : 
+            <ChevronRight size={18} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} />
+          }
+          <span className={`font-medium ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>📋 Tareas del Sprint</span>
+          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+            theme === 'dark' 
+              ? 'bg-indigo-900/50 text-indigo-300' 
+              : 'bg-indigo-100 text-indigo-700'
+          }`}>
             {totalTasks} tarea{totalTasks !== 1 ? 's' : ''}
           </span>
         </div>
@@ -193,8 +236,14 @@ const SprintTasksSummary = ({
       {isExpanded && (
         <div className="p-4 space-y-4">
           {/* Barra de progreso */}
-          <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
-            <div className="flex justify-between text-sm text-gray-700 mb-2">
+          <div className={`rounded-lg p-3 border ${
+            theme === 'dark' 
+              ? 'bg-gray-900/50 border-gray-600' 
+              : 'bg-gray-50 border-gray-200'
+          }`}>
+            <div className={`flex justify-between text-sm mb-2 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               <span className="font-medium">Progreso del Sprint</span>
               <span className="font-bold">{metrics.progress}%</span>
             </div>
@@ -264,8 +313,13 @@ const SprintTasksSummary = ({
                     {/* Header de estado (solo si 'all' está seleccionado) */}
                     {selectedStatus === 'all' && (
                       <div className="flex items-center gap-2 mt-3 mb-2">
-                        {React.createElement(config.icon, { size: 16, className: 'text-gray-600' })}
-                        <span className="text-sm font-semibold text-gray-700">{config.label}</span>
+                        {React.createElement(config.icon, { 
+                          size: 16, 
+                          className: theme === 'dark' ? 'text-gray-400' : 'text-gray-600' 
+                        })}
+                        <span className={`text-sm font-semibold ${
+                          theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                        }`}>{config.label}</span>
                         <div className={`w-px h-4 ${config.badgeColor}`}></div>
                       </div>
                     )}
@@ -278,13 +332,17 @@ const SprintTasksSummary = ({
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="flex-1 min-w-0">
-                            <h4 className="text-sm font-medium text-gray-900 truncate">
+                            <h4 className={`text-sm font-medium truncate ${
+                              theme === 'dark' ? 'text-white' : 'text-gray-900'
+                            }`}>
                               {task.title}
                             </h4>
                             
                             <div className="flex items-center gap-3 mt-2 flex-wrap">
                               {/* Assignee */}
-                              <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <div className={`flex items-center gap-1 text-xs ${
+                                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                              }`}>
                                 <Users size={12} />
                                 <span className="truncate max-w-32">
                                   {formatAssigneeName(task.assignee)}
@@ -292,14 +350,20 @@ const SprintTasksSummary = ({
                               </div>
                               
                               {/* Story Points */}
-                              <div className="flex items-center gap-1 text-xs text-gray-600">
+                              <div className={`flex items-center gap-1 text-xs ${
+                                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                              }`}>
                                 <Target size={12} />
                                 <span>{task.storyPoints || 0} pts</span>
                               </div>
                               
                               {/* Tipo de tarea */}
                               {task.isBacklogItem && (
-                                <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                                <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                                  theme === 'dark' 
+                                    ? 'bg-blue-800/50 text-blue-300' 
+                                    : 'bg-blue-100 text-blue-700'
+                                }`}>
                                   {task.type || 'tarea'}
                                 </span>
                               )}

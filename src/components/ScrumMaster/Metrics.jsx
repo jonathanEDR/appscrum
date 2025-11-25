@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTheme } from '../../context/ThemeContext';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -14,12 +15,14 @@ import {
 } from 'lucide-react';
 
 const MetricCard = ({ title, value, subtitle, icon: Icon, color = 'blue', trend }) => {
+  const { theme } = useTheme();
+  
   const colorClasses = {
-    blue: 'bg-blue-100 text-blue-600',
-    green: 'bg-green-100 text-green-600',
-    red: 'bg-red-100 text-red-600',
-    yellow: 'bg-yellow-100 text-yellow-600',
-    purple: 'bg-purple-100 text-purple-600'
+    blue: theme === 'dark' ? 'bg-blue-900/30 text-blue-400' : 'bg-blue-100 text-blue-600',
+    green: theme === 'dark' ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-600',
+    red: theme === 'dark' ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600',
+    yellow: theme === 'dark' ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-100 text-yellow-600',
+    purple: theme === 'dark' ? 'bg-purple-900/30 text-purple-400' : 'bg-purple-100 text-purple-600'
   };
 
   const getTrendIcon = () => {
@@ -29,15 +32,23 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color = 'blue', trend 
   };
 
   return (
-    <div className="bg-white p-6 rounded-lg border border-gray-200">
+    <div className={`p-6 rounded-lg border ${
+      theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+    }`}>
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="flex items-center justify-between">
-            <p className="text-sm font-medium text-gray-600">{title}</p>
+            <p className={`text-sm font-medium ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>{title}</p>
             {trend && getTrendIcon()}
           </div>
-          <p className="text-2xl font-bold text-gray-900 mt-1">{value}</p>
-          {subtitle && <p className="text-sm text-gray-500 mt-1">{subtitle}</p>}
+          <p className={`text-2xl font-bold mt-1 ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>{value}</p>
+          {subtitle && <p className={`text-sm mt-1 ${
+            theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+          }`}>{subtitle}</p>}
         </div>
         <div className={`p-3 rounded-lg ${colorClasses[color]}`}>
           <Icon className="h-6 w-6" />
@@ -48,9 +59,13 @@ const MetricCard = ({ title, value, subtitle, icon: Icon, color = 'blue', trend 
 };
 
 const VelocityChart = ({ data = [] }) => {
+  const { theme } = useTheme();
+  
   if (!data.length) {
     return (
-      <div className="h-64 flex items-center justify-center text-gray-500">
+      <div className={`h-64 flex items-center justify-center ${
+        theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+      }`}>
         No hay datos de velocidad disponibles
       </div>
     );
@@ -82,9 +97,13 @@ const VelocityChart = ({ data = [] }) => {
               />
             </div>
           </div>
-          <div className="text-xs text-center text-gray-600 mt-2">
+          <div className={`text-xs text-center mt-2 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             <div className="font-medium">{sprint.sprintName || `Sprint ${index + 1}`}</div>
-            <div className="text-gray-500">{sprint.storyPoints || 0} SP</div>
+            <div className={theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}>
+              {sprint.storyPoints || 0} SP
+            </div>
           </div>
         </div>
       ))}
@@ -93,6 +112,7 @@ const VelocityChart = ({ data = [] }) => {
 };
 
 const Metrics = () => {
+  const { theme } = useTheme();
   const [metricsData, setMetricsData] = useState({});
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
@@ -134,24 +154,38 @@ const Metrics = () => {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Métricas del Proyecto</h1>
-          <p className="text-gray-600">Visualiza el rendimiento y progreso del equipo</p>
+          <h1 className={`text-2xl font-bold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>Métricas del Proyecto</h1>
+          <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
+            Visualiza el rendimiento y progreso del equipo
+          </p>
         </div>
         
         <div className="flex gap-2">
-          <select className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500">
+          <select className={`px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 ${
+            theme === 'dark'
+              ? 'bg-gray-800 border-gray-600 text-white'
+              : 'bg-white border-gray-300 text-gray-900'
+          }`}>
             <option value="30">Últimos 30 días</option>
             <option value="60">Últimos 60 días</option>
             <option value="90">Últimos 90 días</option>
           </select>
-          <button className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
+          <button className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-md transition-colors ${
+            theme === 'dark'
+              ? 'text-gray-300 bg-gray-800 border border-gray-600 hover:bg-gray-700'
+              : 'text-gray-700 bg-white border border-gray-300 hover:bg-gray-50'
+          }`}>
             <Download className="h-4 w-4" />
             Exportar
           </button>
         </div>
       </div>
 
-      <div className="border-b border-gray-200">
+      <div className={`border-b ${
+        theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+      }`}>
         <nav className="-mb-px flex space-x-8">
           {[
             { id: 'overview', name: 'Vista General', icon: BarChart3 },
@@ -166,7 +200,9 @@ const Metrics = () => {
                 className={`group inline-flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm transition-colors ${
                   activeTab === tab.id
                     ? 'border-orange-500 text-orange-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                    : theme === 'dark'
+                      ? 'border-transparent text-gray-400 hover:text-gray-200 hover:border-gray-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                 }`}
               >
                 <Icon className="h-4 w-4" />
@@ -227,13 +263,23 @@ const Metrics = () => {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Velocidad del Equipo</h3>
+            <div className={`p-6 rounded-lg border ${
+              theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
+              <h3 className={`text-lg font-semibold mb-4 ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Velocidad del Equipo</h3>
               <VelocityChart data={mockVelocityData} />
             </div>
-            <div className="bg-white p-6 rounded-lg border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900 mb-4">Burndown Chart</h3>
-              <div className="h-64 flex items-center justify-center text-gray-500">
+            <div className={`p-6 rounded-lg border ${
+              theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
+              <h3 className={`text-lg font-semibold mb-4 ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Burndown Chart</h3>
+              <div className={`h-64 flex items-center justify-center ${
+                theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+              }`}>
                 Gráfica de burndown en desarrollo...
               </div>
             </div>
@@ -242,19 +288,31 @@ const Metrics = () => {
       )}
 
       {activeTab === 'velocity' && (
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Análisis de Velocidad</h3>
+        <div className={`p-6 rounded-lg border ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
+          <h3 className={`text-lg font-semibold mb-4 ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>Análisis de Velocidad</h3>
           <VelocityChart data={mockVelocityData} />
-          <div className="mt-6 text-center text-gray-500">
+          <div className={`mt-6 text-center ${
+            theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+          }`}>
             Análisis detallado de velocidad en desarrollo...
           </div>
         </div>
       )}
 
       {activeTab === 'quality' && (
-        <div className="bg-white p-6 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Métricas de Calidad</h3>
-          <div className="text-center text-gray-500 py-8">
+        <div className={`p-6 rounded-lg border ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
+          <h3 className={`text-lg font-semibold mb-4 ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>Métricas de Calidad</h3>
+          <div className={`text-center py-8 ${
+            theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+          }`}>
             Gráficas de calidad en desarrollo...
           </div>
         </div>

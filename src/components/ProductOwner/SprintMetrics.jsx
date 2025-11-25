@@ -1,7 +1,9 @@
 import React from 'react';
 import { Activity } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 
 const SprintMetrics = ({ sprint, className = '', onShowBurndown }) => {
+  const { theme } = useTheme();
   // Función para calcular burndown
   const calculateBurndown = (sprint) => {
     if (!sprint?.metricas?.burndown_data || sprint.metricas.burndown_data.length === 0) {
@@ -54,12 +56,22 @@ const SprintMetrics = ({ sprint, className = '', onShowBurndown }) => {
 
   // Función para obtener color basado en prioridad
   const getPriorityColor = (prioridad) => {
-    switch (prioridad) {
-      case 'critica': return 'bg-red-100 text-red-800 border-red-200';
-      case 'alta': return 'bg-orange-100 text-orange-800 border-orange-200';
-      case 'media': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'baja': return 'bg-green-100 text-green-800 border-green-200';
-      default: return 'bg-gray-100 text-gray-800 border-gray-200';
+    if (theme === 'dark') {
+      switch (prioridad) {
+        case 'critica': return 'bg-red-900/30 text-red-400 border-red-800';
+        case 'alta': return 'bg-orange-900/30 text-orange-400 border-orange-800';
+        case 'media': return 'bg-yellow-900/30 text-yellow-400 border-yellow-800';
+        case 'baja': return 'bg-green-900/30 text-green-400 border-green-800';
+        default: return 'bg-gray-900/30 text-gray-400 border-gray-800';
+      }
+    } else {
+      switch (prioridad) {
+        case 'critica': return 'bg-red-100 text-red-800 border-red-200';
+        case 'alta': return 'bg-orange-100 text-orange-800 border-orange-200';
+        case 'media': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        case 'baja': return 'bg-green-100 text-green-800 border-green-200';
+        default: return 'bg-gray-100 text-gray-800 border-gray-200';
+      }
     }
   };
 
@@ -76,37 +88,63 @@ const SprintMetrics = ({ sprint, className = '', onShowBurndown }) => {
 
   // Función para obtener color de estado
   const getEstadoColor = (estado) => {
-    switch (estado) {
-      case 'completado': return 'bg-green-100 text-green-800';
-      case 'activo': return 'bg-blue-100 text-blue-800';
-      case 'planificado': return 'bg-yellow-100 text-yellow-800';
-      case 'cancelado': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+    if (theme === 'dark') {
+      switch (estado) {
+        case 'completado': return 'bg-green-900/30 text-green-400';
+        case 'activo': return 'bg-blue-900/30 text-blue-400';
+        case 'planificado': return 'bg-yellow-900/30 text-yellow-400';
+        case 'cancelado': return 'bg-red-900/30 text-red-400';
+        default: return 'bg-gray-900/30 text-gray-400';
+      }
+    } else {
+      switch (estado) {
+        case 'completado': return 'bg-green-100 text-green-800';
+        case 'activo': return 'bg-blue-100 text-blue-800';
+        case 'planificado': return 'bg-yellow-100 text-yellow-800';
+        case 'cancelado': return 'bg-red-100 text-red-800';
+        default: return 'bg-gray-100 text-gray-800';
+      }
     }
   };
 
   if (!sprint) {
     return (
-      <div className={`sprint-metrics p-4 bg-gray-50 rounded-lg ${className}`}>
-        <p className="text-gray-500 text-center">No hay datos de sprint disponibles</p>
+      <div className={`sprint-metrics p-4 rounded-lg ${
+        theme === 'dark' ? 'bg-gray-800' : 'bg-gray-50'
+      } ${className}`}>
+        <p className={`text-center ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+        }`}>No hay datos de sprint disponibles</p>
       </div>
     );
   }
 
   return (
-    <div className={`sprint-metrics bg-white border rounded-lg p-4 shadow-sm ${className}`}>
+    <div className={`sprint-metrics border rounded-lg p-4 shadow-sm ${
+      theme === 'dark' 
+        ? 'bg-gray-800 border-gray-700' 
+        : 'bg-white border-gray-200'
+    } ${className}`}>
       {/* Header con nombre y estado */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h4 className="font-semibold text-gray-900">{sprint.nombre}</h4>
-          <p className="text-sm text-gray-600">{sprint.objetivo}</p>
+          <h4 className={`font-semibold ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>{sprint.nombre}</h4>
+          <p className={`text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>{sprint.objetivo}</p>
         </div>
         <div className="flex items-center gap-2">
           {/* Botón de Burndown */}
           {onShowBurndown && (
             <button
               onClick={() => onShowBurndown(sprint._id)}
-              className="p-2 text-purple-600 hover:text-purple-700 hover:bg-purple-50 rounded-lg transition-colors"
+              className={`p-2 rounded-lg transition-colors ${
+                theme === 'dark'
+                  ? 'text-purple-400 hover:text-purple-300 hover:bg-purple-900/20'
+                  : 'text-purple-600 hover:text-purple-700 hover:bg-purple-50'
+              }`}
               title="Ver Burndown Chart"
             >
               <Activity size={18} />
@@ -127,7 +165,9 @@ const SprintMetrics = ({ sprint, className = '', onShowBurndown }) => {
           <div className="text-2xl font-bold text-blue-600">
             {velocityTrend.current}
           </div>
-          <div className="text-xs text-gray-500 flex items-center justify-center">
+          <div className={`text-xs flex items-center justify-center ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+          }`}>
             Velocity
             {velocityTrend.trend === 'up' && <span className="ml-1 text-green-500">↗️</span>}
             {velocityTrend.trend === 'down' && <span className="ml-1 text-red-500">↘️</span>}
@@ -139,14 +179,18 @@ const SprintMetrics = ({ sprint, className = '', onShowBurndown }) => {
           <div className="text-2xl font-bold text-green-600">
             {sprint.capacidad_equipo || 0}h
           </div>
-          <div className="text-xs text-gray-500">Capacidad</div>
+          <div className={`text-xs ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+          }`}>Capacidad</div>
         </div>
 
         <div className="metric text-center">
           <div className="text-2xl font-bold text-purple-600">
             {burndownData.percentage}%
           </div>
-          <div className="text-xs text-gray-500 flex items-center justify-center">
+          <div className={`text-xs flex items-center justify-center ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+          }`}>
             Progreso
             {burndownData.trend === 'up' && <span className="ml-1 text-green-500">↗️</span>}
             {burndownData.trend === 'down' && <span className="ml-1 text-red-500">↘️</span>}
@@ -158,17 +202,23 @@ const SprintMetrics = ({ sprint, className = '', onShowBurndown }) => {
           <div className="text-2xl font-bold text-orange-600">
             {sprint.velocidad_planificada || 0}
           </div>
-          <div className="text-xs text-gray-500">Planificado</div>
+          <div className={`text-xs ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+          }`}>Planificado</div>
         </div>
       </div>
 
       {/* Barra de progreso */}
       <div className="mb-4">
-        <div className="flex justify-between text-sm text-gray-600 mb-1">
+        <div className={`flex justify-between text-sm mb-1 ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+        }`}>
           <span>Progreso del Sprint</span>
           <span>{burndownData.percentage}%</span>
         </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
+        <div className={`w-full rounded-full h-2 ${
+          theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+        }`}>
           <div 
             className="bg-purple-600 h-2 rounded-full transition-all duration-300" 
             style={{ width: `${burndownData.percentage}%` }}
@@ -179,14 +229,18 @@ const SprintMetrics = ({ sprint, className = '', onShowBurndown }) => {
       {/* Fechas */}
       <div className="grid grid-cols-2 gap-4 text-sm">
         <div>
-          <span className="text-gray-500">Inicio:</span>
-          <span className="ml-2 font-medium">
+          <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>Inicio:</span>
+          <span className={`ml-2 font-medium ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             {sprint.fecha_inicio ? new Date(sprint.fecha_inicio).toLocaleDateString('es-ES') : 'N/A'}
           </span>
         </div>
         <div>
-          <span className="text-gray-500">Fin:</span>
-          <span className="ml-2 font-medium">
+          <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>Fin:</span>
+          <span className={`ml-2 font-medium ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             {sprint.fecha_fin ? new Date(sprint.fecha_fin).toLocaleDateString('es-ES') : 'N/A'}
           </span>
         </div>
@@ -194,9 +248,11 @@ const SprintMetrics = ({ sprint, className = '', onShowBurndown }) => {
 
       {/* Release asociado si existe */}
       {sprint.release_id && (
-        <div className="mt-3 pt-3 border-t border-gray-200">
+        <div className={`mt-3 pt-3 border-t ${
+          theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+        }`}>
           <div className="flex items-center text-sm">
-            <span className="text-gray-500">🎯 Release:</span>
+            <span className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>🎯 Release:</span>
             <span className="ml-2 font-medium text-blue-600">
               {sprint.release_nombre || `Release ID: ${sprint.release_id}`}
             </span>

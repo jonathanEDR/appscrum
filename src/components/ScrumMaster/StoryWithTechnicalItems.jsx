@@ -19,7 +19,8 @@ const StoryWithTechnicalItems = ({
   storyData, 
   onViewDetails, 
   onAssignUser,
-  onEditTechnicalItem 
+  onEditTechnicalItem,
+  theme
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   
@@ -35,12 +36,13 @@ const StoryWithTechnicalItems = ({
   const { progress, loading: progressLoading } = useTechnicalItemsProgress(historia._id);
 
   const getStatusColor = (status) => {
+    const isDark = theme === 'dark';
     switch (status) {
-      case 'completado': return 'bg-green-100 text-green-800';
-      case 'en_progreso': return 'bg-yellow-100 text-yellow-800';
-      case 'pendiente': return 'bg-gray-100 text-gray-800';
-      case 'bloqueado': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'completado': return isDark ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-800';
+      case 'en_progreso': return isDark ? 'bg-yellow-900/30 text-yellow-400' : 'bg-yellow-100 text-yellow-800';
+      case 'pendiente': return isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800';
+      case 'bloqueado': return isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-800';
+      default: return isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -55,12 +57,13 @@ const StoryWithTechnicalItems = ({
   };
 
   const getPriorityColor = (priority) => {
+    const isDark = theme === 'dark';
     switch (priority) {
-      case 'critica': return 'text-red-600';
-      case 'alta': return 'text-orange-600';
-      case 'media': return 'text-yellow-600';
-      case 'baja': return 'text-green-600';
-      default: return 'text-gray-600';
+      case 'critica': return isDark ? 'text-red-400' : 'text-red-600';
+      case 'alta': return isDark ? 'text-orange-400' : 'text-orange-600';
+      case 'media': return isDark ? 'text-yellow-400' : 'text-yellow-600';
+      case 'baja': return isDark ? 'text-green-400' : 'text-green-600';
+      default: return isDark ? 'text-gray-400' : 'text-gray-600';
     }
   };
 
@@ -74,11 +77,12 @@ const StoryWithTechnicalItems = ({
   };
 
   const getTechnicalItemColor = (type) => {
+    const isDark = theme === 'dark';
     switch (type) {
-      case 'tarea': return 'bg-purple-100 text-purple-600';
-      case 'bug': return 'bg-red-100 text-red-600';
-      case 'mejora': return 'bg-green-100 text-green-600';
-      default: return 'bg-gray-100 text-gray-600';
+      case 'tarea': return isDark ? 'bg-purple-900/30 text-purple-400' : 'bg-purple-100 text-purple-600';
+      case 'bug': return isDark ? 'bg-red-900/30 text-red-400' : 'bg-red-100 text-red-600';
+      case 'mejora': return isDark ? 'bg-green-900/30 text-green-400' : 'bg-green-100 text-green-600';
+      default: return isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600';
     }
   };
 
@@ -103,36 +107,56 @@ const StoryWithTechnicalItems = ({
   const stats = progressLoading ? getCompletionStats() : progress;
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
+    <div className={`border rounded-lg shadow-sm ${
+      theme === 'dark'
+        ? 'bg-gray-800 border-gray-700'
+        : 'bg-white border-gray-200'
+    }`}>
       {/* Header de la historia */}
-      <div className="p-6 border-b border-gray-100">
+      <div className={`p-6 border-b ${
+        theme === 'dark' ? 'border-gray-700' : 'border-gray-100'
+      }`}>
         <div className="flex items-start justify-between">
           <div className="flex-1">
             <div className="flex items-center gap-3 mb-3">
-              <div className="p-3 bg-blue-100 text-blue-600 rounded-lg">
+              <div className={`p-3 rounded-lg ${
+                theme === 'dark'
+                  ? 'bg-blue-900/30 text-blue-400'
+                  : 'bg-blue-100 text-blue-600'
+              }`}>
                 <Target className="h-5 w-5" />
               </div>
               
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-2">
-                  <h3 className="text-lg font-semibold text-gray-900">
+                  <h3 className={`text-lg font-semibold ${
+                    theme === 'dark' ? 'text-white' : 'text-gray-900'
+                  }`}>
                     {historia.titulo}
                   </h3>
                   <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor(historia.estado)}`}>
                     {getStatusText(historia.estado)}
                   </span>
                   {historia.puntos_historia && (
-                    <span className="px-3 py-1 bg-orange-100 text-orange-800 text-sm rounded-full font-medium">
+                    <span className={`px-3 py-1 text-sm rounded-full font-medium ${
+                      theme === 'dark'
+                        ? 'bg-orange-900/30 text-orange-400'
+                        : 'bg-orange-100 text-orange-800'
+                    }`}>
                       {historia.puntos_historia} SP
                     </span>
                   )}
                 </div>
                 
-                <p className="text-gray-600 mb-3">
+                <p className={`mb-3 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   {historia.descripcion}
                 </p>
                 
-                <div className="flex items-center gap-6 text-sm text-gray-500">
+                <div className={`flex items-center gap-6 text-sm ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                }`}>
                   <div className="flex items-center gap-1">
                     <span className="font-medium">Producto:</span>
                     <span>{historia.producto?.nombre || 'Sin producto'}</span>
@@ -157,22 +181,32 @@ const StoryWithTechnicalItems = ({
 
             {/* Barra de progreso de items técnicos */}
             {items_tecnicos.length > 0 && (
-              <div className="bg-gray-50 rounded-lg p-3">
+              <div className={`rounded-lg p-3 ${
+                theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'
+              }`}>
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-gray-700">
+                  <span className={`text-sm font-medium ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Progreso de Items Técnicos {progressLoading && <span className="text-xs text-blue-500">(actualizando...)</span>}
                   </span>
-                  <span className="text-sm text-gray-500">
+                  <span className={`text-sm ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
                     {stats.completed}/{stats.total} completados
                   </span>
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
+                <div className={`w-full rounded-full h-2 ${
+                  theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+                }`}>
                   <div 
                     className="bg-green-500 h-2 rounded-full transition-all duration-300"
                     style={{ width: `${stats.percentage}%` }}
                   ></div>
                 </div>
-                <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
+                <div className={`flex items-center gap-4 mt-2 text-xs ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                }`}>
                   <span>✅ {stats.completed} completados</span>
                   <span>🔄 {stats.inProgress} en progreso</span>
                   <span>⏳ {stats.pending || 0} pendientes</span>
@@ -186,7 +220,11 @@ const StoryWithTechnicalItems = ({
             {items_tecnicos.length > 0 && (
               <button
                 onClick={() => setIsExpanded(!isExpanded)}
-                className="flex items-center gap-2 px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors"
+                className={`flex items-center gap-2 px-3 py-2 text-sm rounded-lg transition-colors ${
+                  theme === 'dark'
+                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
               >
                 {isExpanded ? 
                   <ChevronDown className="h-4 w-4" /> : 
@@ -198,7 +236,11 @@ const StoryWithTechnicalItems = ({
             
             <button
               onClick={() => onViewDetails(historia)}
-              className="p-2 text-gray-400 hover:text-blue-600 transition-colors"
+              className={`p-2 transition-colors ${
+                theme === 'dark'
+                  ? 'text-gray-500 hover:text-blue-400'
+                  : 'text-gray-400 hover:text-blue-600'
+              }`}
               title="Ver detalles de historia"
             >
               <Eye className="h-4 w-4" />
@@ -209,19 +251,29 @@ const StoryWithTechnicalItems = ({
 
       {/* Items técnicos (expandible) */}
       {isExpanded && items_tecnicos.length > 0 && (
-        <div className="p-6 bg-gray-50">
+        <div className={`p-6 ${
+          theme === 'dark' ? 'bg-gray-900' : 'bg-gray-50'
+        }`}>
           <div className="flex items-center justify-between mb-4">
-            <h4 className="font-medium text-gray-900">
+            <h4 className={`font-medium ${
+              theme === 'dark' ? 'text-white' : 'text-gray-900'
+            }`}>
               Items Técnicos Asignados
             </h4>
-            <div className="text-sm text-gray-500">
+            <div className={`text-sm ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+            }`}>
               {items_tecnicos.length} item{items_tecnicos.length !== 1 ? 's' : ''}
             </div>
           </div>
           
           <div className="space-y-3">
             {items_tecnicos.map((item) => (
-              <div key={item._id} className="bg-white border border-gray-200 rounded-lg p-4">
+              <div key={item._id} className={`border rounded-lg p-4 ${
+                theme === 'dark'
+                  ? 'bg-gray-800 border-gray-700'
+                  : 'bg-white border-gray-200'
+              }`}>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 flex-1">
                     <div className={`p-2 rounded-lg ${getTechnicalItemColor(item.tipo)}`}>
@@ -230,7 +282,9 @@ const StoryWithTechnicalItems = ({
                     
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-medium text-gray-900 truncate">
+                        <span className={`font-medium truncate ${
+                          theme === 'dark' ? 'text-white' : 'text-gray-900'
+                        }`}>
                           {item.titulo}
                         </span>
                         <span className={`px-2 py-1 rounded text-xs font-medium ${getStatusColor(item.estado)}`}>
@@ -241,11 +295,15 @@ const StoryWithTechnicalItems = ({
                         </span>
                       </div>
                       
-                      <p className="text-sm text-gray-600 mb-2 truncate">
+                      <p className={`text-sm mb-2 truncate ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                         {item.descripcion}
                       </p>
                       
-                      <div className="flex items-center gap-4 text-xs text-gray-500">
+                      <div className={`flex items-center gap-4 text-xs ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
                         <div className="flex items-center gap-1">
                           <span className="font-medium">Prioridad:</span>
                           <span className={getPriorityColor(item.prioridad)}>
@@ -273,8 +331,12 @@ const StoryWithTechnicalItems = ({
                       onClick={() => onAssignUser(item)}
                       className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
                         item.asignado_a 
-                          ? 'bg-green-100 text-green-700 hover:bg-green-200' 
-                          : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                          ? theme === 'dark'
+                            ? 'bg-green-900/30 text-green-400 hover:bg-green-900/40'
+                            : 'bg-green-100 text-green-700 hover:bg-green-200'
+                          : theme === 'dark'
+                            ? 'bg-orange-900/30 text-orange-400 hover:bg-orange-900/40'
+                            : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
                       }`}
                       title={item.asignado_a ? "Cambiar asignación" : "Asignar a un developer"}
                     >
@@ -284,7 +346,11 @@ const StoryWithTechnicalItems = ({
                     
                     <button
                       onClick={() => onViewDetails(item)}
-                      className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
+                      className={`p-1.5 transition-colors ${
+                        theme === 'dark'
+                          ? 'text-gray-500 hover:text-blue-400'
+                          : 'text-gray-400 hover:text-blue-600'
+                      }`}
                       title="Ver detalles"
                     >
                       <Eye className="h-4 w-4" />
@@ -292,7 +358,11 @@ const StoryWithTechnicalItems = ({
                     
                     <button
                       onClick={() => onEditTechnicalItem?.(item)}
-                      className="p-1 text-gray-400 hover:text-gray-600 transition-colors"
+                      className={`p-1 transition-colors ${
+                        theme === 'dark'
+                          ? 'text-gray-500 hover:text-gray-400'
+                          : 'text-gray-400 hover:text-gray-600'
+                      }`}
                       title="Más opciones"
                     >
                       <MoreVertical className="h-4 w-4" />
@@ -307,9 +377,13 @@ const StoryWithTechnicalItems = ({
 
       {/* Mensaje cuando no hay items técnicos */}
       {items_tecnicos.length === 0 && (
-        <div className="p-6 text-center text-gray-500">
+        <div className={`p-6 text-center ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+        }`}>
           <div className="flex flex-col items-center gap-2">
-            <CheckSquare className="h-8 w-8 text-gray-300" />
+            <CheckSquare className={`h-8 w-8 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-300'
+            }`} />
             <p className="text-sm">No hay items técnicos asignados a esta historia</p>
             <p className="text-xs">Las tareas, bugs y mejoras aparecerán aquí cuando se asignen</p>
           </div>

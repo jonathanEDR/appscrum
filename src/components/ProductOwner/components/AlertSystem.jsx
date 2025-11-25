@@ -1,7 +1,9 @@
 import React from 'react';
 import { AlertTriangle, Clock, CheckCircle, X } from 'lucide-react';
+import { useTheme } from '../../../context/ThemeContext';
 
 const AlertSystem = ({ releases = [], sprints = [], alerts = [] }) => {
+  const { theme } = useTheme();
   const getSystemAlerts = () => {
     const systemAlerts = [];
     const today = new Date();
@@ -88,10 +90,13 @@ const AlertSystem = ({ releases = [], sprints = [], alerts = [] }) => {
         <div
           key={alert.id}
           className={`flex items-center justify-between p-3 rounded-lg border ${
-            alert.type === 'success' ? 'bg-green-50 border-green-200 text-green-800' :
-            alert.type === 'error' ? 'bg-red-50 border-red-200 text-red-800' :
-            alert.type === 'warning' ? 'bg-yellow-50 border-yellow-200 text-yellow-800' :
-            'bg-blue-50 border-blue-200 text-blue-800'
+            alert.type === 'success' ? 
+              (theme === 'dark' ? 'bg-green-900/30 border-green-700 text-green-300' : 'bg-green-50 border-green-200 text-green-800') :
+            alert.type === 'error' ? 
+              (theme === 'dark' ? 'bg-red-900/30 border-red-700 text-red-300' : 'bg-red-50 border-red-200 text-red-800') :
+            alert.type === 'warning' ? 
+              (theme === 'dark' ? 'bg-yellow-900/30 border-yellow-700 text-yellow-300' : 'bg-yellow-50 border-yellow-200 text-yellow-800') :
+              (theme === 'dark' ? 'bg-blue-900/30 border-blue-700 text-blue-300' : 'bg-blue-50 border-blue-200 text-blue-800')
           }`}
         >
           <span className="text-sm font-medium">{alert.message}</span>
@@ -100,10 +105,10 @@ const AlertSystem = ({ releases = [], sprints = [], alerts = [] }) => {
 
       {/* Alertas del sistema */}
       {systemAlerts.length > 0 && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+        <div className={`${theme === 'dark' ? 'bg-yellow-900/30 border-yellow-700' : 'bg-yellow-50 border-yellow-200'} border rounded-lg p-4`}>
           <div className="flex items-center gap-2 mb-3">
-            <AlertTriangle className="h-5 w-5 text-yellow-600" />
-            <h3 className="font-semibold text-yellow-800">Alertas del Roadmap</h3>
+            <AlertTriangle className={`h-5 w-5 ${theme === 'dark' ? 'text-yellow-400' : 'text-yellow-600'}`} />
+            <h3 className={`font-semibold ${theme === 'dark' ? 'text-yellow-300' : 'text-yellow-800'}`}>Alertas del Roadmap</h3>
           </div>
           
           <div className="space-y-2">
@@ -111,9 +116,11 @@ const AlertSystem = ({ releases = [], sprints = [], alerts = [] }) => {
               <div
                 key={index}
                 className={`flex items-center gap-2 p-2 rounded ${
-                  alert.type === 'danger' ? 'bg-red-100 text-red-800' :
-                  alert.type === 'warning' ? 'bg-yellow-100 text-yellow-800' :
-                  'bg-blue-100 text-blue-800'
+                  alert.type === 'danger' ? 
+                    (theme === 'dark' ? 'bg-red-900/50 text-red-300' : 'bg-red-100 text-red-800') :
+                  alert.type === 'warning' ? 
+                    (theme === 'dark' ? 'bg-yellow-900/50 text-yellow-300' : 'bg-yellow-100 text-yellow-800') :
+                    (theme === 'dark' ? 'bg-blue-900/50 text-blue-300' : 'bg-blue-100 text-blue-800')
                 }`}
               >
                 {alert.type === 'danger' ? <AlertTriangle size={16} /> :
@@ -124,7 +131,7 @@ const AlertSystem = ({ releases = [], sprints = [], alerts = [] }) => {
             ))}
             
             {systemAlerts.length > 3 && (
-              <p className="text-sm text-yellow-700">
+              <p className={`text-sm ${theme === 'dark' ? 'text-yellow-300' : 'text-yellow-700'}`}>
                 +{systemAlerts.length - 3} alertas adicionales
               </p>
             )}

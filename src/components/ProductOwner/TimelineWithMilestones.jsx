@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, CheckCircle, Edit, Trash2, Users, Target, Clock } from 'lucide-react';
+import { useTheme } from '../../context/ThemeContext';
 import SprintMetrics from './SprintMetrics';
 import SprintTasksSummary from './components/SprintTasksSummary';
 
@@ -16,6 +17,7 @@ const TimelineWithMilestones = ({
   calcularProgresoReal,
   milestones = []
 }) => {
+  const { theme } = useTheme();
   // 🔥 NUEVO: Cargar tareas de sprints desde sessionStorage
   const [sprintTasksData, setSprintTasksData] = useState({});
   
@@ -116,10 +118,18 @@ const TimelineWithMilestones = ({
   const timelineAlerts = calculateTimelineAlerts();
 
   return (
-    <div className="bg-white rounded-lg shadow-sm p-6">
+    <div className={`rounded-lg shadow-sm p-6 ${
+      theme === 'dark' 
+        ? 'bg-gray-800 border border-gray-700' 
+        : 'bg-white border border-gray-200'
+    }`}>
       <div className="flex items-center justify-between mb-6">
-        <h3 className="text-lg font-semibold text-gray-900">Vista Timeline Avanzada</h3>
-        <div className="flex items-center gap-2 text-sm text-gray-600">
+        <h3 className={`text-lg font-semibold ${
+          theme === 'dark' ? 'text-white' : 'text-gray-900'
+        }`}>Vista Timeline Avanzada</h3>
+        <div className={`flex items-center gap-2 text-sm ${
+          theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+        }`}>
           <Target size={16} />
           <span>{releases.length} Releases • {sprints.length} Sprints</span>
         </div>
@@ -142,14 +152,24 @@ const TimelineWithMilestones = ({
 
       {/* Milestones */}
       <div className="mb-8">
-        <h4 className="text-md font-medium text-gray-700 mb-4">Milestones 2025</h4>
+        <h4 className={`text-md font-medium mb-4 ${
+          theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+        }`}>Milestones 2025</h4>
         <div className="flex flex-wrap gap-4">
           {generateMilestones().map((milestone, index) => (
-            <div key={index} className="flex items-center gap-2 px-3 py-2 bg-purple-50 rounded-lg border border-purple-200">
+            <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
+              theme === 'dark' 
+                ? 'bg-purple-900/30 border-purple-700' 
+                : 'bg-purple-50 border-purple-200'
+            }`}>
               <span className="text-lg">{milestone.icon}</span>
               <div>
-                <span className="text-sm font-medium text-purple-700">{milestone.label}</span>
-                <div className="text-xs text-purple-600">{formatearFecha(milestone.date)}</div>
+                <span className={`text-sm font-medium ${
+                  theme === 'dark' ? 'text-purple-300' : 'text-purple-700'
+                }`}>{milestone.label}</span>
+                <div className={`text-xs ${
+                  theme === 'dark' ? 'text-purple-400' : 'text-purple-600'
+                }`}>{formatearFecha(milestone.date)}</div>
               </div>
             </div>
           ))}
@@ -168,54 +188,90 @@ const TimelineWithMilestones = ({
               <div className="absolute left-0 top-0 w-4 h-4 bg-purple-600 rounded-full -translate-x-2 border-2 border-white shadow-md"></div>
               
               {/* Contenido del release */}
-              <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-lg p-5 mb-4 border border-purple-200">
+              <div className={`rounded-lg p-5 mb-4 border ${
+                theme === 'dark' 
+                  ? 'bg-gradient-to-r from-purple-900/20 to-blue-900/20 border-purple-700' 
+                  : 'bg-gradient-to-r from-purple-50 to-blue-50 border-purple-200'
+              }`}>
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <h4 className="text-xl font-bold text-gray-900">🎯 {release.nombre}</h4>
+                    <h4 className={`text-xl font-bold ${
+                      theme === 'dark' ? 'text-white' : 'text-gray-900'
+                    }`}>🎯 {release.nombre}</h4>
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${getEstadoColor(release.estado)}`}>
                       {release.estado.replace('_', ' ')}
                     </span>
-                    <span className="text-sm text-purple-600 font-semibold">v{release.version}</span>
+                    <span className={`text-sm font-semibold ${
+                      theme === 'dark' ? 'text-purple-300' : 'text-purple-600'
+                    }`}>v{release.version}</span>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => onEditRelease(release)}
-                      className="p-2 text-gray-600 hover:text-blue-600 bg-white rounded-lg shadow-sm"
+                      className={`p-2 rounded-lg shadow-sm ${
+                        theme === 'dark' 
+                          ? 'text-gray-400 hover:text-blue-400 bg-gray-700 hover:bg-gray-600' 
+                          : 'text-gray-600 hover:text-blue-600 bg-white hover:bg-gray-50'
+                      }`}
                     >
                       <Edit size={16} />
                     </button>
                     <button
                       onClick={() => onDeleteRelease(release._id)}
-                      className="p-2 text-gray-600 hover:text-red-600 bg-white rounded-lg shadow-sm"
+                      className={`p-2 rounded-lg shadow-sm ${
+                        theme === 'dark' 
+                          ? 'text-gray-400 hover:text-red-400 bg-gray-700 hover:bg-gray-600' 
+                          : 'text-gray-600 hover:text-red-600 bg-white hover:bg-gray-50'
+                      }`}
                     >
                       <Trash2 size={16} />
                     </button>
                   </div>
                 </div>
                 
-                <p className="text-gray-700 mb-4">{release.descripcion}</p>
+                <p className={`mb-4 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>{release.descripcion}</p>
                 
                 {/* Métricas del release */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                  <div className="bg-white rounded-lg p-3 border border-gray-200">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className={`rounded-lg p-3 border ${
+                    theme === 'dark' 
+                      ? 'bg-gray-800 border-gray-600' 
+                      : 'bg-white border-gray-200'
+                  }`}>
+                    <div className={`flex items-center gap-2 text-sm ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
                       <Calendar size={16} />
                       <span>Objetivo: {formatearFecha(release.fecha_objetivo)}</span>
                     </div>
                   </div>
                   
                   {release.fecha_lanzamiento && (
-                    <div className="bg-white rounded-lg p-3 border border-gray-200">
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className={`rounded-lg p-3 border ${
+                      theme === 'dark' 
+                        ? 'bg-gray-800 border-gray-600' 
+                        : 'bg-white border-gray-200'
+                    }`}>
+                      <div className={`flex items-center gap-2 text-sm ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                      }`}>
                         <CheckCircle size={16} />
                         <span>Lanzado: {formatearFecha(release.fecha_lanzamiento)}</span>
                       </div>
                     </div>
                   )}
                   
-                  <div className="bg-white rounded-lg p-3 border border-gray-200">
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                  <div className={`rounded-lg p-3 border ${
+                    theme === 'dark' 
+                      ? 'bg-gray-800 border-gray-600' 
+                      : 'bg-white border-gray-200'
+                  }`}>
+                    <div className={`flex items-center gap-2 text-sm ${
+                      theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                    }`}>
                       <Users size={16} />
                       <span>{releaseSprintList.length} Sprint{releaseSprintList.length !== 1 ? 's' : ''}</span>
                     </div>
@@ -224,11 +280,15 @@ const TimelineWithMilestones = ({
                 
                 {/* Barra de progreso del release */}
                 <div className="mb-4">
-                  <div className="flex justify-between text-sm text-gray-700 mb-2">
+                  <div className={`flex justify-between text-sm mb-2 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     <span>Progreso del Release</span>
                     <span className="font-semibold">{progreso}%</span>
                   </div>
-                  <div className="w-full bg-gray-200 rounded-full h-3">
+                  <div className={`w-full rounded-full h-3 ${
+                    theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'
+                  }`}>
                     <div 
                       className={`h-3 rounded-full transition-all duration-500 ${
                         progreso >= 100 ? 'bg-green-500' :
@@ -243,7 +303,9 @@ const TimelineWithMilestones = ({
                 {/* Sprints asociados al release */}
                 {releaseSprintList.length > 0 && (
                   <div className="mt-4">
-                    <h5 className="text-sm font-medium text-gray-700 mb-3">Sprints Asociados:</h5>
+                    <h5 className={`text-sm font-medium mb-3 ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                    }`}>Sprints Asociados:</h5>
                     <div className="space-y-4">
                       {releaseSprintList
                         .sort((a, b) => new Date(a.fecha_inicio) - new Date(b.fecha_inicio))
@@ -256,7 +318,6 @@ const TimelineWithMilestones = ({
                               {/* Sprint Metrics Card */}
                               <SprintMetrics 
                                 sprint={{...sprint, release_nombre: release.nombre}} 
-                                className="bg-white"
                                 onShowBurndown={onShowBurndown}
                               />
                               
@@ -287,15 +348,27 @@ const TimelineWithMilestones = ({
           <div className="border-l-4 border-gray-300 pl-6 relative">
             <div className="absolute left-0 top-0 w-4 h-4 bg-gray-400 rounded-full -translate-x-2 border-2 border-white shadow-md"></div>
             
-            <div className="bg-gradient-to-r from-gray-50 to-slate-50 rounded-lg p-5 border border-gray-200">
+            <div className={`rounded-lg p-5 border ${
+              theme === 'dark' 
+                ? 'bg-gradient-to-r from-gray-800/50 to-slate-800/50 border-gray-600' 
+                : 'bg-gradient-to-r from-gray-50 to-slate-50 border-gray-200'
+            }`}>
               <div className="flex items-center gap-3 mb-4">
-                <h4 className="text-xl font-bold text-gray-900">🔄 Sprints Independientes</h4>
-                <span className="px-3 py-1 bg-gray-200 text-gray-700 rounded-full text-xs font-medium">
+                <h4 className={`text-xl font-bold ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>🔄 Sprints Independientes</h4>
+                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 text-gray-300' 
+                    : 'bg-gray-200 text-gray-700'
+                }`}>
                   {independentSprints.length} Sprint{independentSprints.length !== 1 ? 's' : ''}
                 </span>
               </div>
               
-              <p className="text-gray-600 mb-4">
+              <p className={`mb-4 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>
                 Sprints no asociados a ningún release específico
               </p>
               
@@ -311,7 +384,6 @@ const TimelineWithMilestones = ({
                         {/* Sprint Metrics Card */}
                         <SprintMetrics 
                           sprint={sprint} 
-                          className="bg-white"
                           onShowBurndown={onShowBurndown}
                         />
                         

@@ -192,8 +192,24 @@ const CollaboratorsManagement = () => {
   };
 
   const getRoleInfo = (role) => {
-    return roleOptions.find(option => option.value === role) || 
-           { label: role, color: 'bg-gray-100 text-gray-800' };
+    const roleOption = roleOptions.find(option => option.value === role);
+    if (!roleOption) {
+      return { label: role, color: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200' };
+    }
+    
+    // Adaptar colores para tema oscuro
+    const darkColors = {
+      'bg-gray-100 text-gray-800': 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200',
+      'bg-blue-100 text-blue-800': 'bg-blue-100 dark:bg-blue-900/50 text-blue-800 dark:text-blue-300',
+      'bg-green-100 text-green-800': 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300',
+      'bg-yellow-100 text-yellow-800': 'bg-yellow-100 dark:bg-yellow-900/50 text-yellow-800 dark:text-yellow-300',
+      'bg-purple-100 text-purple-800': 'bg-purple-100 dark:bg-purple-900/50 text-purple-800 dark:text-purple-300'
+    };
+    
+    return {
+      ...roleOption,
+      color: darkColors[roleOption.color] || roleOption.color
+    };
   };
 
   useEffect(() => {
@@ -312,27 +328,27 @@ const CollaboratorsManagement = () => {
             </p>
           </div>
         ) : (
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-200 dark:divide-gray-700">
             {collaborators.map((collaborator) => {
               const roleInfo = getRoleInfo(collaborator.role);
               return (
-                <div key={collaborator._id} className="p-6 hover:bg-gray-50 transition-colors">
+                <div key={collaborator._id} className="p-6 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4">
                       <div className="flex-shrink-0">
-                        <div className="h-10 w-10 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-blue-600">
+                        <div className="h-10 w-10 bg-blue-100 dark:bg-blue-900/50 rounded-full flex items-center justify-center">
+                          <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
                             {(collaborator.nombre_negocio || collaborator.email || 'U').charAt(0).toUpperCase()}
                           </span>
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">
+                        <p className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                           {collaborator.nombre_negocio || 'Sin nombre'}
                         </p>
                         <div className="flex items-center gap-2 mt-1">
-                          <Mail size={14} className="text-gray-400" />
-                          <p className="text-sm text-gray-500 truncate">
+                          <Mail size={14} className="text-gray-400 dark:text-gray-500" />
+                          <p className="text-sm text-gray-500 dark:text-gray-400 truncate">
                             {collaborator.email}
                           </p>
                         </div>
@@ -376,13 +392,13 @@ const CollaboratorsManagement = () => {
                   </div>
 
                   {/* Información adicional */}
-                  <div className="mt-3 flex items-center gap-4 text-xs text-gray-500">
+                  <div className="mt-3 flex items-center gap-4 text-xs text-gray-500 dark:text-gray-400">
                     <span>ID: {collaborator.clerk_id}</span>
                     <span>Creado: {new Date(collaborator.createdAt).toLocaleDateString()}</span>
                     <span className={`px-2 py-1 rounded-full ${
                       collaborator.is_active 
-                        ? 'bg-green-100 text-green-800' 
-                        : 'bg-red-100 text-red-800'
+                        ? 'bg-green-100 dark:bg-green-900/50 text-green-800 dark:text-green-300' 
+                        : 'bg-red-100 dark:bg-red-900/50 text-red-800 dark:text-red-300'
                     }`}>
                       {collaborator.is_active ? 'Activo' : 'Inactivo'}
                     </span>
@@ -397,16 +413,16 @@ const CollaboratorsManagement = () => {
       {/* Modal para agregar colaborador - Solo para Super Admin */}
       {showAddForm && role === 'super_admin' && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Invitar Colaborador</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">Invitar Colaborador</h3>
               <button
                 onClick={() => {
                   setShowAddForm(false);
                   setNewCollaborator({ email: '', nombre_negocio: '', role: 'user' });
                   setError('');
                 }}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
               >
                 <X size={24} />
               </button>
@@ -415,7 +431,7 @@ const CollaboratorsManagement = () => {
             <form onSubmit={handleInviteCollaborator} className="p-6">
               <div className="space-y-4">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Email *
                   </label>
                   <input
@@ -424,13 +440,13 @@ const CollaboratorsManagement = () => {
                     required
                     value={newCollaborator.email}
                     onChange={(e) => setNewCollaborator(prev => ({ ...prev, email: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="colaborador@email.com"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="nombre_negocio" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="nombre_negocio" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Nombre *
                   </label>
                   <input
@@ -439,20 +455,20 @@ const CollaboratorsManagement = () => {
                     required
                     value={newCollaborator.nombre_negocio}
                     onChange={(e) => setNewCollaborator(prev => ({ ...prev, nombre_negocio: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Nombre del colaborador"
                   />
                 </div>
                 
                 <div>
-                  <label htmlFor="role" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label htmlFor="role" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Rol
                   </label>
                   <select
                     id="role"
                     value={newCollaborator.role}
                     onChange={(e) => setNewCollaborator(prev => ({ ...prev, role: e.target.value }))}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   >
                     {roleOptions.map(role => (
                       <option key={role.value} value={role.value}>
@@ -471,7 +487,7 @@ const CollaboratorsManagement = () => {
                     setNewCollaborator({ email: '', nombre_negocio: '', role: 'user' });
                     setError('');
                   }}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancelar
                 </button>

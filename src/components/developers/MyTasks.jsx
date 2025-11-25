@@ -17,9 +17,11 @@ import { useDeveloperTasks } from '../../hooks/useDeveloperTasks';
 import { useTimeTracking } from '../../hooks/useTimeTracking';
 import { developersApiService } from '../../services/developersApiService';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../context/ThemeContext';
 
 const MyTasks = () => {
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   const [filter, setFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedPriority, setSelectedPriority] = useState('');
@@ -241,7 +243,7 @@ const MyTasks = () => {
 
         <div className="animate-pulse space-y-4">
           {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-gray-200 rounded-xl h-24"></div>
+            <div key={i} className={`${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-200'} rounded-xl h-24`}></div>
           ))}
         </div>
       </div>
@@ -253,12 +255,12 @@ const MyTasks = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-100 rounded-lg">
+          <div className={`p-2 ${theme === 'dark' ? 'bg-blue-900/30' : 'bg-blue-100'} rounded-lg`}>
             <Target className="h-6 w-6 text-blue-600" />
           </div>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Mis Tareas</h1>
-            <p className="text-gray-600">
+            <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Mis Tareas</h1>
+            <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
               {tasks.length} tarea{tasks.length !== 1 ? 's' : ''} asignada{tasks.length !== 1 ? 's' : ''}
             </p>
           </div>
@@ -274,18 +276,18 @@ const MyTasks = () => {
 
       {/* Timer activo */}
       {isTimerRunning && activeTimer && (
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+        <div className={`${theme === 'dark' ? 'bg-blue-900/30 border-blue-800' : 'bg-blue-50 border-blue-200'} border rounded-xl p-4`}>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-3 h-3 bg-blue-500 rounded-full animate-pulse"></div>
               <div>
-                <p className="font-medium text-blue-900">Timer activo</p>
-                <p className="text-sm text-blue-700">
+                <p className={`font-medium ${theme === 'dark' ? 'text-blue-300' : 'text-blue-900'}`}>Timer activo</p>
+                <p className={`text-sm ${theme === 'dark' ? 'text-blue-400' : 'text-blue-700'}`}>
                   {activeTimer.task?.titulo || activeTimer.task?.title || 'Tarea en progreso'}
                 </p>
               </div>
             </div>
-            <div className="text-xl font-mono font-bold text-blue-900">
+            <div className={`text-xl font-mono font-bold ${theme === 'dark' ? 'text-blue-300' : 'text-blue-900'}`}>
               {formattedTimerTime}
             </div>
           </div>
@@ -293,15 +295,19 @@ const MyTasks = () => {
       )}
 
       {/* Filtros */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className={`${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-100'} rounded-xl shadow-sm border p-6`}>
         <div className="flex flex-wrap gap-4">
           {/* Filtro de estado */}
           <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4 text-gray-500" />
+            <Filter className={`h-4 w-4 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`} />
             <select
               value={filter}
               onChange={(e) => handleFilterChange(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+              className={`border rounded-lg px-3 py-2 text-sm ${
+                theme === 'dark' 
+                  ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="all">Todos los estados</option>
               <option value="todo">Por Hacer</option>
@@ -316,7 +322,11 @@ const MyTasks = () => {
           <select
             value={selectedPriority}
             onChange={(e) => handlePriorityChange(e.target.value)}
-            className="border border-gray-300 rounded-lg px-3 py-2 text-sm"
+            className={`border rounded-lg px-3 py-2 text-sm ${
+              theme === 'dark' 
+                ? 'bg-gray-700 border-gray-600 text-gray-200' 
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
           >
             <option value="">Todas las prioridades</option>
             <option value="low">Baja</option>
@@ -333,7 +343,11 @@ const MyTasks = () => {
               value={searchTerm}
               onChange={(e) => handleSearch(e.target.value)}
               placeholder="Buscar tareas..."
-              className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-full text-sm"
+              className={`pl-10 pr-4 py-2 border rounded-lg w-full text-sm ${
+                theme === 'dark' 
+                  ? 'bg-gray-700 border-gray-600 text-gray-200 placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
         </div>
@@ -341,10 +355,10 @@ const MyTasks = () => {
 
       {/* Error */}
       {error && (
-        <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+        <div className={`${theme === 'dark' ? 'bg-red-900/30 border-red-800' : 'bg-red-50 border-red-200'} border rounded-xl p-4`}>
           <div className="flex items-center gap-2">
             <AlertCircle className="h-5 w-5 text-red-500" />
-            <p className="text-red-700">{error}</p>
+            <p className={theme === 'dark' ? 'text-red-300' : 'text-red-700'}>{error}</p>
           </div>
         </div>
       )}
@@ -354,8 +368,8 @@ const MyTasks = () => {
         {tasks.length === 0 ? (
           <div className="text-center py-12">
             <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No hay tareas</h3>
-            <p className="text-gray-500">
+            <h3 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'} mb-2`}>No hay tareas</h3>
+            <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}>
               {filter === 'all' 
                 ? 'No tienes tareas asignadas en este momento'
                 : `No hay tareas con el filtro "${filter}"`}
@@ -371,12 +385,12 @@ const MyTasks = () => {
             return (
               <div 
                 key={task._id} 
-                className={`border-l-4 ${getPriorityColor(task.priority)} p-6 rounded-r-xl bg-white hover:shadow-md transition-all duration-300 group`}
+                className={`border-l-4 ${getPriorityColor(task.priority)} p-6 rounded-r-xl ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'} hover:shadow-md transition-all duration-300 group`}
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
                     <div className="flex items-start justify-between mb-3">
-                      <h3 className="text-lg font-medium text-gray-900 group-hover:text-blue-600 transition-colors">
+                      <h3 className={`text-lg font-medium ${theme === 'dark' ? 'text-white' : 'text-gray-900'} group-hover:text-blue-600 transition-colors`}>
                         {task.title}
                       </h3>
                       <div className="flex items-center gap-2">
@@ -410,9 +424,11 @@ const MyTasks = () => {
                           
                           {/* Dropdown Menu - Solo opción de des-asignar */}
                           {openMenuTaskId === task._id && (
-                            <div className="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-lg border border-gray-200 z-50 py-1">
-                              <div className="px-4 py-2 border-b border-gray-100">
-                                <p className="text-xs font-medium text-gray-500">Opciones de tarea</p>
+                            <div className={`absolute right-0 mt-2 w-64 rounded-lg shadow-lg border z-50 py-1 ${
+                              theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                            }`}>
+                              <div className={`px-4 py-2 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}`}>
+                                <p className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>Opciones de tarea</p>
                               </div>
                               
                               <button
@@ -429,8 +445,8 @@ const MyTasks = () => {
                                 </div>
                               </button>
                               
-                              <div className="px-4 py-2 border-t border-gray-100 bg-gray-50">
-                                <p className="text-xs text-gray-600">
+                              <div className={`px-4 py-2 border-t ${theme === 'dark' ? 'border-gray-700 bg-gray-900/50' : 'border-gray-100 bg-gray-50'}`}>
+                                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
                                   Esta tarea será removida de "Mis Tareas" y estará disponible nuevamente en "Proyectos"
                                 </p>
                               </div>
@@ -441,7 +457,7 @@ const MyTasks = () => {
                     </div>
 
                     {task.description && (
-                      <p className="text-gray-600 mb-3 text-sm">{task.description}</p>
+                      <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mb-3 text-sm`}>{task.description}</p>
                     )}
 
                     <div className="flex items-center flex-wrap gap-3 mb-4">
@@ -484,7 +500,7 @@ const MyTasks = () => {
                     </div>
 
                     {/* Fechas */}
-                    <div className="flex items-center gap-4 text-xs text-gray-500">
+                    <div className={`flex items-center gap-4 text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
                       {task.createdAt && (
                         <span>Creada: {formatDate(task.createdAt)}</span>
                       )}
@@ -495,7 +511,7 @@ const MyTasks = () => {
 
                     {/* Acciones de estado */}
                     <div className="mt-4 flex items-center gap-2">
-                      <span className="text-sm text-gray-600">Cambiar estado:</span>
+                      <span className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>Cambiar estado:</span>
                       <div className="flex gap-1">
                         {['todo', 'in_progress', 'code_review', 'testing', 'done'].map((status) => {
                           if (status === task.status) return null;
@@ -527,19 +543,27 @@ const MyTasks = () => {
           <button
             onClick={() => changePage(pagination.current - 1)}
             disabled={pagination.current === 1}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            className={`px-3 py-2 text-sm border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+              theme === 'dark' 
+                ? 'border-gray-700 hover:bg-gray-800 text-gray-300' 
+                : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+            }`}
           >
             Anterior
           </button>
           
-          <span className="px-3 py-2 text-sm text-gray-600">
+          <span className={`px-3 py-2 text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
             Página {pagination.current} de {pagination.pages}
           </span>
           
           <button
             onClick={() => changePage(pagination.current + 1)}
             disabled={pagination.current === pagination.pages}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+            className={`px-3 py-2 text-sm border rounded-lg disabled:opacity-50 disabled:cursor-not-allowed ${
+              theme === 'dark' 
+                ? 'border-gray-700 hover:bg-gray-800 text-gray-300' 
+                : 'border-gray-300 hover:bg-gray-50 text-gray-700'
+            }`}
           >
             Siguiente
           </button>
