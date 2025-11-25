@@ -5,7 +5,7 @@ import {
   Target, 
   Calendar, 
   Clock, 
-  Code, 
+  Bug, 
   LogOut, 
   Shield,
   Menu,
@@ -22,7 +22,7 @@ function DevelopersSidebar({ currentView, onViewChange, onLogout, userRole, isOp
     { id: 'projects', icon: FolderOpen, label: 'Proyectos' },
     { id: 'sprint-board', icon: Calendar, label: 'Sprint Board' },
     { id: 'time-tracking', icon: Clock, label: 'Time Tracking' },
-    { id: 'code', icon: Code, label: 'Código' }
+    { id: 'bug-reports', icon: Bug, label: 'Bug Reports' }
   ];
 
   return (

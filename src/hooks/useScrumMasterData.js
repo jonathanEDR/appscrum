@@ -95,14 +95,11 @@ export const useScrumMasterData = (autoLoad = true) => {
       if (!forceRefresh) {
         const cachedData = getCachedData('scrumMaster:dashboard');
         if (cachedData) {
-          console.log('✅ Usando datos cacheados de Scrum Master');
           setData(cachedData);
           setLoading(false);
           return cachedData;
         }
       }
-
-      console.log('🔄 Cargando datos frescos del servidor...');
 
       // 2. ✅ Usar endpoint consolidado optimizado
       const response = await fetch(`${config.API_URL}/scrum-master/dashboard`, {
@@ -114,26 +111,15 @@ export const useScrumMasterData = (autoLoad = true) => {
 
       if (!response.ok) {
         // Si el endpoint consolidado no existe aún, usar fallback a múltiples consultas
-        console.warn('⚠️ Endpoint consolidado no disponible, usando fallback...');
         return await loadDataFallback(token);
       }
 
       // 3. Procesar respuesta del endpoint consolidado
       const dashboardData = await response.json();
-      
-      console.log('✅ Datos recibidos del endpoint consolidado');
 
       // 4. Guardar en caché
       setCachedData('scrumMaster:dashboard', dashboardData);
       setData(dashboardData);
-
-      console.log('✅ Datos cargados y cacheados:', {
-        sprints: dashboardData.sprints?.length || 0,
-        backlog: dashboardData.backlogItems?.length || 0,
-        technical: dashboardData.technicalItems?.length || 0,
-        team: dashboardData.teamMembers?.length || 0,
-        products: dashboardData.products?.length || 0
-      });
 
       return dashboardData;
 

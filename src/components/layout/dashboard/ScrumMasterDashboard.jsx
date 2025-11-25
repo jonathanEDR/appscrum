@@ -327,7 +327,7 @@ const ScrumMasterDashboard = () => {
         </Card>
 
         {/* Tarjetas de métricas con tema */}
-        <DashboardGrid columns={4}>
+        <DashboardGrid columns={5}>
           <Card className="transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-l-4 border-purple-500">
             <div className="flex items-center justify-between">
               <div className="flex items-center">
@@ -364,15 +364,36 @@ const ScrumMasterDashboard = () => {
             </div>
           </Card>
 
-          <Card className="transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-l-4 border-red-500">
+          <Card 
+            className="transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-l-4 border-red-500 cursor-pointer"
+            onClick={() => handleNavigateToSection('bug-reports')}
+          >
             <div className="flex items-center justify-between">
               <div className="flex items-center">
                 <div className="w-12 h-12 bg-gradient-to-br from-red-500 to-red-600 rounded-2xl flex items-center justify-center shadow-lg">
+                  <Bug className="h-6 w-6 text-white" />
+                </div>
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Bug Reports</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{safeMetrics.totalBugReports || 0}</p>
+                  <p className="text-xs text-red-600 dark:text-red-400 flex items-center mt-1 font-medium">
+                    <AlertTriangle className="h-3 w-3 mr-1" />
+                    {safeMetrics.openBugs || 0} abiertos
+                  </p>
+                </div>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="transition-all duration-300 hover:shadow-xl hover:scale-[1.02] border-l-4 border-orange-500">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center">
+                <div className="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-2xl flex items-center justify-center shadow-lg">
                   <AlertTriangle className="h-6 w-6 text-white" />
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Critical Issues</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{(safeMetrics.criticalBugs || 0) + (safeMetrics.activeImpediments || 0)}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{(safeMetrics.criticalBugReports || 0) + (safeMetrics.activeImpediments || 0)}</p>
                   <p className="text-xs text-red-600 dark:text-red-400 flex items-center mt-1 font-medium">
                     <AlertTriangle className="h-3 w-3 mr-1" />
                     Requiere atención
@@ -390,7 +411,7 @@ const ScrumMasterDashboard = () => {
                 </div>
                 <div className="ml-4">
                   <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Items Técnicos</p>
-                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{safeMetrics.technicalItemsPending}</p>
+                  <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{safeMetrics.technicalItemsPending || 0}</p>
                   <p className="text-xs text-gray-600 dark:text-gray-400 font-medium">Pendientes</p>
                 </div>
               </div>

@@ -283,14 +283,6 @@ const DevelopersDashboard = () => {
               </button>
 
               <button 
-                onClick={() => navigate('/developers/codigo')}
-                className="w-full bg-gradient-to-r from-teal-600 to-teal-700 text-white px-6 py-3 rounded-xl hover:from-teal-700 hover:to-teal-800 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center"
-              >
-                <GitPullRequest className="h-5 w-5 mr-2" />
-                Pull Requests
-              </button>
-
-              <button 
                 onClick={() => setIsBugModalOpen(true)}
                 className="w-full bg-white dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-6 py-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center"
               >

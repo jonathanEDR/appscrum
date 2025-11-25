@@ -91,6 +91,20 @@ class DevelopersApiService {
   }
 
   /**
+   * Des-asigna una tarea (la devuelve al backlog)
+   */
+  async unassignTask(taskId) {
+    try {
+      const token = await this._getTokenFromContext();
+      const response = await apiService.delete(`${this.baseURL}/tasks/${taskId}/unassign`, token);
+      return response;
+    } catch (error) {
+      console.error('Error al des-asignar tarea:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
    * Sprint Board - Obtiene datos del sprint board con filtros
    */
   async getSprintBoardData(sprintId = null, filterMode = 'all') {
@@ -108,8 +122,6 @@ class DevelopersApiService {
       
       const queryString = params.toString();
       const url = `${this.baseURL}/sprint-board${queryString ? '?' + queryString : ''}`;
-      
-      console.log('📡 API Request:', { url, sprintId, filterMode });
       
       const response = await apiService.get(url, token);
       return response;
@@ -296,65 +308,131 @@ class DevelopersApiService {
   }
 
   /**
-   * Repositorios - Obtiene repositorios del developer
+   * Obtiene un bug report específico por ID
    */
-  async getRepositories() {
+  async getBugReportById(bugId) {
     try {
       const token = await this._getTokenFromContext();
-      const response = await apiService.get(`${this.baseURL}/repositories`, token);
+      const response = await apiService.get(`${this.baseURL}/bug-reports/${bugId}`, token);
       return response;
     } catch (error) {
-      console.error('Error al obtener repositorios:', error);
+      console.error('Error al obtener bug report:', error);
       throw this.handleError(error);
     }
   }
 
   /**
-   * Obtiene historial de commits
+   * Actualiza un bug report
    */
-  async getCommitHistory(filters = {}) {
+  async updateBugReport(bugId, updateData) {
     try {
       const token = await this._getTokenFromContext();
-      const params = new URLSearchParams();
-      
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          params.append(key, value);
-        }
-      });
-
-      const queryString = params.toString();
-      const url = queryString ? `${this.baseURL}/commits?${queryString}` : `${this.baseURL}/commits`;
-      
-      const response = await apiService.get(url, token);
+      const response = await apiService.put(`${this.baseURL}/bug-reports/${bugId}`, updateData, token);
       return response;
     } catch (error) {
-      console.error('Error al obtener historial de commits:', error);
+      console.error('Error al actualizar bug report:', error);
       throw this.handleError(error);
     }
   }
 
   /**
-   * Obtiene pull requests
+   * Cambia el estado de un bug report
    */
-  async getPullRequests(filters = {}) {
+  async updateBugStatus(bugId, status) {
     try {
       const token = await this._getTokenFromContext();
-      const params = new URLSearchParams();
-      
-      Object.entries(filters).forEach(([key, value]) => {
-        if (value !== undefined && value !== null && value !== '') {
-          params.append(key, value);
-        }
-      });
-
-      const queryString = params.toString();
-      const url = queryString ? `${this.baseURL}/pull-requests?${queryString}` : `${this.baseURL}/pull-requests`;
-      
-      const response = await apiService.get(url, token);
+      const response = await apiService.patch(`${this.baseURL}/bug-reports/${bugId}/status`, { status }, token);
       return response;
     } catch (error) {
-      console.error('Error al obtener pull requests:', error);
+      console.error('Error al cambiar estado del bug:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Asigna un bug report a un developer
+   */
+  async assignBugReport(bugId, developerId) {
+    try {
+      const token = await this._getTokenFromContext();
+      const response = await apiService.patch(`${this.baseURL}/bug-reports/${bugId}/assign`, { developerId }, token);
+      return response;
+    } catch (error) {
+      console.error('Error al asignar bug report:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Elimina un bug report
+   */
+  async deleteBugReport(bugId) {
+    try {
+      const token = await this._getTokenFromContext();
+      const response = await apiService.delete(`${this.baseURL}/bug-reports/${bugId}`, token);
+      return response;
+    } catch (error) {
+      console.error('Error al eliminar bug report:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Obtiene comentarios de un bug report
+   */
+  async getBugComments(bugId, page = 1, limit = 20) {
+    try {
+      const token = await this._getTokenFromContext();
+      const response = await apiService.get(
+        `${this.baseURL}/bug-reports/${bugId}/comments?page=${page}&limit=${limit}`, 
+        token
+      );
+      return response;
+    } catch (error) {
+      console.error('Error al obtener comentarios:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Agrega un comentario a un bug report
+   */
+  async addBugComment(bugId, content, parentComment = null) {
+    try {
+      const token = await this._getTokenFromContext();
+      const response = await apiService.post(
+        `${this.baseURL}/bug-reports/${bugId}/comments`, 
+        { content, parentComment },
+        token
+      );
+      return response;
+    } catch (error) {
+      console.error('Error al agregar comentario:', error);
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * Sube attachments a un bug report
+   */
+  async uploadBugAttachments(bugId, files) {
+    try {
+      const token = await this._getTokenFromContext();
+      const formData = new FormData();
+      
+      files.forEach(file => {
+        formData.append('attachments', file);
+      });
+
+      const response = await apiService.post(
+        `${this.baseURL}/bug-reports/${bugId}/attachments`,
+        formData,
+        token,
+        { 'Content-Type': 'multipart/form-data' }
+      );
+      return response;
+    } catch (error) {
+      console.error('Error al subir attachments:', error);
       throw this.handleError(error);
     }
   }

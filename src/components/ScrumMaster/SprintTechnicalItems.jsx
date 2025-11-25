@@ -6,6 +6,8 @@ import {
   Settings, 
   CheckSquare, 
   User, 
+  UserPlus,
+  UserCheck,
   AlertTriangle,
   Filter,
   Search,
@@ -16,11 +18,11 @@ import {
   Plus
 } from 'lucide-react';
 import StoryWithTechnicalItems from './StoryWithTechnicalItems';
-import AssignTechnicalItemModal from './AssignTechnicalItemModal';
+import AssignUserToTechnicalItemModal from './AssignUserToTechnicalItemModal';
 import ModalBacklogItemSM from './modalsSM/ModalBacklogItemSM';
 
 // Componente para mostrar items técnicos sin asignar
-const UnassignedTechnicalItems = ({ items, onAssignToStory, onViewDetails }) => {
+const UnassignedTechnicalItems = ({ items, onAssignUser, onViewDetails }) => {
   const [isExpanded, setIsExpanded] = useState(true);
 
   const getItemIcon = (type) => {
@@ -84,7 +86,7 @@ const UnassignedTechnicalItems = ({ items, onAssignToStory, onViewDetails }) => 
         
         {isExpanded && (
           <p className="text-sm text-gray-500 mt-2">
-            Estos items técnicos no están asignados a ninguna historia. Puedes asignarlos usando el botón de enlace.
+            Estos items técnicos no están asignados a ninguna historia. Puedes asignarlos a un developer usando el botón "Asignar Usuario".
           </p>
         )}
       </div>
@@ -130,17 +132,21 @@ const UnassignedTechnicalItems = ({ items, onAssignToStory, onViewDetails }) => 
 
                 <div className="flex items-center gap-1 ml-4">
                   <button
-                    onClick={() => onAssignToStory(item)}
-                    className="flex items-center gap-1 px-2 py-1 text-xs bg-orange-100 text-orange-700 hover:bg-orange-200 rounded transition-colors"
-                    title="Asignar a historia"
+                    onClick={() => onAssignUser(item)}
+                    className={`flex items-center gap-2 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                      item.asignado_a 
+                        ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                        : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                    }`}
+                    title={item.asignado_a ? "Cambiar asignación" : "Asignar a un developer"}
                   >
-                    <Link2 className="h-3 w-3" />
-                    Asignar
+                    {item.asignado_a ? <UserCheck className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                    {item.asignado_a ? 'Asignado' : 'Asignar Usuario'}
                   </button>
                   
                   <button
                     onClick={() => onViewDetails(item)}
-                    className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                    className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
                     title="Ver detalles"
                   >
                     <Eye className="h-4 w-4" />
@@ -160,10 +166,16 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
   const { getToken } = useAuth();
   const [hierarchicalData, setHierarchicalData] = useState({
     historias: [],
-    items_sin_asignar: []
+    items_sin_historia: [],
+    sprint: null,
+    estadisticas: {
+      total_historias: 0,
+      total_items_tecnicos: 0,
+      items_sin_asignar: 0
+    }
   });
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
   // Estados para filtros
@@ -178,7 +190,7 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
   const [isExpanded, setIsExpanded] = useState(true);
   
   // Estados para modales
-  const [assignModal, setAssignModal] = useState({
+  const [assignUserModal, setAssignUserModal] = useState({
     isOpen: false,
     technicalItem: null
   });
@@ -196,6 +208,14 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
   useEffect(() => {
     if (sprintData?._id) {
       fetchHierarchicalData();
+      
+      // 🆕 Auto-refresh cada 30 segundos para ver cambios en tiempo real
+      const refreshInterval = setInterval(() => {
+        fetchHierarchicalData();
+      }, 30000); // 30 segundos
+      
+      // Limpiar interval al desmontar
+      return () => clearInterval(refreshInterval);
     }
   }, [sprintData]);
 
@@ -233,7 +253,17 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
       const hierarchicalData = await hierarchicalResponse.json();
       const productsData = productsResponse.ok ? await productsResponse.json() : { products: [] };
       
-      setHierarchicalData(hierarchicalData);
+      // Asegurar que hierarchicalData tenga la estructura correcta
+      setHierarchicalData({
+        historias: Array.isArray(hierarchicalData?.historias) ? hierarchicalData.historias : [],
+        items_sin_historia: Array.isArray(hierarchicalData?.items_sin_historia) ? hierarchicalData.items_sin_historia : [],
+        sprint: hierarchicalData?.sprint || null,
+        estadisticas: hierarchicalData?.estadisticas || hierarchicalData?.resumen || {
+          total_historias: 0,
+          total_items_tecnicos: 0,
+          items_sin_asignar: 0
+        }
+      });
       setProducts(productsData.products || []);
       
       // Cargar usuarios y sprints para el modal de creación
@@ -300,29 +330,39 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
   };
 
   // Filtrar historias según los criterios seleccionados
-  const filteredHistorias = hierarchicalData.historias.filter(storyData => {
-    const { historia } = storyData;
-    const matchesProduct = filters.producto === 'todos' || 
-      historia.producto?._id === filters.producto;
-    const matchesStatus = filters.estado === 'todos' || historia.estado === filters.estado;
-    const matchesSearch = !filters.search || 
-      historia.titulo.toLowerCase().includes(filters.search.toLowerCase()) ||
-      historia.descripcion.toLowerCase().includes(filters.search.toLowerCase());
-      
-    return matchesProduct && matchesStatus && matchesSearch;
-  });
+  const filteredHistorias = Array.isArray(hierarchicalData?.historias) 
+    ? hierarchicalData.historias.filter(storyData => {
+        // Validar que storyData tenga la estructura correcta
+        if (!storyData || !storyData.historia) {
+          console.warn('⚠️ storyData sin historia:', storyData);
+          return false;
+        }
+        
+        const { historia } = storyData;
+        const matchesProduct = filters.producto === 'todos' || 
+          historia.producto?._id === filters.producto;
+        const matchesStatus = filters.estado === 'todos' || historia.estado === filters.estado;
+        const matchesSearch = !filters.search || 
+          historia.titulo?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          historia.descripcion?.toLowerCase().includes(filters.search.toLowerCase());
+          
+        return matchesProduct && matchesStatus && matchesSearch;
+      })
+    : [];
 
   // Filtrar items sin asignar
-  const filteredUnassigned = hierarchicalData.items_sin_asignar.filter(item => {
-    const matchesProduct = filters.producto === 'todos' || 
-      item.producto?._id === filters.producto;
-    const matchesStatus = filters.estado === 'todos' || item.estado === filters.estado;
-    const matchesSearch = !filters.search || 
-      item.titulo.toLowerCase().includes(filters.search.toLowerCase()) ||
-      item.descripcion.toLowerCase().includes(filters.search.toLowerCase());
-      
-    return matchesProduct && matchesStatus && matchesSearch;
-  });
+  const filteredUnassigned = Array.isArray(hierarchicalData?.items_sin_historia)
+    ? hierarchicalData.items_sin_historia.filter(item => {
+        const matchesProduct = filters.producto === 'todos' || 
+          item.producto?._id === filters.producto;
+        const matchesStatus = filters.estado === 'todos' || item.estado === filters.estado;
+        const matchesSearch = !filters.search || 
+          item.titulo?.toLowerCase().includes(filters.search.toLowerCase()) ||
+          item.descripcion?.toLowerCase().includes(filters.search.toLowerCase());
+          
+        return matchesProduct && matchesStatus && matchesSearch;
+      })
+    : [];
 
   const handleFilterChange = (filterKey, value) => {
     setFilters(prev => ({
@@ -332,19 +372,18 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
   };
 
   const handleViewDetails = (item) => {
-    console.log('Ver detalles de item:', item);
-    // Implementar modal de detalles de item
+    // TODO: Implementar modal de detalles de item
   };
 
-  const handleAssignTechnicalItem = (technicalItem) => {
-    setAssignModal({
+  const handleAssignUserToItem = (technicalItem) => {
+    setAssignUserModal({
       isOpen: true,
       technicalItem
     });
   };
 
   const handleAssignSuccess = (result) => {
-    console.log('Item asignado exitosamente:', result);
+    console.log('✅ [SPRINT] Item asignado, refrescando datos...');
     // Refrescar datos
     fetchHierarchicalData();
     if (onRefresh) onRefresh();
@@ -366,7 +405,6 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
   };
 
   const handleCreateModalSuccess = (message) => {
-    console.log('Item técnico creado exitosamente:', message);
     // Refrescar datos
     fetchHierarchicalData();
     if (onRefresh) onRefresh();
@@ -374,31 +412,36 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
   };
 
   const getSummaryStats = () => {
-    const totalHistorias = filteredHistorias.length;
+    const totalHistorias = filteredHistorias?.length || 0;
     
     // Calcular stats de items técnicos
     let totalTechnicalItems = 0;
     let completedTechnicalItems = 0;
     let inProgressTechnicalItems = 0;
     
-    filteredHistorias.forEach(storyData => {
-      totalTechnicalItems += storyData.items_tecnicos.length;
-      completedTechnicalItems += storyData.items_tecnicos.filter(item => item.estado === 'completado').length;
-      inProgressTechnicalItems += storyData.items_tecnicos.filter(item => item.estado === 'en_progreso').length;
-    });
+    if (Array.isArray(filteredHistorias)) {
+      filteredHistorias.forEach(storyData => {
+        const items = Array.isArray(storyData?.items_tecnicos) ? storyData.items_tecnicos : [];
+        totalTechnicalItems += items.length;
+        completedTechnicalItems += items.filter(item => item.estado === 'completado').length;
+        inProgressTechnicalItems += items.filter(item => item.estado === 'en_progreso').length;
+      });
+    }
     
     // Agregar items sin asignar
-    totalTechnicalItems += filteredUnassigned.length;
-    completedTechnicalItems += filteredUnassigned.filter(item => item.estado === 'completado').length;
-    inProgressTechnicalItems += filteredUnassigned.filter(item => item.estado === 'en_progreso').length;
+    if (Array.isArray(filteredUnassigned)) {
+      totalTechnicalItems += filteredUnassigned.length;
+      completedTechnicalItems += filteredUnassigned.filter(item => item.estado === 'completado').length;
+      inProgressTechnicalItems += filteredUnassigned.filter(item => item.estado === 'en_progreso').length;
+    }
     
-    const completedHistorias = filteredHistorias.filter(storyData => 
-      storyData.historia.estado === 'completado'
-    ).length;
+    const completedHistorias = Array.isArray(filteredHistorias) 
+      ? filteredHistorias.filter(storyData => storyData?.historia?.estado === 'completado').length
+      : 0;
     
-    const inProgressHistorias = filteredHistorias.filter(storyData => 
-      storyData.historia.estado === 'en_progreso'
-    ).length;
+    const inProgressHistorias = Array.isArray(filteredHistorias)
+      ? filteredHistorias.filter(storyData => storyData?.historia?.estado === 'en_progreso').length
+      : 0;
     
     return { 
       totalHistorias,
@@ -407,11 +450,12 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
       totalTechnicalItems,
       completedTechnicalItems,
       inProgressTechnicalItems,
-      unassignedItems: filteredUnassigned.length
+      unassignedItems: filteredUnassigned?.length || 0
     };
   };
 
   const getAvailableStories = () => {
+    if (!Array.isArray(hierarchicalData?.historias)) return [];
     return hierarchicalData.historias.map(storyData => storyData.historia);
   };
 
@@ -439,6 +483,27 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
           </button>
 
           <div className="flex items-center gap-3">
+            <button
+              onClick={fetchHierarchicalData}
+              disabled={loading}
+              className={`flex items-center gap-2 px-3 py-2 rounded-lg border transition-colors ${
+                loading 
+                  ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
+                  : 'hover:bg-green-50 border-green-200 text-green-700'
+              }`}
+              title="Actualizar datos del sprint"
+            >
+              <svg 
+                className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} 
+                fill="none" 
+                viewBox="0 0 24 24" 
+                stroke="currentColor"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {loading ? 'Actualizando...' : 'Actualizar'}
+            </button>
+            
             <button
               onClick={handleCreateTechnicalItem}
               className="flex items-center gap-2 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
@@ -577,7 +642,7 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
                   No hay historias ni items técnicos
                 </h4>
                 <p className="text-sm text-gray-500">
-                  {hierarchicalData.historias.length === 0 
+                  {(hierarchicalData?.historias?.length || 0) === 0 
                     ? 'Este sprint no tiene historias asignadas aún.'
                     : 'No hay items que coincidan con los filtros seleccionados.'
                   }
@@ -588,31 +653,32 @@ const SprintTechnicalItems = ({ sprintData, onRefresh }) => {
                 {/* Historias con items técnicos */}
                 {filteredHistorias.map(storyData => (
                   <StoryWithTechnicalItems
-                    key={storyData.historia._id}
+                    key={storyData?.historia?._id || Math.random()}
                     storyData={storyData}
                     onViewDetails={handleViewDetails}
-                    onAssignTechnicalItem={handleAssignTechnicalItem}
+                    onAssignUser={handleAssignUserToItem}
                   />
                 ))}
 
                 {/* Items técnicos sin asignar */}
-                <UnassignedTechnicalItems
-                  items={filteredUnassigned}
-                  onAssignToStory={handleAssignTechnicalItem}
-                  onViewDetails={handleViewDetails}
-                />
+                {filteredUnassigned.length > 0 && (
+                  <UnassignedTechnicalItems
+                    items={filteredUnassigned}
+                    onAssignUser={handleAssignUserToItem}
+                    onViewDetails={handleViewDetails}
+                  />
+                )}
               </div>
             )}
           </div>
         </>
       )}
 
-      {/* Modal de asignación */}
-      <AssignTechnicalItemModal
-        isOpen={assignModal.isOpen}
-        onClose={() => setAssignModal({ isOpen: false, technicalItem: null })}
-        technicalItem={assignModal.technicalItem}
-        availableStories={getAvailableStories()}
+      {/* Modal de asignación de usuario */}
+      <AssignUserToTechnicalItemModal
+        isOpen={assignUserModal.isOpen}
+        onClose={() => setAssignUserModal({ isOpen: false, technicalItem: null })}
+        technicalItem={assignUserModal.technicalItem}
         onAssignSuccess={handleAssignSuccess}
       />
 

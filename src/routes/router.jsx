@@ -43,13 +43,14 @@ const SprintPlanning = lazy(() => import('../components/ScrumMaster/SprintPlanni
 const TeamOverview = lazy(() => import('../components/ScrumMaster/TeamOverview.jsx'));
 const Metrics = lazy(() => import('../components/ScrumMaster/Metrics.jsx'));
 const ScrumMasterBacklog = lazy(() => import('../components/ScrumMaster/ScrumMasterBacklog.jsx'));
+const ScrumMasterBugReports = lazy(() => import('../components/ScrumMaster/ScrumMasterBugReports.jsx'));
 
 // Componentes de Developers - lazy loading
 const MyTasks = lazy(() => import('../components/developers/MyTasks.jsx'));
 const SprintBoard = lazy(() => import('../components/developers/SprintBoard.jsx'));
 const TimeTracking = lazy(() => import('../components/developers/TimeTracking.jsx'));
-const CodeRepositories = lazy(() => import('../components/developers/CodeRepositories.jsx'));
 const Projects = lazy(() => import('../components/developers/Projects.jsx'));
+const BugReports = lazy(() => import('../components/developers/BugReports.jsx'));
 
 // Componentes de User - lazy loading
 const MyActivities = lazy(() => import('../components/users/MyActivities.jsx'));
@@ -260,6 +261,10 @@ export const router = createBrowserRouter([
         path: 'backlog-tecnico',
         element: <LazyWrapper><ScrumMasterBacklog /></LazyWrapper>,
       },
+      {
+        path: 'bug-reports',
+        element: <LazyWrapper><ScrumMasterBugReports /></LazyWrapper>,
+      },
     ],
   },
   // Dashboard para Developers
@@ -296,8 +301,8 @@ export const router = createBrowserRouter([
         element: <LazyWrapper><TimeTracking /></LazyWrapper>,
       },
       {
-        path: 'codigo',
-        element: <LazyWrapper><CodeRepositories /></LazyWrapper>,
+        path: 'bug-reports',
+        element: <LazyWrapper><BugReports /></LazyWrapper>,
       },
     ],
   },

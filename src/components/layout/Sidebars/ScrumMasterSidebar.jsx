@@ -14,7 +14,8 @@ import {
   ClipboardList,
   Wrench,
   Menu,
-  X
+  X,
+  Bug
 } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 
@@ -49,6 +50,12 @@ function ScrumMasterSidebar({ currentView, onViewChange, onLogout, userRole, isO
       icon: Users, 
       label: 'Equipo',
       section: 'team'
+    },
+    { 
+      id: 'bug-reports', 
+      icon: Bug, 
+      label: 'Bug Reports',
+      section: 'reports'
     },
     { 
       id: 'metrics', 

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   AlertTriangle, 
   X, 
@@ -10,19 +10,22 @@ import {
   RefreshCw
 } from 'lucide-react';
 import { useBugReports } from '../../hooks/useBugReports';
+import { useDeveloperTasks } from '../../hooks/useDeveloperTasks';
 
 const BugReportModal = ({ isOpen, onClose }) => {
   const { createBugReport, loading } = useBugReports();
+  const { tasks } = useDeveloperTasks();
   
   const [formData, setFormData] = useState({
     title: '',
     description: '',
     priority: 'medium',
-    severity: 'medium',
+    severity: 'major',
     stepsToReproduce: '',
     expectedBehavior: '',
     actualBehavior: '',
     environment: '',
+    relatedTask: '',
     attachments: []
   });
 
@@ -75,11 +78,12 @@ const BugReportModal = ({ isOpen, onClose }) => {
           title: '',
           description: '',
           priority: 'medium',
-          severity: 'medium',
+          severity: 'major',
           stepsToReproduce: '',
           expectedBehavior: '',
           actualBehavior: '',
           environment: '',
+          relatedTask: '',
           attachments: []
         });
         
@@ -163,10 +167,10 @@ const BugReportModal = ({ isOpen, onClose }) => {
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
               >
-                <option value="low">Baja</option>
-                <option value="medium">Media</option>
-                <option value="high">Alta</option>
+                <option value="minor">Menor</option>
+                <option value="major">Mayor</option>
                 <option value="critical">Crítica</option>
+                <option value="blocker">Bloqueante</option>
               </select>
             </div>
             
@@ -186,6 +190,29 @@ const BugReportModal = ({ isOpen, onClose }) => {
                 <option value="critical">Crítica</option>
               </select>
             </div>
+          </div>
+
+          {/* Tarea Relacionada */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tarea Relacionada (opcional)
+            </label>
+            <select
+              name="relatedTask"
+              value={formData.relatedTask}
+              onChange={handleInputChange}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Ninguna - Bug general del sistema</option>
+              {tasks && tasks.map((task) => (
+                <option key={task._id} value={task._id}>
+                  {task.titulo || task.title} - {task.status}
+                </option>
+              ))}
+            </select>
+            <p className="text-xs text-gray-500 mt-1">
+              Selecciona la tarea específica a la que está relacionado este bug
+            </p>
           </div>
 
           {/* Descripción */}

@@ -25,17 +25,12 @@ export const useSprintBoard = (initialSprintId = null, initialFilterMode = 'all'
       setLoading(true);
       setError(null);
       
-      console.log('🔄 Cargando Sprint Board:', { sprintId, mode });
+      console.log('🔄 [HOOK] Cargando Sprint Board:', { sprintId, mode });
       
       const response = await developersApiService.getSprintBoardData(sprintId, mode);
       
       if (response.success) {
         setSprintData(response.data);
-        console.log('✅ Sprint Board cargado:', {
-          sprint: response.data.sprint.name,
-          tasksCount: response.data.tasks.length,
-          filterMode: response.data.filterMode
-        });
       } else {
         setError('Error al cargar datos del sprint board');
       }

@@ -35,7 +35,8 @@ export const useScrumMasterDashboard = () => {
         sprintsResponse,
         backlogResponse,
         technicalItemsResponse,
-        teamMembersResponse
+        teamMembersResponse,
+        bugStatsResponse
       ] = await Promise.all([
         fetch(`${config.API_URL}/sprints`, {
           headers: { 'Authorization': `Bearer ${token}` }
@@ -48,6 +49,9 @@ export const useScrumMasterDashboard = () => {
         }),
         fetch(`${config.API_URL}/team/members`, {
           headers: { 'Authorization': `Bearer ${token}` }
+        }),
+        fetch(`${config.API_URL}/scrum-master/bugs?limit=1`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         })
       ]);
 
@@ -56,6 +60,7 @@ export const useScrumMasterDashboard = () => {
       const backlogData = backlogResponse.ok ? await backlogResponse.json() : { items: [] };
       const technicalData = technicalItemsResponse.ok ? await technicalItemsResponse.json() : { items: [] };
       const teamData = teamMembersResponse.ok ? await teamMembersResponse.json() : { members: [] };
+      const bugData = bugStatsResponse.ok ? await bugStatsResponse.json() : { data: { stats: {} } };
 
       // Encontrar sprint activo
       const activeSprint = sprints.find(s => s.estado === 'activo') || sprints[0] || null;
@@ -103,6 +108,13 @@ export const useScrumMasterDashboard = () => {
         item.tipo === 'bug' && ['muy_alta', 'alta'].includes(item.prioridad)
       ).length;
 
+      // Obtener estadísticas de bugs reportados desde el nuevo endpoint
+      const bugStats = bugData.data?.stats || {};
+      const totalBugReports = bugStats.total || 0;
+      const openBugs = bugStats.open || 0;
+      const criticalBugReports = bugStats.critical || 0;
+      const blockerBugs = bugStats.blockers || 0;
+
       // Calcular velocidad del equipo (story points completados en sprints recientes)
       const teamVelocity = completedStoryPoints; // Simplificado por ahora
 
@@ -114,7 +126,13 @@ export const useScrumMasterDashboard = () => {
         pendingTasks,
         criticalBugs,
         activeImpediments: 2, // Placeholder - necesitaría endpoint de impedimentos
-        teamVelocity
+        teamVelocity,
+        // Nuevas métricas de bug reports
+        totalBugReports,
+        openBugs,
+        criticalBugReports,
+        blockerBugs,
+        technicalItemsPending: pendingTasks + openBugs
       };
 
       setData({

@@ -27,7 +27,8 @@ const TimeTracking = () => {
     stopTimer,
     refresh,
     isTimerRunning,
-    formattedTimerTime
+    formattedTimerTime,
+    timerSeconds
   } = useTimeTracking();
   
   const { 
@@ -46,10 +47,20 @@ const TimeTracking = () => {
   const error = timeError || tasksError;
 
   const formatTime = (minutes) => {
-    if (!minutes) return '0h 0m';
+    if (!minutes) return '0s';
     const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    return `${hours}h ${mins}m`;
+    const mins = Math.floor(minutes % 60);
+    const secs = Math.round((minutes % 1) * 60);
+    
+    if (hours > 0) {
+      if (mins > 0) return `${hours}h ${mins}m`;
+      return `${hours}h`;
+    }
+    if (mins > 0) {
+      if (secs > 0) return `${mins}m ${secs}s`;
+      return `${mins}m`;
+    }
+    return `${secs}s`;
   };
 
   const handleStartTracking = async (taskId) => {
@@ -63,6 +74,8 @@ const TimeTracking = () => {
   const handleStopTracking = async () => {
     try {
       await stopTimer();
+      // Refrescar tareas para actualizar los tiempos
+      await refresh();
     } catch (error) {
       console.error('Error deteniendo tracking:', error);
     }
@@ -70,14 +83,34 @@ const TimeTracking = () => {
 
   const getTaskTimeData = (taskId) => {
     const taskSessions = entries.filter(entry => entry.task && entry.task._id === taskId);
-    const totalTime = taskSessions.reduce((total, session) => total + (session.duration || 0), 0);
+    // duration viene en segundos desde el backend, convertimos a minutos con decimales
+    const totalMinutes = taskSessions.reduce((total, session) => {
+      const seconds = session.duration || 0;
+      return total + (seconds / 60);
+    }, 0);
     
     const today = new Date().toDateString();
-    const todayTime = taskSessions
+    const todayMinutes = taskSessions
       .filter(session => new Date(session.date).toDateString() === today)
-      .reduce((total, session) => total + (session.duration || 0), 0);
+      .reduce((total, session) => {
+        const seconds = session.duration || 0;
+        return total + (seconds / 60);
+      }, 0);
     
-    return { totalTime, todayTime };
+    // Si el timer está activo para esta tarea, agregar el tiempo actual
+    let adjustedTodayTime = todayMinutes;
+    let adjustedTotalTime = totalMinutes;
+    
+    if (isTimerRunning && activeTimer?.task?._id === taskId) {
+      const currentMinutes = timerSeconds / 60;
+      adjustedTodayTime += currentMinutes;
+      adjustedTotalTime += currentMinutes;
+    }
+    
+    return { 
+      totalTime: adjustedTotalTime, 
+      todayTime: adjustedTodayTime 
+    };
   };
 
   if (loading) {
@@ -134,7 +167,7 @@ const TimeTracking = () => {
                 </div>
                 <div>
                   <div className="text-sm font-medium text-blue-900">
-                    {tasks.find(t => t._id === activeTimer.task?._id)?.title || activeTimer.task?.title || 'Tarea desconocida'}
+                    {activeTimer.task?.titulo || activeTimer.task?.title || 'Tarea desconocida'}
                   </div>
                   <div className="text-xs text-blue-700">
                     Tiempo transcurrido: {formattedTimerTime}
@@ -143,6 +176,7 @@ const TimeTracking = () => {
                 <button 
                   onClick={handleStopTracking}
                   className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition-colors"
+                  title="Detener timer"
                 >
                   <Square className="h-4 w-4" />
                 </button>
@@ -234,57 +268,111 @@ const TimeTracking = () => {
                 const isTaskTracking = isTimerRunning && activeTimer?.task?._id === task._id;
                 
                 return (
-                  <div key={task._id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{task.title}</h4>
-                      <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                        <span>Total: {formatTime(totalTime)}</span>
-                        <span>•</span>
-                        <span>Hoy: {formatTime(todayTime)}</span>
-                        <span>•</span>
-                        <span className={`px-2 py-1 rounded-full text-xs ${
-                          task.status === 'in_progress' ? 'bg-blue-100 text-blue-800' :
-                          task.status === 'done' ? 'bg-green-100 text-green-800' :
-                          'bg-gray-100 text-gray-800'
-                        }`}>
-                          {task.status === 'in_progress' ? 'En Progreso' :
-                           task.status === 'done' ? 'Completada' : 'Por Hacer'}
+                  <div 
+                    key={task._id} 
+                    className={`relative border-2 rounded-xl overflow-hidden transition-all duration-300 ${
+                      isTaskTracking 
+                        ? 'border-blue-500 bg-blue-50 shadow-lg' 
+                        : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                    }`}
+                  >
+                    {/* Barra superior con estado y badge activo */}
+                    <div className={`px-4 py-2 flex items-center justify-between ${
+                      isTaskTracking ? 'bg-blue-100' : 'bg-gray-50'
+                    }`}>
+                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        task.estado === 'en_progreso' || task.status === 'in_progress' ? 'bg-blue-500 text-white' :
+                        task.estado === 'completada' || task.status === 'done' ? 'bg-green-500 text-white' :
+                        'bg-gray-400 text-white'
+                      }`}>
+                        {task.estado === 'en_progreso' || task.status === 'in_progress' ? '🚀 En Progreso' :
+                         task.estado === 'completada' || task.status === 'done' ? '✅ Completada' : '📋 Por Hacer'}
+                      </span>
+                      
+                      {isTaskTracking && (
+                        <span className="flex items-center gap-2 bg-green-500 text-white text-xs px-3 py-1 rounded-full animate-pulse font-semibold">
+                          <span className="w-2 h-2 bg-white rounded-full animate-ping"></span>
+                          ACTIVA
                         </span>
-                      </div>
+                      )}
                     </div>
 
-                    <div className="flex items-center gap-3">
-                      {isTaskTracking && (
-                        <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full animate-pulse">
-                          Activa
-                        </span>
-                      )}
+                    {/* Contenido principal */}
+                    <div className="p-4">
+                      {/* Título de la tarea */}
+                      <h4 className="font-semibold text-gray-900 text-lg mb-3">{task.titulo || task.title}</h4>
                       
-                      {!isTimerRunning ? (
-                        <button
-                          onClick={() => handleStartTracking(task._id)}
-                          className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-colors"
-                          title="Iniciar tracking"
-                        >
-                          <Play className="h-4 w-4" />
-                        </button>
-                      ) : isTaskTracking ? (
-                        <button
-                          onClick={handleStopTracking}
-                          className="bg-red-500 hover:bg-red-600 text-white p-2 rounded-lg transition-colors"
-                          title="Detener tracking"
-                        >
-                          <Square className="h-4 w-4" />
-                        </button>
-                      ) : (
-                        <button
-                          disabled
-                          className="bg-gray-300 text-gray-500 p-2 rounded-lg cursor-not-allowed"
-                          title="Otra tarea está siendo trackeada"
-                        >
-                          <Play className="h-4 w-4" />
-                        </button>
-                      )}
+                      {/* Grid de tiempos */}
+                      <div className="grid grid-cols-3 gap-3 mb-4">
+                        {/* Total */}
+                        <div className="bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg p-3 border border-purple-200">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Clock className="h-4 w-4 text-purple-600" />
+                            <span className="text-xs font-medium text-purple-700">Total</span>
+                          </div>
+                          <p className="text-lg font-bold text-purple-900">{formatTime(totalTime)}</p>
+                        </div>
+
+                        {/* Hoy */}
+                        <div className="bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-3 border border-blue-200">
+                          <div className="flex items-center gap-2 mb-1">
+                            <Clock className="h-4 w-4 text-blue-600" />
+                            <span className="text-xs font-medium text-blue-700">Hoy</span>
+                          </div>
+                          <p className="text-lg font-bold text-blue-900">{formatTime(todayTime)}</p>
+                        </div>
+
+                        {/* Tiempo en progreso (solo si está activa) */}
+                        {isTaskTracking ? (
+                          <div className="bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-3 border border-green-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Clock className="h-4 w-4 text-green-600" />
+                              <span className="text-xs font-medium text-green-700">En Curso</span>
+                            </div>
+                            <p className="text-lg font-bold text-green-900">{formattedTimerTime}</p>
+                          </div>
+                        ) : (
+                          <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg p-3 border border-gray-200">
+                            <div className="flex items-center gap-2 mb-1">
+                              <Clock className="h-4 w-4 text-gray-500" />
+                              <span className="text-xs font-medium text-gray-600">Sesión</span>
+                            </div>
+                            <p className="text-lg font-bold text-gray-700">--</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Botones de acción */}
+                      <div className="flex justify-end">
+                        {!isTimerRunning ? (
+                          <button
+                            onClick={() => handleStartTracking(task._id)}
+                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                            title="Iniciar tracking"
+                          >
+                            <Play className="h-4 w-4" />
+                            Iniciar Timer
+                          </button>
+                        ) : isTaskTracking ? (
+                          <button
+                            onClick={handleStopTracking}
+                            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-all duration-200 font-medium shadow-sm hover:shadow-md"
+                            title="Detener tracking"
+                          >
+                            <Square className="h-4 w-4" />
+                            Detener Timer
+                          </button>
+                        ) : (
+                          <button
+                            disabled
+                            className="flex items-center gap-2 bg-gray-300 text-gray-500 px-4 py-2 rounded-lg cursor-not-allowed font-medium"
+                            title="Otra tarea está siendo trackeada"
+                          >
+                            <Play className="h-4 w-4" />
+                            Timer en Uso
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 );

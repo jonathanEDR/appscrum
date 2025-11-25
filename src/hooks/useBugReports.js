@@ -64,6 +64,22 @@ export const useBugReports = (initialFilters = {}) => {
     }
   }, []);
 
+  // Función para actualizar un bug existente (optimista)
+  const updateBugReport = useCallback((bugId, updatedData) => {
+    setBugReports(prevBugs => 
+      prevBugs.map(bug => 
+        bug._id === bugId ? { ...bug, ...updatedData } : bug
+      )
+    );
+  }, []);
+
+  // Función para eliminar un bug (optimista)
+  const deleteBugReport = useCallback((bugId) => {
+    setBugReports(prevBugs => 
+      prevBugs.filter(bug => bug._id !== bugId)
+    );
+  }, []);
+
   // Función para aplicar filtros
   const applyFilters = useCallback((newFilters) => {
     setFilters(prevFilters => ({ ...prevFilters, ...newFilters }));
@@ -127,6 +143,8 @@ export const useBugReports = (initialFilters = {}) => {
     
     // Funciones
     createBugReport,
+    updateBugReport,
+    deleteBugReport,
     applyFilters,
     clearFilters,
     refresh,

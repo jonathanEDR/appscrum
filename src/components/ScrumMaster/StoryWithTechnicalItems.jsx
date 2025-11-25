@@ -5,21 +5,34 @@ import {
   Settings, 
   CheckSquare, 
   User, 
+  UserPlus,
+  UserCheck,
   Eye,
   ChevronDown,
   ChevronRight,
   Link2,
   MoreVertical
 } from 'lucide-react';
+import { useTechnicalItemsProgress } from '../../hooks/useTechnicalItemsProgress';
 
 const StoryWithTechnicalItems = ({ 
   storyData, 
   onViewDetails, 
-  onAssignTechnicalItem,
+  onAssignUser,
   onEditTechnicalItem 
 }) => {
   const [isExpanded, setIsExpanded] = useState(true);
-  const { historia, items_tecnicos } = storyData;
+  
+  // Validar que storyData tenga la estructura correcta
+  if (!storyData || !storyData.historia) {
+    console.warn('StoryWithTechnicalItems: storyData o historia no válidos', storyData);
+    return null;
+  }
+  
+  const { historia, items_tecnicos = [] } = storyData;
+  
+  // Usar el hook para obtener progreso real
+  const { progress, loading: progressLoading } = useTechnicalItemsProgress(historia._id);
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -86,7 +99,8 @@ const StoryWithTechnicalItems = ({
     return { total, completed, inProgress, percentage: total > 0 ? (completed / total) * 100 : 0 };
   };
 
-  const stats = getCompletionStats();
+  // Usar progreso real del hook, fallback al cálculo local si está cargando
+  const stats = progressLoading ? getCompletionStats() : progress;
 
   return (
     <div className="bg-white border border-gray-200 rounded-lg shadow-sm">
@@ -146,7 +160,7 @@ const StoryWithTechnicalItems = ({
               <div className="bg-gray-50 rounded-lg p-3">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm font-medium text-gray-700">
-                    Progreso de Items Técnicos
+                    Progreso de Items Técnicos {progressLoading && <span className="text-xs text-blue-500">(actualizando...)</span>}
                   </span>
                   <span className="text-sm text-gray-500">
                     {stats.completed}/{stats.total} completados
@@ -161,6 +175,7 @@ const StoryWithTechnicalItems = ({
                 <div className="flex items-center gap-4 mt-2 text-xs text-gray-500">
                   <span>✅ {stats.completed} completados</span>
                   <span>🔄 {stats.inProgress} en progreso</span>
+                  <span>⏳ {stats.pending || 0} pendientes</span>
                   <span>📋 {stats.total} total</span>
                 </div>
               </div>
@@ -255,16 +270,21 @@ const StoryWithTechnicalItems = ({
 
                   <div className="flex items-center gap-1 ml-4">
                     <button
-                      onClick={() => onAssignTechnicalItem(item)}
-                      className="p-1 text-gray-400 hover:text-orange-600 transition-colors"
-                      title="Reasignar a otra historia"
+                      onClick={() => onAssignUser(item)}
+                      className={`flex items-center gap-1 px-3 py-1.5 text-sm font-medium rounded-lg transition-colors ${
+                        item.asignado_a 
+                          ? 'bg-green-100 text-green-700 hover:bg-green-200' 
+                          : 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                      }`}
+                      title={item.asignado_a ? "Cambiar asignación" : "Asignar a un developer"}
                     >
-                      <Link2 className="h-4 w-4" />
+                      {item.asignado_a ? <UserCheck className="h-4 w-4" /> : <UserPlus className="h-4 w-4" />}
+                      {item.asignado_a ? 'Asignado' : 'Asignar Usuario'}
                     </button>
                     
                     <button
                       onClick={() => onViewDetails(item)}
-                      className="p-1 text-gray-400 hover:text-blue-600 transition-colors"
+                      className="p-1.5 text-gray-400 hover:text-blue-600 transition-colors"
                       title="Ver detalles"
                     >
                       <Eye className="h-4 w-4" />

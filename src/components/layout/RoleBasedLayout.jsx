@@ -165,12 +165,6 @@ const getRoleNavigation = (role) => {
         path: `/developers/time-tracking`,
         icon: BarChart3,
         show: true
-      },
-      {
-        name: 'Código',
-        path: `/developers/codigo`,
-        icon: Code,
-        show: true
       }
     ],
     user: [
@@ -274,6 +268,7 @@ const Sidebar = ({ isOpen, onClose, onToggle, role, onLogout }) => {
       if (path.includes('/impedimentos')) return 'impediments';
       if (path.includes('/ceremonias')) return 'ceremonies';
       if (path.includes('/equipo')) return 'team';
+      if (path.includes('/bug-reports')) return 'bug-reports';
       if (path.includes('/metricas')) return 'metrics';
       if (path.includes('/perfil')) return 'profile';
       return 'dashboard';
@@ -297,6 +292,9 @@ const Sidebar = ({ isOpen, onClose, onToggle, role, onLogout }) => {
           break;
         case 'team':
           navigate('/scrum_master/equipo');
+          break;
+        case 'bug-reports':
+          navigate('/scrum_master/bug-reports');
           break;
         case 'metrics':
           navigate('/scrum_master/metricas');
@@ -331,7 +329,7 @@ const Sidebar = ({ isOpen, onClose, onToggle, role, onLogout }) => {
       if (path.includes('/proyectos')) return 'projects';
       if (path.includes('/sprint-board')) return 'sprint-board';
       if (path.includes('/time-tracking')) return 'time-tracking';
-      if (path.includes('/codigo')) return 'code';
+      if (path.includes('/bug-reports')) return 'bug-reports';
       if (path.includes('/perfil')) return 'profile';
       return 'dashboard';
     };
@@ -355,8 +353,8 @@ const Sidebar = ({ isOpen, onClose, onToggle, role, onLogout }) => {
         case 'time-tracking':
           navigate('/developers/time-tracking');
           break;
-        case 'code':
-          navigate('/developers/codigo');
+        case 'bug-reports':
+          navigate('/developers/bug-reports');
           break;
         case 'profile':
           navigate('/developers/perfil');

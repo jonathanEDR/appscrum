@@ -1,483 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useNavigate } from 'react-router-dom';
 import sprintService from '../../services/sprintService';
 import { useScrumMasterData } from '../../hooks/useScrumMasterData';
-import { MetricCard, SprintProgressCard, CriticalAlertsCard } from './MetricCards';
 import SprintTechnicalItems from './SprintTechnicalItems';
 import { 
   Target, 
-  TrendingUp, 
-  Users, 
   Calendar, 
   BarChart3,
-  Activity,
-  CheckCircle,
   Clock,
-  AlertTriangle,
-  Play,
   Pause,
   Square,
   RefreshCw,
+  Code,
   Eye,
   Edit,
   User,
-  ExternalLink,
-  ArrowRight,
-  Code,
-  Bug,
-  Settings,
-  CheckSquare
+  CheckCircle,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 
-// Datos mock para el sprint actual
-const mockSprintData = {
-  id: 23,
-  name: 'Sprint 23',
-  goal: 'Implementar sistema de reportes y optimizar rendimiento',
-  startDate: '2025-01-01',
-  endDate: '2025-01-14',
-  status: 'active',
-  capacity: 120,
-  planned: 95,
-  completed: 71,
-  inProgress: 18,
-  remaining: 6,
-  velocity: 38,
-  previousVelocity: 34,
-  burndownData: [
-    { day: 1, planned: 95, actual: 95 },
-    { day: 2, planned: 88, actual: 90 },
-    { day: 3, planned: 81, actual: 85 },
-    { day: 4, planned: 74, actual: 78 },
-    { day: 5, planned: 67, actual: 71 },
-    { day: 6, planned: 60, actual: 65 },
-    { day: 7, planned: 53, actual: 58 }
-  ],
-  teamMembers: [
-    { name: 'Ana García', role: 'Frontend', completed: 18, planned: 24, availability: 'available' },
-    { name: 'Carlos López', role: 'Backend', completed: 22, planned: 28, availability: 'busy' },
-    { name: 'María Rodríguez', role: 'UX/UI', completed: 16, planned: 20, availability: 'available' },
-    { name: 'David Chen', role: 'DevOps', completed: 15, planned: 23, availability: 'off' }
-  ]
-};
-
-// Componente mejorado para navegación rápida
-const QuickActionsPanel = ({ onNavigateToSprint, onNavigateToBacklog, sprintData, onQuickAction }) => {
-  const navigate = useNavigate();
-
-  const actions = [
-    {
-      id: 'sprint-planning',
-      title: 'Sprint Planning',
-      description: 'Asignar historias al sprint',
-      icon: Target,
-      color: 'bg-orange-500',
-      onClick: onNavigateToSprint,
-      external: true
-    },
-    {
-      id: 'backlog-tecnico',
-      title: 'Items Técnicos',
-      description: 'Gestionar tareas y bugs',
-      icon: Code,
-      color: 'bg-purple-500',
-      onClick: onNavigateToBacklog,
-      external: true
-    },
-    {
-      id: 'daily',
-      title: 'Daily Standup',
-      description: 'Reunión diaria del equipo',
-      icon: Users,
-      color: 'bg-blue-500',
-      onClick: () => onQuickAction('daily')
-    },
-    {
-      id: 'metrics',
-      title: 'Actualizar Métricas',
-      description: 'Refrescar datos del sprint',
-      icon: BarChart3,
-      color: 'bg-green-500',
-      onClick: () => onQuickAction('metrics')
-    }
-  ];
-
-  return (
-    <div className="glass-card shadow-galaxy-enhanced">
-      <div className="px-6 py-4 border-b border-primary-200/50">
-        <h3 className="text-lg font-semibold text-primary-800">Acciones Rápidas</h3>
-      </div>
-      <div className="p-6 space-y-3">
-        {actions.map((action) => {
-          const Icon = action.icon;
-          return (
-            <button
-              key={action.id}
-              onClick={action.onClick}
-              className="w-full flex items-center justify-between p-4 border border-primary-200/50 rounded-xl hover:border-primary-300 hover:bg-primary-50/50 transition-all group glass-card hover-lift"
-            >
-              <div className="flex items-center gap-3">
-                <div className={`p-2 ${action.color} rounded-xl text-white shadow-medium`}>
-                  <Icon className="h-4 w-4" />
-                </div>
-                <div className="text-left">
-                  <div className="font-medium text-primary-800">{action.title}</div>
-                  <div className="text-sm text-primary-600">{action.description}</div>
-                </div>
-              </div>
-              {action.external ? (
-                <ExternalLink className="h-4 w-4 text-primary-400 group-hover:text-primary-600" />
-              ) : (
-                <ArrowRight className="h-4 w-4 text-primary-400 group-hover:text-primary-600" />
-              )}
-            </button>
-          );
-        })}
-      </div>
-    </div>
-  );
-};
-
-// Componente mejorado para métricas técnicas
-const TechnicalItemsMetrics = ({ sprintData, onNavigateToBacklog }) => {
-  const technicalItems = sprintData?.technicalItems || [];
-  const totalTechnical = technicalItems.length;
-  const completedTechnical = technicalItems.filter(item => 
-    item.estado === 'completado' || item.status === 'completed'
-  ).length;
-  const pendingTasks = technicalItems.filter(item => 
-    item.tipo === 'tarea' && item.estado !== 'completado'
-  ).length;
-  const criticalBugs = technicalItems.filter(item => 
-    item.tipo === 'bug' && ['muy_alta', 'alta'].includes(item.prioridad)
-  ).length;
-
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
-      <div className="px-6 py-4 border-b border-gray-200">
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Items Técnicos</h3>
-          <button
-            onClick={onNavigateToBacklog}
-            className="text-sm text-blue-600 hover:text-blue-700 font-medium"
-          >
-            Gestionar →
-          </button>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="text-center">
-            <div className="text-2xl font-bold text-gray-900">{totalTechnical}</div>
-            <div className="text-sm text-gray-600">Total</div>
-          </div>
-          <div className="text-center">
-            <div className="text-2xl font-bold text-green-600">{completedTechnical}</div>
-            <div className="text-sm text-gray-600">Completados</div>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Code className="h-4 w-4 text-blue-600" />
-              <span className="text-sm text-gray-600">Tareas pendientes</span>
-            </div>
-            <span className="text-sm font-medium text-gray-900">{pendingTasks}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <Bug className="h-4 w-4 text-red-600" />
-              <span className="text-sm text-gray-600">Bugs críticos</span>
-            </div>
-            <span className="text-sm font-medium text-red-600">{criticalBugs}</span>
-          </div>
-        </div>
-
-        {totalTechnical > 0 && (
-          <div className="mt-4">
-            <div className="flex justify-between text-sm text-gray-600 mb-2">
-              <span>Progreso</span>
-              <span>{completedTechnical}/{totalTechnical}</span>
-            </div>
-            <div className="w-full bg-gray-200 rounded-full h-2">
-              <div 
-                className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
-                style={{ width: `${totalTechnical > 0 ? (completedTechnical / totalTechnical) * 100 : 0}%` }}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-const TeamMemberCard = ({ member }) => {
-  const getAvailabilityColor = (availability) => {
-    const colors = {
-      available: 'bg-green-500',
-      busy: 'bg-yellow-500',
-      off: 'bg-gray-500'
-    };
-    return colors[availability] || colors.off;
-  };
-
-  const getAvailabilityText = (availability) => {
-    const texts = {
-      available: 'Disponible',
-      busy: 'Ocupado',
-      off: 'No disponible'
-    };
-    return texts[availability] || availability;
-  };
-
-  const plannedPoints = Number(member && member.planned) || 0;
-  const completedPoints = Number(member && member.completed) || 0;
-  const completionPercentage = plannedPoints > 0 ? (completedPoints / plannedPoints) * 100 : 0;
-
-  const displayName = (member && (member.name || `${member.firstName || ''} ${member.lastName || ''}`.trim())) || 'Sin nombre';
-  const initials = displayName.split(' ').map(n => (n ? n[0] : '')).join('').slice(0, 2) || 'NA';
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4">
-      <div className="flex items-center justify-between mb-3">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gray-300 rounded-full flex items-center justify-center text-sm font-medium text-gray-700">
-            {initials}
-          </div>
-          <div>
-            <p className="font-medium text-gray-900">{displayName}</p>
-            <p className="text-sm text-gray-600">{member && (member.role || 'Desconocido')}</p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className={`w-2 h-2 rounded-full ${getAvailabilityColor(member.availability)}`}></div>
-          <span className="text-xs text-gray-500">{getAvailabilityText(member.availability)}</span>
-        </div>
-      </div>
-
-      <div className="space-y-2">
-        <div className="flex justify-between text-sm">
-          <span className="text-gray-600">Progreso</span>
-          <span className="font-medium">{member.completed}/{member.planned} pts</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${Math.min(completionPercentage, 100)}%` }}
-          ></div>
-        </div>
-        <p className="text-xs text-gray-500">{completionPercentage.toFixed(0)}% completado</p>
-      </div>
-    </div>
-  );
-};
-
-const BurndownChart = ({ data }) => {
-  const safeData = Array.isArray(data) ? data : [];
-  const chartHeight = 200;
-
-  if (safeData.length === 0) {
-    return (
-      <div className="bg-white rounded-lg border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Burndown Chart</h3>
-        <div className="text-center text-sm text-gray-500 py-8">No hay datos de burndown para este sprint.</div>
-      </div>
-    );
-  }
-
-  const maxValue = safeData.reduce((max, d) => Math.max(max, (d.planned || 0), (d.actual || 0)), 0) || 1;
-  const steps = Math.max(safeData.length - 1, 1);
-
-  const pointsFor = (value, i) => `${(i * 100) / steps},${((maxValue - (value || 0)) / maxValue) * chartHeight}`;
-
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <h3 className="text-lg font-semibold text-gray-900 mb-4">Burndown Chart</h3>
-      
-      <div className="relative" style={{ height: chartHeight }}>
-        <svg width="100%" height={chartHeight} className="overflow-visible">
-          {/* Grid lines */}
-          {[0, 25, 50, 75, 100].map(percent => {
-            const y = (chartHeight * percent) / 100;
-            return (
-              <g key={percent}>
-                <line
-                  x1="0"
-                  y1={y}
-                  x2="100%"
-                  y2={y}
-                  stroke="#e5e7eb"
-                  strokeWidth="1"
-                />
-                <text
-                  x="-10"
-                  y={y + 4}
-                  fontSize="12"
-                  fill="#6b7280"
-                  textAnchor="end"
-                >
-                  {Math.round(maxValue - (maxValue * percent) / 100)}
-                </text>
-              </g>
-            );
-          })}
-
-          {/* Planned line */}
-          <polyline
-            fill="none"
-            stroke="#3b82f6"
-            strokeWidth="2"
-            strokeDasharray="5,5"
-            points={safeData.map((d, i) => pointsFor(d.planned, i)).join(' ')}
-          />
-
-          {/* Actual line */}
-          <polyline
-            fill="none"
-            stroke="#f59e0b"
-            strokeWidth="3"
-            points={safeData.map((d, i) => pointsFor(d.actual, i)).join(' ')}
-          />
-
-          {/* Data points */}
-          {safeData.map((d, i) => (
-            <circle
-              key={i}
-              cx={`${(i * 100) / steps}%`}
-              cy={((maxValue - (d.actual || 0)) / maxValue) * chartHeight}
-              r="4"
-              fill="#f59e0b"
-            />
-          ))}
-        </svg>
-
-        {/* Legend */}
-        <div className="absolute top-4 right-4 space-y-2">
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5 bg-blue-500 border-dashed border-blue-500" style={{borderWidth: '1px'}}></div>
-            <span className="text-xs text-gray-600">Planificado</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="w-4 h-0.5 bg-yellow-500"></div>
-            <span className="text-xs text-gray-600">Real</span>
-          </div>
-        </div>
-      </div>
-
-      {/* X-axis labels */}
-      <div className="flex justify-between mt-2 text-xs text-gray-500">
-        {safeData.map((d, i) => (
-          <span key={i}>Día {d.day}</span>
-        ))}
-      </div>
-    </div>
-  );
-};
-
-// Componente placeholder para Sprint Planning
-const SprintPlanningTab = ({ sprintData, onRefresh }) => {
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="text-center py-12">
-        <Target className="h-16 w-16 text-orange-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">Sprint Planning</h3>
-        <p className="text-gray-600 mb-6">
-          Aquí podrás asignar historias del Product Backlog a este sprint.
-        </p>
-        <div className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="bg-blue-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-blue-600">{sprintData?.backlogItems?.length || 0}</div>
-              <div className="text-sm text-blue-800">Historias Asignadas</div>
-            </div>
-            <div className="bg-green-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-green-600">{sprintData?.totalStoryPoints || 0}</div>
-              <div className="text-sm text-green-800">Story Points Total</div>
-            </div>
-            <div className="bg-purple-50 p-4 rounded-lg">
-              <div className="text-2xl font-bold text-purple-600">{sprintData?.capacity || 0}</div>
-              <div className="text-sm text-purple-800">Capacidad del Sprint</div>
-            </div>
-          </div>
-          
-          <button
-            onClick={() => window.open('/scrum_master/sprint-planning', '_blank')}
-            className="inline-flex items-center gap-2 px-6 py-3 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
-          >
-            <Target className="h-5 w-5" />
-            Abrir Sprint Planning Completo
-            <ExternalLink className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-// Componente placeholder para Backlog Técnico
-const BacklogTecnicoTab = ({ sprintData, onRefresh }) => {
-  const technicalItems = sprintData?.technicalItems || [];
-  const tareas = technicalItems.filter(item => item.tipo === 'tarea');
-  const bugs = technicalItems.filter(item => item.tipo === 'bug');
-  const mejoras = technicalItems.filter(item => item.tipo === 'mejora');
-  
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6">
-      <div className="text-center py-8">
-        <Code className="h-16 w-16 text-purple-400 mx-auto mb-4" />
-        <h3 className="text-xl font-semibold text-gray-900 mb-2">Items Técnicos del Sprint</h3>
-        <p className="text-gray-600 mb-6">
-          Gestiona tareas técnicas, bugs y mejoras asociadas a este sprint.
-        </p>
-        
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-blue-50 p-4 rounded-lg">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <CheckSquare className="h-5 w-5 text-blue-600" />
-              <span className="text-2xl font-bold text-blue-600">{tareas.length}</span>
-            </div>
-            <div className="text-sm text-blue-800">Tareas</div>
-          </div>
-          <div className="bg-red-50 p-4 rounded-lg">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Bug className="h-5 w-5 text-red-600" />
-              <span className="text-2xl font-bold text-red-600">{bugs.length}</span>
-            </div>
-            <div className="text-sm text-red-800">Bugs</div>
-          </div>
-          <div className="bg-green-50 p-4 rounded-lg">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <Settings className="h-5 w-5 text-green-600" />
-              <span className="text-2xl font-bold text-green-600">{mejoras.length}</span>
-            </div>
-            <div className="text-sm text-green-800">Mejoras</div>
-          </div>
-        </div>
-
-        <button
-          onClick={() => window.open('/scrum_master/backlog-tecnico', '_blank')}
-          className="inline-flex items-center gap-2 px-6 py-3 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors"
-        >
-          <Code className="h-5 w-5" />
-          Abrir Backlog Técnico Completo
-          <ExternalLink className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
-};
+// ============================================================================
+// COMPONENTES AUXILIARES
+// ============================================================================
 
 // Componente para navegación por pestañas
 const SprintTabNavigation = ({ activeTab, onTabChange, sprintData }) => {
   const tabs = [
     {
       id: 'overview',
-      label: 'Vista General',
+      label: 'Sprints',
       icon: BarChart3,
-      description: 'Métricas y estado del sprint',
+      description: 'Gestionar sprints y items técnicos',
       badge: null
     },
     {
@@ -546,56 +101,185 @@ const SprintTabNavigation = ({ activeTab, onTabChange, sprintData }) => {
 };
 
 // Componente para seleccionar sprints
-const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => (
-  <div className="bg-white rounded-lg border border-gray-200 p-4 mb-6">
-    <div className="flex items-center justify-between mb-3">
-      <h3 className="text-lg font-semibold text-gray-900">Sprints Disponibles</h3>
-      <button 
-        onClick={() => window.location.reload()}
-        className="inline-flex items-center gap-1 px-3 py-1.5 text-sm text-gray-600 hover:text-gray-800 transition-colors"
-        disabled={loading}
-      >
-        <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
-        Actualizar
-      </button>
+const SprintSelector = ({ sprints, activeSprint, onSelectSprint, loading }) => {
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const SPRINTS_PER_PAGE = 6;
+  
+  const totalPages = Math.ceil(sprints.length / SPRINTS_PER_PAGE);
+  const startIndex = currentPage * SPRINTS_PER_PAGE;
+  const endIndex = startIndex + SPRINTS_PER_PAGE;
+  const visibleSprints = sprints.slice(startIndex, endIndex);
+
+  const handlePrevPage = () => {
+    setCurrentPage(prev => Math.max(0, prev - 1));
+  };
+
+  const handleNextPage = () => {
+    setCurrentPage(prev => Math.min(totalPages - 1, prev + 1));
+  };
+
+  return (
+    <div className="bg-white rounded-lg border border-gray-200 p-6 mb-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>
+          <h3 className="text-xl font-semibold text-gray-900">Sprints Disponibles</h3>
+          <p className="text-sm text-gray-500 mt-1">
+            Mostrando {startIndex + 1}-{Math.min(endIndex, sprints.length)} de {sprints.length} sprints
+          </p>
+        </div>
+        <button 
+          onClick={() => window.location.reload()}
+          className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+          disabled={loading}
+        >
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+          Actualizar
+        </button>
+      </div>
+      
+      {sprints.length === 0 ? (
+        <div className="text-center py-12 text-gray-500">
+          <Target className="h-16 w-16 mx-auto mb-4 text-gray-300" />
+          <h4 className="text-lg font-medium text-gray-400 mb-2">No hay sprints disponibles</h4>
+          <p className="text-sm">Los sprints se crean desde el módulo Product Owner</p>
+        </div>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {visibleSprints.map(sprint => {
+              const isActive = activeSprint?._id === sprint._id;
+              const statusColor = 
+                (sprint.estado || sprint.status) === 'activo' || (sprint.estado || sprint.status) === 'active' 
+                  ? 'bg-green-100 text-green-800' 
+                  : (sprint.estado || sprint.status) === 'completado' || (sprint.estado || sprint.status) === 'completed'
+                  ? 'bg-gray-100 text-gray-800'
+                  : 'bg-blue-100 text-blue-800';
+              
+              return (
+                <button
+                  key={sprint._id}
+                  onClick={() => onSelectSprint(sprint)}
+                  disabled={loading}
+                  className={`group relative p-4 rounded-xl border-2 transition-all text-left ${
+                    isActive
+                      ? 'border-orange-500 bg-orange-50 shadow-md'
+                      : 'border-gray-200 hover:border-orange-300 hover:shadow-sm'
+                  } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                >
+                  {/* Badge de selección */}
+                  {isActive && (
+                    <div className="absolute -top-2 -right-2 bg-orange-500 text-white rounded-full p-1.5">
+                      <CheckCircle className="h-4 w-4" />
+                    </div>
+                  )}
+
+                  {/* Producto */}
+                  <div className="flex items-center gap-2 mb-3">
+                    <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white text-xs font-bold">
+                      {(sprint.producto?.nombre || sprint.product?.name || 'P')[0].toUpperCase()}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-gray-500 truncate">
+                        {sprint.producto?.nombre || sprint.product?.name || 'Sin producto'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Nombre del sprint */}
+                  <h4 className="font-semibold text-gray-900 mb-2 line-clamp-2">
+                    {sprint.nombre || sprint.name}
+                  </h4>
+
+                  {/* Meta del sprint */}
+                  {(sprint.meta || sprint.goal) && (
+                    <p className="text-xs text-gray-600 mb-3 line-clamp-2">
+                      {sprint.meta || sprint.goal}
+                    </p>
+                  )}
+
+                  {/* Estado y fechas */}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${statusColor}`}>
+                        {(sprint.estado || sprint.status) === 'activo' || (sprint.estado || sprint.status) === 'active' 
+                          ? 'Activo' 
+                          : (sprint.estado || sprint.status) === 'completado' || (sprint.estado || sprint.status) === 'completed'
+                          ? 'Completado'
+                          : 'Planificado'}
+                      </span>
+                      <div className="flex items-center gap-1 text-xs text-gray-500">
+                        <Calendar className="h-3 w-3" />
+                        <span>
+                          {Math.ceil(
+                            (new Date(sprint.fecha_fin || sprint.endDate) - new Date(sprint.fecha_inicio || sprint.startDate)) 
+                            / (1000 * 60 * 60 * 24)
+                          )} días
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1 text-xs text-gray-500">
+                      <Clock className="h-3 w-3" />
+                      <span>
+                        {new Date(sprint.fecha_inicio || sprint.startDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short' })}
+                        {' - '}
+                        {new Date(sprint.fecha_fin || sprint.endDate).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' })}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Indicador hover */}
+                  {!isActive && (
+                    <div className="absolute inset-0 border-2 border-orange-400 rounded-xl opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
+                  )}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Paginación */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
+              <button
+                onClick={handlePrevPage}
+                disabled={currentPage === 0}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Anterior
+              </button>
+              
+              <div className="flex items-center gap-2">
+                {Array.from({ length: totalPages }, (_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrentPage(i)}
+                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                      currentPage === i
+                        ? 'bg-orange-500 text-white'
+                        : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                    }`}
+                  >
+                    {i + 1}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={handleNextPage}
+                disabled={currentPage === totalPages - 1}
+                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Siguiente
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
-    
-    {sprints.length === 0 ? (
-      <div className="text-center py-4 text-gray-500">
-        <Target className="h-8 w-8 mx-auto mb-2 text-gray-400" />
-        <p>No hay sprints disponibles</p>
-        <p className="text-sm">Los sprints se crean desde el módulo Product Owner</p>
-      </div>
-    ) : (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {sprints.map(sprint => (
-          <button
-            key={sprint._id}
-            onClick={() => onSelectSprint(sprint)}
-            disabled={loading}
-            className={`p-3 rounded-lg border-2 transition-colors text-left ${
-              activeSprint?._id === sprint._id
-                ? 'border-orange-500 bg-orange-50'
-                : 'border-gray-200 hover:border-gray-300'
-            } ${loading ? 'opacity-50 cursor-not-allowed' : ''}`}
-          >
-            <div className="font-medium text-gray-900">{sprint.nombre || sprint.name}</div>
-            <div className={`text-sm capitalize ${
-              (sprint.estado || sprint.status) === 'activo' || (sprint.estado || sprint.status) === 'active' 
-                ? 'text-green-600' : 'text-gray-600'
-            }`}>
-              {sprint.estado || sprint.status}
-            </div>
-            <div className="text-xs text-gray-500">
-              {new Date(sprint.fecha_inicio || sprint.startDate).toLocaleDateString()} - 
-              {new Date(sprint.fecha_fin || sprint.endDate).toLocaleDateString()}
-            </div>
-          </button>
-        ))}
-      </div>
-    )}
-  </div>
-);
+  );
+};
 
 // Componente para mostrar historias del sprint
 const SprintBacklogDetails = ({ sprintData, onToggleStory, showDetails, onToggleDetails }) => {
@@ -764,7 +448,7 @@ const SprintManagement = () => {
     startDate: activeSprintData.fecha_inicio || activeSprintData.startDate,
     endDate: activeSprintData.fecha_fin || activeSprintData.endDate,
     burndownData: metrics?.burndownData || []
-  } : mockSprintData;
+  } : null;
 
   const handleNavigateToSprint = () => {
     navigate('/scrum_master/sprint-planning');
@@ -837,55 +521,23 @@ const SprintManagement = () => {
     // o navegar a una página de detalles de la historia
   };
 
-  const handleQuickAction = async (action) => {
-    switch (action) {
-      case 'daily':
-        console.log('Navegando a Daily Standup...');
-        // Navegar a la página de ceremonias o abrir modal de daily
-        window.location.href = '/scrum-master/ceremonies?ceremony=daily';
-        break;
-      case 'metrics':
-        console.log('Actualizando métricas...');
-        // ✅ OPTIMIZADO: Refrescar usando el hook
-        await refresh();
-        break;
-      case 'review':
-        console.log('Navegando a Sprint Review...');
-        // Navegar a la página de review o abrir modal
-        window.location.href = '/scrum-master/ceremonies?ceremony=review';
-        break;
-      default:
-        console.log('Acción no reconocida:', action);
-    }
+  // Calcular progreso y estado del sprint inline
+  const totalPlanned = metrics?.plannedStoryPoints || 0;
+  const totalCompleted = metrics?.completedStoryPoints || 0;
+  const progress = totalPlanned > 0 ? (totalCompleted / totalPlanned) * 100 : 0;
+
+  const today = new Date();
+  const endDate = activeSprintData ? new Date(activeSprintData.fecha_fin || activeSprintData.endDate) : new Date();
+  const startDate = activeSprintData ? new Date(activeSprintData.fecha_inicio || activeSprintData.startDate) : new Date();
+  const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
+  const daysElapsed = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
+  const daysRemaining = Math.max(0, totalDays - daysElapsed);
+  const sprintStatus = {
+    totalDays,
+    daysElapsed: Math.max(0, daysElapsed),
+    daysRemaining,
+    isOverdue: today > endDate
   };
-
-  const getSprintProgress = () => {
-    if (!metrics) return 0;
-    const totalPlanned = metrics.plannedStoryPoints || 0;
-    const totalCompleted = metrics.completedStoryPoints || 0;
-    return totalPlanned > 0 ? (totalCompleted / totalPlanned) * 100 : 0;
-  };
-
-  const getSprintStatus = () => {
-    if (!activeSprintData) return { totalDays: 0, daysElapsed: 0, daysRemaining: 0, isOverdue: false };
-    
-    const today = new Date();
-    const endDate = new Date(activeSprintData.fecha_fin || activeSprintData.endDate);
-    const startDate = new Date(activeSprintData.fecha_inicio || activeSprintData.startDate);
-    const totalDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
-    const daysElapsed = Math.ceil((today - startDate) / (1000 * 60 * 60 * 24));
-    const daysRemaining = Math.max(0, totalDays - daysElapsed);
-
-    return {
-      totalDays,
-      daysElapsed: Math.max(0, daysElapsed),
-      daysRemaining,
-      isOverdue: today > endDate
-    };
-  };
-
-  const sprintStatus = getSprintStatus();
-  const progress = getSprintProgress();
 
   // Mostrar loading
   if (isLoading && !activeSprintData) {
@@ -898,14 +550,6 @@ const SprintManagement = () => {
 
   return (
     <div className="space-y-6">
-      {/* Selector de Sprints */}
-      <SprintSelector 
-        sprints={sprints}
-        activeSprint={activeSprint}
-        onSelectSprint={handleSelectSprint}
-        loading={isLoading}
-      />
-
       {/* Mensaje de error/información */}
       {error && (
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -920,6 +564,29 @@ const SprintManagement = () => {
               <p className="text-sm text-blue-700 mt-1">{error}</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Si no hay sprint seleccionado, mostrar solo selector */}
+      {!sprintData && (
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 text-center">
+            <Target className="h-12 w-12 mx-auto mb-4 text-gray-400" />
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              Selecciona un Sprint
+            </h3>
+            <p className="text-gray-600">
+              Elige un sprint de la lista para ver sus detalles e items técnicos
+            </p>
+          </div>
+
+          {/* Selector de Sprints */}
+          <SprintSelector 
+            sprints={sprints}
+            activeSprint={activeSprint}
+            onSelectSprint={handleSelectSprint}
+            loading={isLoading}
+          />
         </div>
       )}
 
@@ -1010,135 +677,21 @@ const SprintManagement = () => {
 
           {/* Contenido según la pestaña activa */}
           {activeTab === 'overview' && (
-            <>
-              {/* Métricas del Sprint mejoradas */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <MetricCard
-                  title="Completado"
-                  value={sprintData.completed || 0}
-                  subtitle={`${sprintData.totalStoryPoints || 0} Story Points`}
-                  icon={CheckCircle}
-                  color="green"
-                  trend="up"
-                  trendValue="+12%"
-                />
-                
-                <MetricCard
-                  title="En Progreso"
-                  value={sprintData.inProgress || 0}
-                  subtitle="Items activos"
-                  icon={Clock}
-                  color="blue"
-                />
-                
-                <MetricCard
-                  title="Items Técnicos"
-                  value={sprintData.technicalItems?.length || 0}
-                  subtitle="Tareas, bugs, mejoras"
-                  icon={Code}
-                  color="purple"
-                  isClickable={true}
-                  onClick={handleNavigateToBacklog}
-                />
-                
-                <MetricCard
-                  title="Velocidad"
-                  value={sprintData.velocity || 0}
-                  subtitle="Story Points"
-                  icon={TrendingUp}
-                  color="orange"
-                  trend="up"
-                  trendValue={sprintData.previousVelocity ? 
-                    `+${((sprintData.velocity - sprintData.previousVelocity) / sprintData.previousVelocity * 100).toFixed(0)}%` : 
-                    undefined
-                  }
-                />
-              </div>
+            <div className="space-y-6">
+              {/* Selector de Sprints */}
+              <SprintSelector 
+                sprints={sprints}
+                activeSprint={activeSprint}
+                onSelectSprint={handleSelectSprint}
+                loading={isLoading}
+              />
 
-              {/* Contenido principal */}
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                {/* Burndown Chart */}
-                <div className="lg:col-span-2 space-y-6">
-                  <BurndownChart data={sprintData.burndownData} />
-                  
-                  {/* Items Técnicos del Sprint - Ahora dentro del grid */}
-                  <SprintTechnicalItems 
-                    sprintData={sprintData}
-                    onRefresh={handleRefreshTechnicalItems}
-                  />
-                </div>
-
-                {/* Alertas y estado */}
-                <div className="space-y-6">
-                  {/* Items técnicos */}
-                  <TechnicalItemsMetrics 
-                    sprintData={sprintData}
-                    onNavigateToBacklog={handleNavigateToBacklog}
-                  />
-
-                  {/* Estado del sprint */}
-                  <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <Activity className="h-5 w-5" />
-                      Estado del Sprint
-                    </h3>
-                    
-                    <div className="space-y-4">
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Días transcurridos</span>
-                        <span className="font-medium">{sprintStatus.daysElapsed}/{sprintStatus.totalDays}</span>
-                      </div>
-                      
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Puntos completados</span>
-                        <span className="font-medium">{sprintData.completed}/{sprintData.planned}</span>
-                      </div>
-                      
-                      <div className="flex justify-between text-sm">
-                        <span className="text-gray-600">Velocidad proyectada</span>
-                        <span className="font-medium">{sprintData.velocity} pts</span>
-                      </div>
-
-                      {sprintStatus.isOverdue && (
-                        <div className="p-3 bg-red-50 rounded-lg">
-                          <div className="flex items-center gap-2 text-red-700">
-                            <AlertTriangle className="h-4 w-4" />
-                            <span className="text-sm font-medium">Sprint retrasado</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {progress < 50 && sprintStatus.daysElapsed > sprintStatus.totalDays / 2 && (
-                        <div className="p-3 bg-yellow-50 rounded-lg">
-                          <div className="flex items-center gap-2 text-yellow-700">
-                            <AlertTriangle className="h-4 w-4" />
-                            <span className="text-sm font-medium">Progreso por debajo de lo esperado</span>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Acciones rápidas mejoradas */}
-                  <QuickActionsPanel
-                    onNavigateToSprint={handleNavigateToSprint}
-                    onNavigateToBacklog={handleNavigateToBacklog}
-                    sprintData={sprintData}
-                    onQuickAction={handleQuickAction}
-                  />
-                </div>
-              </div>
-
-              {/* Equipo */}
-              <div>
-                <h2 className="text-lg font-semibold text-gray-900 mb-4">Estado del Equipo</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {sprintData.teamMembers.map((member, index) => (
-                    <TeamMemberCard key={index} member={member} />
-                  ))}
-                </div>
-              </div>
-            </>
+              {/* Items Técnicos del Sprint */}
+              <SprintTechnicalItems 
+                sprintData={sprintData}
+                onRefresh={handleRefreshTechnicalItems}
+              />
+            </div>
           )}
         </>
       )}

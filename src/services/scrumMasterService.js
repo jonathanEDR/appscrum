@@ -1,16 +1,52 @@
 // Servicios API para el módulo Scrum Master
-const API_BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+// Usar URL estática para evitar problemas de process en el navegador
+const API_BASE_URL = 'http://localhost:5000/api';
 
 class ScrumMasterService {
+  constructor() {
+    // Función para obtener token de Clerk desde contexto
+    this._getTokenFromContext = async () => undefined;
+  }
+
+  // Método para configurar el proveedor de token desde el contexto de Clerk
+  setTokenProvider(getTokenFn) {
+    console.log('scrumMasterService: Setting token provider');
+    if (typeof getTokenFn === 'function') {
+      this._getTokenFromContext = getTokenFn;
+      console.log('scrumMasterService: Token provider set successfully (function)');
+      return;
+    }
+    
+    if (getTokenFn && (typeof getTokenFn === 'string' || typeof getTokenFn.then === 'function')) {
+      console.log('scrumMasterService: Token provider set successfully (string/promise)');
+      this._getTokenFromContext = () => Promise.resolve(getTokenFn);
+      return;
+    }
+
+    console.warn('scrumMasterService: setTokenProvider called with invalid value, token requests will be unauthenticated.', getTokenFn);
+    this._getTokenFromContext = async () => undefined;
+  }
+
+  // Método privado para obtener headers con autenticación
+  async _getHeaders() {
+    try {
+      const token = await this._getTokenFromContext();
+      return {
+        'Content-Type': 'application/json',
+        ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+      };
+    } catch (error) {
+      console.error('Error al obtener token para scrumMasterService:', error);
+      return { 'Content-Type': 'application/json' };
+    }
+  }
   // Métodos para impedimentos
   async getImpediments(filters = {}) {
     try {
       const queryParams = new URLSearchParams(filters);
+      const headers = await this._getHeaders();
       const response = await fetch(`${API_BASE_URL}/impediments?${queryParams}`, {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        }
+        headers
       });
       
       if (!response.ok) {
@@ -26,12 +62,10 @@ class ScrumMasterService {
 
   async createImpediment(impedimentData) {
     try {
+      const headers = await this._getHeaders();
       const response = await fetch(`${API_BASE_URL}/impediments`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json'
-        },
+        headers,
         body: JSON.stringify(impedimentData)
       });
       
@@ -317,6 +351,91 @@ class ScrumMasterService {
       return { success: true };
     } catch (error) {
       console.error('Error en exportSprintReport:', error);
+      throw error;
+    }
+  }
+
+  // Métodos para Bug Reports
+  async getBugReports(filters = {}) {
+    try {
+      const queryParams = new URLSearchParams();
+      
+      // Agregar filtros a los query params
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== undefined && filters[key] !== '' && filters[key] !== null) {
+          queryParams.append(key, filters[key]);
+        }
+      });
+
+      const headers = await this._getHeaders();
+      const response = await fetch(`${API_BASE_URL}/scrum-master/bugs?${queryParams}`, {
+        headers
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.text();
+        throw new Error(`Error al obtener bug reports: ${errorData}`);
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error en getBugReports:', error);
+      throw error;
+    }
+  }
+
+  async getBugReportById(id) {
+    try {
+      const headers = await this._getHeaders();
+      const response = await fetch(`${API_BASE_URL}/scrum-master/bugs/${id}`, {
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener bug report');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error en getBugReportById:', error);
+      throw error;
+    }
+  }
+
+  async getBugComments(bugId) {
+    try {
+      const headers = await this._getHeaders();
+      const response = await fetch(`${API_BASE_URL}/scrum-master/bugs/${bugId}/comments`, {
+        headers
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al obtener comentarios');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error en getBugComments:', error);
+      throw error;
+    }
+  }
+
+  async addBugComment(bugId, text) {
+    try {
+      const headers = await this._getHeaders();
+      const response = await fetch(`${API_BASE_URL}/scrum-master/bugs/${bugId}/comments`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify({ text })
+      });
+      
+      if (!response.ok) {
+        throw new Error('Error al agregar comentario');
+      }
+      
+      return await response.json();
+    } catch (error) {
+      console.error('Error en addBugComment:', error);
       throw error;
     }
   }

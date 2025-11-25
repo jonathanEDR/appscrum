@@ -175,6 +175,13 @@ class ApiService {
     }, getToken);
   }
 
+  async patch(endpoint, data, getToken = null) {
+    return this.request(endpoint, {
+      method: 'PATCH',
+      body: JSON.stringify(data)
+    }, getToken);
+  }
+
   async delete(endpoint, getToken = null) {
     return this.request(endpoint, { method: 'DELETE' }, getToken);
   }

@@ -23,7 +23,6 @@ const Projects = () => {
   const { getToken } = useAuth();
   const [projects, setProjects] = useState([]);
   const [availableTasks, setAvailableTasks] = useState([]);
-  const [myAssignedTasks, setMyAssignedTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedProject, setSelectedProject] = useState('all');
@@ -38,7 +37,6 @@ const Projects = () => {
   });
 
   // Estados para UI
-  const [activeTab, setActiveTab] = useState('available'); // 'available' | 'assigned'
   const [showFilters, setShowFilters] = useState(false);
   
   // Estados para modales
@@ -66,8 +64,7 @@ const Projects = () => {
       
       await Promise.all([
         loadProjects(),
-        loadAvailableTasks(),
-        loadMyAssignedTasks()
+        loadAvailableTasks()
       ]);
     } catch (err) {
       setError(err.message || 'Error al cargar datos');
@@ -147,26 +144,7 @@ const Projects = () => {
     }
   };
 
-  const loadMyAssignedTasks = async () => {
-    try {
-      const token = await getToken();
-      const API_URL = import.meta.env.VITE_API_URL;
-      
-      const response = await fetch(`${API_URL}/developers/tasks`, {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
 
-      if (response.ok) {
-        const data = await response.json();
-        setMyAssignedTasks(data.data?.tasks || []);
-      }
-    } catch (error) {
-      console.error('Error loading my assigned tasks:', error);
-    }
-  };
 
   const handleTakeTask = (task) => {
     setAssignModal({
@@ -178,11 +156,8 @@ const Projects = () => {
   const handleAssignSuccess = async (result) => {
     console.log('Tarea asignada exitosamente:', result);
     
-    // Recargar datos después de asignar tarea
-    await Promise.all([
-      loadAvailableTasks(),
-      loadMyAssignedTasks()
-    ]);
+    // Recargar tareas disponibles después de asignar
+    await loadAvailableTasks();
     
     setAssignModal({ isOpen: false, task: null });
     
@@ -313,7 +288,7 @@ const Projects = () => {
       </div>
 
       {/* Estadísticas rápidas */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
           <div className="flex items-center justify-between">
             <div className="bg-blue-100 p-3 rounded-lg">
@@ -322,18 +297,6 @@ const Projects = () => {
             <div className="text-right">
               <p className="text-sm font-medium text-gray-600">Tareas Disponibles</p>
               <p className="text-2xl font-bold text-gray-900">{availableTasks.length}</p>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <div className="flex items-center justify-between">
-            <div className="bg-green-100 p-3 rounded-lg">
-              <CheckCircle className="h-6 w-6 text-green-600" />
-            </div>
-            <div className="text-right">
-              <p className="text-sm font-medium text-gray-600">Mis Tareas</p>
-              <p className="text-2xl font-bold text-gray-900">{myAssignedTasks.length}</p>
             </div>
           </div>
         </div>
@@ -376,167 +339,72 @@ const Projects = () => {
         />
       )}
 
-      {/* Tabs */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-100">
-        <div className="border-b border-gray-200">
-          <nav className="flex space-x-8 px-6" aria-label="Tabs">
-            <button
-              onClick={() => setActiveTab('available')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'available'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Tareas Disponibles ({availableTasks.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('assigned')}
-              className={`py-4 px-1 border-b-2 font-medium text-sm ${
-                activeTab === 'assigned'
-                  ? 'border-blue-500 text-blue-600'
-                  : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-              }`}
-            >
-              Mis Tareas ({myAssignedTasks.length})
-            </button>
-          </nav>
-        </div>
-
-        <div className="p-6">
-          {activeTab === 'available' ? (
-            <div className="space-y-4">
-              {availableTasks.length === 0 ? (
-                <div className="text-center py-12">
-                  <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No hay tareas disponibles
-                  </h3>
-                  <p className="text-gray-500">
-                    No se encontraron tareas disponibles con los filtros actuales
-                  </p>
-                </div>
-              ) : (
-                availableTasks.map((task) => (
-                  <div key={task._id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      {/* Icono y contenido */}
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className={`p-2 rounded-lg ${getTaskColor(task.tipo)} flex-shrink-0`}>
-                          {getTaskIcon(task.tipo)}
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <h3 className="font-medium text-gray-900 truncate max-w-xs sm:max-w-md">
-                              {task.titulo}
-                            </h3>
-                            <span className={`px-2 py-1 rounded text-xs font-medium border ${getPriorityColor(task.prioridad)} flex-shrink-0`}>
-                              {getPriorityText(task.prioridad)}
-                            </span>
-                            <span className={`px-2 py-1 rounded text-xs font-medium ${getTaskColor(task.tipo)} flex-shrink-0`}>
-                              {task.tipo.charAt(0).toUpperCase() + task.tipo.slice(1)}
-                            </span>
-                          </div>
-                          
-                          <p className="text-sm text-gray-600 mb-2 line-clamp-2 leading-tight">
-                            {task.descripcion}
-                          </p>
-                          
-                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500">
-                            <span className="truncate">Proyecto: {task.producto?.nombre || 'Sin proyecto'}</span>
-                            {task.puntos_historia && (
-                              <span className="flex-shrink-0">{task.puntos_historia} SP</span>
-                            )}
-                            <span className="flex items-center gap-1 flex-shrink-0">
-                              <Calendar className="h-3 w-3" />
-                              {new Date(task.createdAt).toLocaleDateString()}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Botón de acción */}
-                      <div className="flex-shrink-0 self-start sm:self-center">
-                        <button
-                          onClick={() => handleTakeTask(task)}
-                          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium whitespace-nowrap w-full sm:w-auto justify-center"
-                        >
-                          <Plus className="h-4 w-4" />
-                          Tomar Tarea
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
+      {/* Contenido de tareas disponibles */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="space-y-4">
+          {availableTasks.length === 0 ? (
+            <div className="text-center py-12">
+              <Target className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No hay tareas disponibles
+              </h3>
+              <p className="text-gray-500">
+                No se encontraron tareas disponibles con los filtros actuales
+              </p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {myAssignedTasks.length === 0 ? (
-                <div className="text-center py-12">
-                  <CheckCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-                  <h3 className="text-lg font-medium text-gray-900 mb-2">
-                    No tienes tareas asignadas
-                  </h3>
-                  <p className="text-gray-500">
-                    Ve a la pestaña "Tareas Disponibles" para tomar nuevas tareas
-                  </p>
-                </div>
-              ) : (
-                myAssignedTasks.map((task) => (
-                  <div key={task._id} className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      {/* Icono y contenido */}
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <div className={`p-2 rounded-lg ${getTaskColor(task.tipo)} flex-shrink-0`}>
-                          {getTaskIcon(task.tipo)}
-                        </div>
-                        
-                        <div className="flex-1 min-w-0">
-                          <div className="flex flex-wrap items-center gap-2 mb-1">
-                            <h3 className="font-medium text-gray-900 truncate max-w-xs sm:max-w-md">
-                              {task.title}
-                            </h3>
-                            <span className={`px-2 py-1 rounded text-xs font-medium border ${getPriorityColor(task.priority)} flex-shrink-0`}>
-                              {getPriorityText(task.priority)}
-                            </span>
-                            <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium flex-shrink-0">
-                              {task.status}
-                            </span>
-                          </div>
-                          
-                          <p className="text-sm text-gray-600 mb-2 line-clamp-2 leading-tight">
-                            {task.description}
-                          </p>
-                          
-                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500">
-                            <span className="truncate">Sprint: {task.sprint?.nombre || 'Sin sprint'}</span>
-                            {task.spentHours && (
-                              <span className="flex items-center gap-1 flex-shrink-0">
-                                <Clock className="h-3 w-3" />
-                                {task.spentHours}h trabajadas
-                              </span>
-                            )}
-                          </div>
-                        </div>
+            availableTasks.map((task) => (
+              <div key={task._id} className="bg-gray-50 border border-gray-200 rounded-lg p-4 hover:bg-gray-100 transition-colors">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  {/* Icono y contenido */}
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={`p-2 rounded-lg ${getTaskColor(task.tipo)} flex-shrink-0`}>
+                      {getTaskIcon(task.tipo)}
+                    </div>
+                    
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h3 className="font-medium text-gray-900 truncate max-w-xs sm:max-w-md">
+                          {task.titulo}
+                        </h3>
+                        <span className={`px-2 py-1 rounded text-xs font-medium border ${getPriorityColor(task.prioridad)} flex-shrink-0`}>
+                          {getPriorityText(task.prioridad)}
+                        </span>
+                        <span className={`px-2 py-1 rounded text-xs font-medium ${getTaskColor(task.tipo)} flex-shrink-0`}>
+                          {task.tipo.charAt(0).toUpperCase() + task.tipo.slice(1)}
+                        </span>
                       </div>
-
-                      {/* Botón de acción */}
-                      <div className="flex-shrink-0 self-start sm:self-center">
-                        <button
-                          onClick={() => {/* Navegar a detalles de tarea */}}
-                          className="flex items-center gap-2 px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors text-sm font-medium whitespace-nowrap w-full sm:w-auto justify-center"
-                        >
-                          <ArrowRight className="h-4 w-4" />
-                          Ver Detalles
-                        </button>
+                      
+                      <p className="text-sm text-gray-600 mb-2 line-clamp-2 leading-tight">
+                        {task.descripcion}
+                      </p>
+                      
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs text-gray-500">
+                        <span className="truncate">Proyecto: {task.producto?.nombre || 'Sin proyecto'}</span>
+                        {task.puntos_historia && (
+                          <span className="flex-shrink-0">{task.puntos_historia} SP</span>
+                        )}
+                        <span className="flex items-center gap-1 flex-shrink-0">
+                          <Calendar className="h-3 w-3" />
+                          {new Date(task.createdAt).toLocaleDateString()}
+                        </span>
                       </div>
                     </div>
                   </div>
-                ))
-              )}
-            </div>
+
+                  {/* Botón de acción */}
+                  <div className="flex-shrink-0 self-start sm:self-center">
+                    <button
+                      onClick={() => handleTakeTask(task)}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium whitespace-nowrap w-full sm:w-auto justify-center"
+                    >
+                      <Plus className="h-4 w-4" />
+                      Tomar Tarea
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))
           )}
         </div>
       </div>
