@@ -2,6 +2,8 @@ import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useAuth } from '@clerk/clerk-react';
 import { useTheme } from '../../context/ThemeContext';
 import sprintService from '../../services/sprintService';
+import { userTasksService } from '../../services/userTasksService';
+import UserTasksModal from './UserTasksModal';
 // ✅ OPTIMIZADO: Importar hook con caché
 import { useScrumMasterData } from '../../hooks/useScrumMasterData';
 import { 
@@ -24,8 +26,18 @@ import {
   Target
 } from 'lucide-react';
 
-const TeamMemberCard = ({ member, onEdit, onMessage }) => {
+const TeamMemberCard = ({ member, onMessage, onViewTasks, tasksStats }) => {
   const { theme } = useTheme();
+  
+  // Usar datos reales de tareas si están disponibles
+  const actualTasksStats = tasksStats || {
+    assignedItems: member.sprintInfo?.assignedItems || 0,
+    completedItems: member.sprintInfo?.completedItems || 0
+  };
+  
+  const workloadPercentage = actualTasksStats.assignedItems > 0 
+    ? Math.round((actualTasksStats.completedItems / actualTasksStats.assignedItems) * 100)
+    : 0;
   
   const getStatusColor = (status) => {
     if (theme === 'dark') {
@@ -65,9 +77,12 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
   };
 
   return (
-    <div className={`backdrop-blur-lg rounded-xl border-0 shadow-galaxy hover:shadow-large transition-all duration-300 overflow-hidden relative group ${
-      theme === 'dark' ? 'bg-gray-800/80' : 'bg-white/80'
-    }`}>
+    <div 
+      className={`backdrop-blur-lg rounded-xl border-0 shadow-galaxy hover:shadow-large transition-all duration-300 overflow-hidden relative group cursor-pointer ${
+        theme === 'dark' ? 'bg-gray-800/80 hover:bg-gray-700/80' : 'bg-white/80 hover:bg-gray-50'
+      }`}
+      onClick={() => onViewTasks && onViewTasks(member)}
+    >
       <div className={`absolute inset-0 bg-gradient-to-br opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
         theme === 'dark' 
           ? 'from-gray-700/50 via-transparent to-primary-900/30'
@@ -129,38 +144,36 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
           )}
         </div>
         
-        {/* Carga de trabajo */}
+        {/* Carga de trabajo actual */}
         <div className="mt-4">
-          <div className="flex items-center justify-between mb-2">
-            <span className={`text-sm font-medium ${
-              theme === 'dark' ? 'text-gray-300' : 'text-primary-700'
-            }`}>Carga de trabajo</span>
-            <span className={`text-sm font-semibold ${getWorkloadColor(member.workloadPercentage)}`}>
-              {member.workloadPercentage}%
+          <div className={`flex items-center justify-between text-sm mb-2 ${
+            theme === 'dark' ? 'text-gray-300' : 'text-primary-700'
+          }`}>
+            <span>Progreso de tareas</span>
+            <span className={`font-semibold ${getWorkloadColor(workloadPercentage)}`}>
+              {workloadPercentage}%
             </span>
           </div>
           <div className={`w-full rounded-full h-2 shadow-inner ${
             theme === 'dark' ? 'bg-gray-700' : 'bg-primary-100'
           }`}>
-            <div 
-              className={`h-2 rounded-full transition-all duration-500 shadow-soft ${
-                member.workloadPercentage > 100 ? 'bg-gradient-to-r from-error-500 to-error-600' :
-                member.workloadPercentage > 80 ? 'bg-gradient-to-r from-warning-500 to-warning-600' : 'bg-gradient-to-r from-success-500 to-success-600'
+            <div
+              className={`h-2 rounded-full transition-all duration-500 ${
+                workloadPercentage > 100 
+                  ? 'bg-gradient-to-r from-red-500 to-red-600'
+                  : workloadPercentage > 80
+                  ? 'bg-gradient-to-r from-yellow-400 to-orange-500'
+                  : 'bg-gradient-to-r from-green-400 to-emerald-500'
               }`}
-              style={{ width: `${Math.min(member.workloadPercentage, 100)}%` }}
-            />
+              style={{ width: `${Math.min(workloadPercentage, 100)}%` }}
+            ></div>
           </div>
-          <div className={`flex justify-between text-xs mt-1 ${
-            theme === 'dark' ? 'text-gray-500' : 'text-primary-500'
+          <div className={`flex items-center justify-between text-xs mt-2 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-primary-600'
           }`}>
-            <span>{member.workload?.currentStoryPoints || 0} SP actuales</span>
-            <span>{member.workload?.maxStoryPoints || 0} SP máx</span>
+            <span>{actualTasksStats.completedItems} completadas</span>
+            <span>{actualTasksStats.assignedItems} asignadas</span>
           </div>
-          {member.workload?.completedPoints > 0 && (
-            <div className="text-xs text-success-600 mt-1">
-              ✓ {member.workload?.completedPoints || 0} SP completados
-            </div>
-          )}
         </div>
         
         {/* Información del Sprint Activo */}
@@ -238,17 +251,6 @@ const TeamMemberCard = ({ member, onEdit, onMessage }) => {
           theme === 'dark' ? 'border-gray-700' : 'border-primary-100'
         }`}>
           <button 
-            onClick={() => onEdit(member)}
-            className={`inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-xl transition-all duration-300 font-medium shadow-soft hover:shadow-medium ${
-              theme === 'dark'
-                ? 'text-primary-400 hover:text-primary-300 hover:bg-primary-900/30'
-                : 'text-primary-600 hover:text-primary-700 hover:bg-primary-50'
-            }`}
-          >
-            <Edit className="h-4 w-4" />
-            Editar
-          </button>
-          <button 
             onClick={() => onMessage(member)}
             className={`inline-flex items-center gap-1 px-3 py-1.5 text-sm rounded-xl transition-all duration-300 font-medium shadow-soft hover:shadow-medium ${
               theme === 'dark'
@@ -269,61 +271,141 @@ const TeamOverview = () => {
   const { theme } = useTheme();
   const { getToken } = useAuth();
   
-  // ✅ OPTIMIZADO: Usar hook con caché
-  const { 
-    teamMembers: teamMembersFromHook, 
-    activeSprint, 
-    loading: loadingHook,
-    refresh 
-  } = useScrumMasterData();
-  
-  // Estados locales solo para UI
-  const [loading, setLoading] = useState(false);
+  // Estados para manejo de datos
+  const [teamMembers, setTeamMembers] = useState([]);
+  const [activeSprint, setActiveSprint] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [roleFilter, setRoleFilter] = useState('all');
+  
+  // Estados para modal de tareas
+  const [selectedUser, setSelectedUser] = useState(null);
+  const [showTasksModal, setShowTasksModal] = useState(false);
+  const [teamTasksStats, setTeamTasksStats] = useState({});
 
-  // ✅ OPTIMIZADO: Procesar teamMembers del hook con useMemo
-  const teamMembers = useMemo(() => {
-    if (!teamMembersFromHook || teamMembersFromHook.length === 0) return [];
-    
-    return teamMembersFromHook.map(member => ({
-      _id: member._id || member.id || Math.random().toString(36),
-      user: {
-        firstName: member.user?.firstName || member.firstName || 
-          (member.user?.nombre_negocio?.split(' ')[0]) || 'Usuario',
-        lastName: member.user?.lastName || member.lastName || 
-          (member.user?.nombre_negocio?.split(' ').slice(1).join(' ')) || '',
-        email: member.user?.email || member.email || 'usuario@email.com',
-        phone: member.user?.phone || member.phone || ''
-      },
-      role: member.role || 'developer',
-      status: member.status || 'active',
-      availability: member.availability || 100,
-      workload: {
-        currentStoryPoints: member.workload?.currentStoryPoints || 0,
-        maxStoryPoints: member.workload?.maxStoryPoints || 24,
-        completedPoints: member.workload?.completedPoints || 0
-      },
-      workloadPercentage: member.workload && member.workload.maxStoryPoints > 0 ? 
-        Math.round((member.workload.currentStoryPoints / member.workload.maxStoryPoints) * 100) : 0,
-      skills: member.skills || [],
-      lastActiveDate: member.updatedAt ? new Date(member.updatedAt) : new Date(),
-      sprintInfo: member.sprintAssignment || {
-        currentSprint: activeSprint?.nombre || activeSprint?.name,
-        assignedItems: member.sprintAssignment?.itemsCount || 0,
-        completedItems: member.sprintAssignment?.completedCount || 0
+  const API_URL = import.meta.env.VITE_API_URL;
+
+  // Función para cargar colaboradores de la API
+  const fetchTeamMembers = async () => {
+    try {
+      setLoading(true);
+      setError('');
+      
+      const token = await getToken();
+      if (!token) {
+        throw new Error('No hay token de autenticación');
       }
-    }));
-  }, [teamMembersFromHook, activeSprint]);
 
-  // ✅ ELIMINADAS: fetchTeamMembers y fetchActiveSprintWorkload
-  // Los datos ahora vienen directamente del hook useScrumMasterData con caché
+      // Usar el mismo endpoint que funciona en CollaboratorsManagement
+      const response = await fetch(`${API_URL}/team/members`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        // Procesar datos de TeamMember a formato de usuario
+        // Filtrar solo roles relevantes para Scrum Master: developers y scrum_master
+        const allowedRoles = ['developers', 'scrum_master'];
+        const filteredMembers = (data.teamMembers || data.members || [])
+          .filter(teamMember => allowedRoles.includes(teamMember.role));
+        
+        const members = filteredMembers.map(teamMember => ({
+          _id: teamMember.user?._id || teamMember._id,
+          user: {
+            firstName: teamMember.user?.firstName || teamMember.user?.nombre_negocio?.split(' ')[0] || 'Usuario',
+            lastName: teamMember.user?.lastName || teamMember.user?.nombre_negocio?.split(' ').slice(1).join(' ') || '',
+            email: teamMember.user?.email || 'usuario@email.com',
+            phone: teamMember.user?.phone || ''
+          },
+          role: teamMember.role || 'user',
+          status: teamMember.status || 'active',
+          team: teamMember.team,
+          position: teamMember.position || 'Miembro del equipo',
+          skills: teamMember.skills || [],
+          availability: teamMember.availability || 100,
+          lastActiveDate: teamMember.lastActiveDate || new Date(),
+          workloadPercentage: teamMember.workloadPercentage || 0,
+          sprintInfo: {
+            currentSprint: teamMember.currentSprint || null,
+            assignedItems: teamMember.assignedItems || 0,
+            completedItems: teamMember.completedItems || 0
+          }
+        }));
+        
+        setTeamMembers(members);
+      } else if (response.status === 404) {
+        // Si no hay miembros, no es un error
+        setTeamMembers([]);
+      } else {
+        throw new Error(`Error ${response.status}: ${response.statusText}`);
+      }
+    } catch (error) {
+      console.error('Error fetching team members:', error);
+      setError('Error al cargar los miembros del equipo: ' + error.message);
+      setTeamMembers([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Función para cargar estadísticas de tareas del equipo
+  const fetchTeamTasksStats = async () => {
+    try {
+      const token = await getToken();
+      if (!token) return;
+
+      const result = await userTasksService.getTeamTasksSummary(token);
+      if (result.success) {
+        // Convertir array a objeto para acceso rápido por ID de usuario
+        const statsMap = {};
+        result.data.forEach(stat => {
+          // Usar tanto email como teamMemberId como claves para acceso flexible
+          statsMap[stat.userId] = {
+            assignedItems: stat.totalTasks || 0,
+            completedItems: stat.completedTasks || 0,
+            inProgressItems: stat.inProgressTasks || 0,
+            pendingItems: stat.pendingTasks || 0
+          };
+          
+          // También usar teamMemberId si está disponible
+          if (stat.teamMemberId) {
+            statsMap[stat.teamMemberId] = {
+              assignedItems: stat.totalTasks || 0,
+              completedItems: stat.completedTasks || 0,
+              inProgressItems: stat.inProgressTasks || 0,
+              pendingItems: stat.pendingTasks || 0
+            };
+          }
+        });
+        setTeamTasksStats(statsMap);
+      }
+    } catch (error) {
+      console.error('Error fetching team tasks stats:', error);
+    }
+  };
+
+  // Cargar datos al montar el componente
+  useEffect(() => {
+    fetchTeamMembers();
+    fetchTeamTasksStats();
+  }, []);
+
+  // ✅ OPTIMIZADO: Procesar teamMembers con useMemo
+  const processedTeamMembers = useMemo(() => {
+    if (!teamMembers || teamMembers.length === 0) return [];
+    
+    return teamMembers;
+  }, [teamMembers]);
 
   // ✅ OPTIMIZADO: Filtrado optimizado con useMemo
   const filteredMembers = useMemo(() => {
-    let filtered = teamMembers;
+    let filtered = processedTeamMembers;
 
     if (searchTerm) {
       const searchLower = searchTerm.toLowerCase();
@@ -343,45 +425,40 @@ const TeamOverview = () => {
     }
 
     return filtered;
-  }, [teamMembers, searchTerm, statusFilter, roleFilter]);
+  }, [processedTeamMembers, searchTerm, statusFilter, roleFilter]);
 
   // Handlers optimizados con useCallback
-  const handleEditMember = useCallback((member) => {
-    console.log('Editar miembro:', member);
-    // Aquí puedes abrir un modal de edición
-  }, []);
-
   const handleMessageMember = useCallback((member) => {
-    console.log('Enviar mensaje a:', member);
     // Aquí puedes abrir un chat o modal de mensaje
+  }, []);  const handleViewTasks = useCallback((member) => {
+    setSelectedUser(member);
+    setShowTasksModal(true);
   }, []);
 
-  const handleAddMember = useCallback(() => {
-    console.log('Agregar nuevo miembro');
-    // Redirigir a la página de gestión de colaboradores
-    window.location.href = '/super_admin/colaboradores';
+  const handleCloseTasksModal = useCallback(() => {
+    setShowTasksModal(false);
+    setSelectedUser(null);
   }, []);
 
   const handleRefresh = useCallback(async () => {
-    setLoading(true);
-    // ✅ OPTIMIZADO: Usar refresh del hook
-    await refresh();
-    setLoading(false);
-  }, [refresh]);
+    await Promise.all([
+      fetchTeamMembers(),
+      fetchTeamTasksStats()
+    ]);
+  }, []);
 
   // Estadísticas optimizadas con useMemo
   const statsCards = useMemo(() => {
-    const totalMembers = teamMembers.length;
-    const activeMembers = teamMembers.filter(m => m.status === 'active').length;
-    const overloadedMembers = teamMembers.filter(m => m.workloadPercentage > 100).length;
-    const avgWorkload = totalMembers > 0 
-      ? Math.round(teamMembers.reduce((sum, m) => sum + (m.workloadPercentage || 0), 0) / totalMembers)
-      : 0;
-
+    const totalMembers = processedTeamMembers.length;
+    const activeMembers = processedTeamMembers.filter(m => m.status === 'active').length;
+    
+    // Calcular estadísticas basadas en tareas reales
+    const totalTasks = Object.values(teamTasksStats).reduce((sum, stats) => sum + stats.assignedItems, 0);
+    const completedTasks = Object.values(teamTasksStats).reduce((sum, stats) => sum + stats.completedItems, 0);
+    const avgProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    
     // Nueva estadística: miembros trabajando en sprint activo
-    const membersInActiveSprint = teamMembers.filter(m => 
-      m.sprintInfo?.currentSprint || m.workload?.currentStoryPoints > 0
-    ).length;
+    const membersWithTasks = Object.keys(teamTasksStats).length;
 
     return [
       {
@@ -397,19 +474,19 @@ const TeamOverview = () => {
         color: 'green'
       },
       {
-        title: 'En Sprint Activo',
-        value: membersInActiveSprint,
+        title: 'Con Tareas Asignadas',
+        value: membersWithTasks,
         icon: Target,
         color: 'orange'
       },
       {
-        title: 'Sobrecargados',
-        value: overloadedMembers,
+        title: 'Progreso Promedio',
+        value: `${avgProgress}%`,
         icon: AlertTriangle,
-        color: overloadedMembers > 0 ? 'red' : 'gray'
+        color: avgProgress > 70 ? 'green' : avgProgress > 40 ? 'orange' : 'red'
       }
     ];
-  }, [teamMembers]);
+  }, [processedTeamMembers, teamTasksStats]);
 
   if (loading) {
     return (
@@ -443,13 +520,7 @@ const TeamOverview = () => {
             <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
             Actualizar
           </button>
-          <button 
-            onClick={handleAddMember}
-            className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-orange-600 border border-transparent rounded-md hover:bg-orange-700 transition-colors"
-          >
-            <Plus className="h-4 w-4" />
-            Agregar Miembro
-          </button>
+
         </div>
       </div>
 
@@ -580,8 +651,9 @@ const TeamOverview = () => {
             <TeamMemberCard
               key={member._id}
               member={member}
-              onEdit={handleEditMember}
               onMessage={handleMessageMember}
+              onViewTasks={handleViewTasks}
+              tasksStats={teamTasksStats[member.user?.email] || teamTasksStats[member._id]}
             />
           ))
         ) : (
@@ -605,6 +677,14 @@ const TeamOverview = () => {
           </div>
         )}
       </div>
+      
+      {/* Modal de tareas del usuario */}
+      <UserTasksModal
+        isOpen={showTasksModal}
+        onClose={handleCloseTasksModal}
+        user={selectedUser?.user}
+        teamMemberId={selectedUser?._id}
+      />
     </div>
   );
 };
