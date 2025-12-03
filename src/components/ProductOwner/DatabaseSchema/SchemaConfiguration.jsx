@@ -159,39 +159,40 @@ const SchemaConfiguration = ({
       )}
 
       {/* Info Banner */}
-      <div className={`flex items-start gap-3 p-4 rounded-lg ${
+      <div className={`flex items-start gap-2 md:gap-3 p-3 md:p-4 rounded-lg ${
         theme === 'dark' ? 'bg-blue-900/20 border border-blue-800' : 'bg-blue-50 border border-blue-200'
       }`}>
         <Info className={`flex-shrink-0 ${
           theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
-        }`} size={20} />
-        <div className={`text-sm ${
+        }`} size={18} />
+        <div className={`text-xs md:text-sm ${
           theme === 'dark' ? 'text-blue-300' : 'text-blue-700'
         }`}>
-          <p className="font-medium mb-1">Configuración del Esquema</p>
-          <p>Define las opciones generales para la generación de código, validaciones y comportamiento del esquema de base de datos.</p>
+          <p className="font-medium mb-0.5 md:mb-1">Configuración del Esquema</p>
+          <p className="hidden sm:block">Define las opciones generales para la generación de código, validaciones y comportamiento del esquema de base de datos.</p>
+          <p className="sm:hidden">Opciones de generación de código y validaciones.</p>
         </div>
       </div>
 
       {/* Grid de configuración */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         {/* ===== Sección: Información General ===== */}
-        <div className={`p-4 rounded-lg border ${
+        <div className={`p-3 md:p-4 rounded-lg border ${
           theme === 'dark' ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50'
         }`}>
-          <div className="flex items-center gap-2 mb-4">
-            <Database size={18} className="text-indigo-500" />
-            <h3 className={`font-semibold ${
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
+            <Database size={16} className="text-indigo-500" />
+            <h3 className={`text-sm md:text-base font-semibold ${
               theme === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>
               Información General
             </h3>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {/* Versión */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${
+              <label className={`block text-xs md:text-sm font-medium mb-1 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Versión del Esquema
@@ -201,7 +202,7 @@ const SchemaConfiguration = ({
                 value={config.version}
                 onChange={(e) => handleChange('version', e.target.value)}
                 placeholder="1.0.0"
-                className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -211,7 +212,7 @@ const SchemaConfiguration = ({
 
             {/* Estado */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${
+              <label className={`block text-xs md:text-sm font-medium mb-1 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Estado
@@ -219,7 +220,7 @@ const SchemaConfiguration = ({
               <select
                 value={config.status}
                 onChange={(e) => handleChange('status', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -234,7 +235,7 @@ const SchemaConfiguration = ({
 
             {/* Descripción */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${
+              <label className={`block text-xs md:text-sm font-medium mb-1 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Descripción
@@ -243,8 +244,8 @@ const SchemaConfiguration = ({
                 value={config.description}
                 onChange={(e) => handleChange('description', e.target.value)}
                 placeholder="Describe el propósito de este esquema..."
-                rows={3}
-                className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none ${
+                rows={2}
+                className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -254,7 +255,7 @@ const SchemaConfiguration = ({
 
             {/* Autor */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${
+              <label className={`block text-xs md:text-sm font-medium mb-1 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Autor
@@ -264,7 +265,7 @@ const SchemaConfiguration = ({
                 value={config.author}
                 onChange={(e) => handleChange('author', e.target.value)}
                 placeholder="Nombre del autor o equipo"
-                className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -275,22 +276,22 @@ const SchemaConfiguration = ({
         </div>
 
         {/* ===== Sección: Base de Datos ===== */}
-        <div className={`p-4 rounded-lg border ${
+        <div className={`p-3 md:p-4 rounded-lg border ${
           theme === 'dark' ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50'
         }`}>
-          <div className="flex items-center gap-2 mb-4">
-            <Settings size={18} className="text-green-500" />
-            <h3 className={`font-semibold ${
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
+            <Settings size={16} className="text-green-500" />
+            <h3 className={`text-sm md:text-base font-semibold ${
               theme === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>
               Base de Datos
             </h3>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {/* Tipo de BD */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${
+              <label className={`block text-xs md:text-sm font-medium mb-1 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Tipo de Base de Datos
@@ -298,7 +299,7 @@ const SchemaConfiguration = ({
               <select
                 value={config.database_type}
                 onChange={(e) => handleChange('database_type', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -313,7 +314,7 @@ const SchemaConfiguration = ({
 
             {/* Nivel de validación */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${
+              <label className={`block text-xs md:text-sm font-medium mb-1 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Nivel de Validación
@@ -321,7 +322,7 @@ const SchemaConfiguration = ({
               <select
                 value={config.validation_level}
                 onChange={(e) => handleChange('validation_level', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -331,15 +332,15 @@ const SchemaConfiguration = ({
                 <option value="moderate">Moderate (Moderado)</option>
                 <option value="relaxed">Relaxed (Relajado)</option>
               </select>
-              <p className={`text-xs mt-1 ${
+              <p className={`text-xs mt-1 hidden sm:block ${
                 theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
               }`}>
-                Controla qué tan estrictas son las validaciones en los modelos
+                Controla qué tan estrictas son las validaciones
               </p>
             </div>
 
             {/* Opciones booleanas */}
-            <div className="space-y-3">
+            <div className="space-y-2 md:space-y-3">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -347,10 +348,11 @@ const SchemaConfiguration = ({
                   onChange={(e) => handleChange('generate_timestamps', e.target.checked)}
                   className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <span className={`text-sm ${
+                <span className={`text-xs md:text-sm ${
                   theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
-                  Generar timestamps (createdAt, updatedAt)
+                  <span className="hidden sm:inline">Generar timestamps (createdAt, updatedAt)</span>
+                  <span className="sm:hidden">Generar timestamps</span>
                 </span>
               </label>
 
@@ -361,10 +363,11 @@ const SchemaConfiguration = ({
                   onChange={(e) => handleChange('generate_indexes', e.target.checked)}
                   className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <span className={`text-sm ${
+                <span className={`text-xs md:text-sm ${
                   theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
-                  Generar índices automáticamente
+                  <span className="hidden sm:inline">Generar índices automáticamente</span>
+                  <span className="sm:hidden">Generar índices auto</span>
                 </span>
               </label>
 
@@ -375,10 +378,11 @@ const SchemaConfiguration = ({
                   onChange={(e) => handleChange('soft_delete', e.target.checked)}
                   className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <span className={`text-sm ${
+                <span className={`text-xs md:text-sm ${
                   theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
-                  Habilitar soft delete (eliminación lógica)
+                  <span className="hidden sm:inline">Habilitar soft delete (eliminación lógica)</span>
+                  <span className="sm:hidden">Soft delete</span>
                 </span>
               </label>
             </div>
@@ -386,22 +390,22 @@ const SchemaConfiguration = ({
         </div>
 
         {/* ===== Sección: Generación de Código ===== */}
-        <div className={`p-4 rounded-lg border ${
+        <div className={`p-3 md:p-4 rounded-lg border ${
           theme === 'dark' ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50'
         }`}>
-          <div className="flex items-center gap-2 mb-4">
-            <Code2 size={18} className="text-purple-500" />
-            <h3 className={`font-semibold ${
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
+            <Code2 size={16} className="text-purple-500" />
+            <h3 className={`text-sm md:text-base font-semibold ${
               theme === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>
               Generación de Código
             </h3>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3 md:space-y-4">
             {/* Convención de nombres */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${
+              <label className={`block text-xs md:text-sm font-medium mb-1 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Convención de Nombres
@@ -409,7 +413,7 @@ const SchemaConfiguration = ({
               <select
                 value={config.naming_convention}
                 onChange={(e) => handleChange('naming_convention', e.target.value)}
-                className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -424,7 +428,7 @@ const SchemaConfiguration = ({
 
             {/* Versión de API */}
             <div>
-              <label className={`block text-sm font-medium mb-1 ${
+              <label className={`block text-xs md:text-sm font-medium mb-1 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Versión de API
@@ -434,7 +438,7 @@ const SchemaConfiguration = ({
                 value={config.api_version}
                 onChange={(e) => handleChange('api_version', e.target.value)}
                 placeholder="v1"
-                className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -445,31 +449,31 @@ const SchemaConfiguration = ({
         </div>
 
         {/* ===== Sección: Tags ===== */}
-        <div className={`p-4 rounded-lg border ${
+        <div className={`p-3 md:p-4 rounded-lg border ${
           theme === 'dark' ? 'border-gray-700 bg-gray-800/50' : 'border-gray-200 bg-gray-50'
         }`}>
-          <div className="flex items-center gap-2 mb-4">
-            <Tag size={18} className="text-orange-500" />
-            <h3 className={`font-semibold ${
+          <div className="flex items-center gap-2 mb-3 md:mb-4">
+            <Tag size={16} className="text-orange-500" />
+            <h3 className={`text-sm md:text-base font-semibold ${
               theme === 'dark' ? 'text-white' : 'text-gray-900'
             }`}>
               Etiquetas
             </h3>
           </div>
 
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             {/* Input para agregar tags */}
             <div>
               <input
                 type="text"
-                placeholder="Presiona Enter para agregar etiqueta"
+                placeholder="Presiona Enter para agregar"
                 onKeyPress={(e) => {
                   if (e.key === 'Enter') {
                     addTag(e.target.value.trim());
                     e.target.value = '';
                   }
                 }}
-                className={`w-full px-3 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                className={`w-full px-3 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -505,13 +509,13 @@ const SchemaConfiguration = ({
       </div>
 
       {/* Botones de acción */}
-      <div className={`flex items-center justify-end gap-3 pt-4 border-t ${
+      <div className={`flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-2 sm:gap-3 pt-4 border-t ${
         theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
       }`}>
         <button
           onClick={handleReset}
           disabled={!hasChanges || saving}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center justify-center gap-2 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
             !hasChanges || saving
               ? theme === 'dark' ? 'text-gray-600 cursor-not-allowed' : 'text-gray-400 cursor-not-allowed'
               : theme === 'dark'
@@ -519,14 +523,15 @@ const SchemaConfiguration = ({
                 : 'text-gray-700 hover:bg-gray-100'
           }`}
         >
-          <RotateCcw size={18} />
-          Descartar Cambios
+          <RotateCcw size={16} />
+          <span className="hidden sm:inline">Descartar Cambios</span>
+          <span className="sm:hidden">Descartar</span>
         </button>
         
         <button
           onClick={handleSave}
           disabled={!hasChanges || saving}
-          className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center justify-center gap-2 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors ${
             !hasChanges || saving
               ? 'bg-indigo-400 cursor-not-allowed text-white'
               : 'bg-indigo-600 hover:bg-indigo-700 text-white'
@@ -535,12 +540,13 @@ const SchemaConfiguration = ({
           {saving ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
-              Guardando...
+              <span className="hidden sm:inline">Guardando...</span>
             </>
           ) : (
             <>
-              <Save size={18} />
-              Guardar Configuración
+              <Save size={16} />
+              <span className="hidden sm:inline">Guardar Configuración</span>
+              <span className="sm:hidden">Guardar</span>
             </>
           )}
         </button>

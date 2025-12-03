@@ -20,7 +20,11 @@ import {
   Clock,
   Calendar,
   CheckCircle2,
-  AlertCircle
+  AlertCircle,
+  ChevronLeft,
+  ChevronRight,
+  ChevronsLeft,
+  ChevronsRight
 } from 'lucide-react';
 
 const ProductBacklog = () => {
@@ -38,6 +42,12 @@ const ProductBacklog = () => {
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
   const [isFiltering, setIsFiltering] = useState(false);
+  
+  // ✅ Estados para paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [itemsPerPage, setItemsPerPage] = useState(10);
   
   // ✅ Usar custom hooks con caché para productos y usuarios (siempre cargan)
   const { products: productos, loading: loadingProducts } = useProducts();
@@ -108,7 +118,7 @@ const ProductBacklog = () => {
     return hasDescription && hasCriteria && hasStoryPoints && isPending;
   };
 
-  const fetchItems = useCallback(async () => {
+  const fetchItems = useCallback(async (page = currentPage) => {
     try {
       setIsFiltering(true);
       const token = await getToken();
@@ -118,6 +128,10 @@ const ProductBacklog = () => {
       if (filtroProducto) params.append('producto', filtroProducto);
       if (filtroEstado) params.append('estado', filtroEstado);
       if (filtroPrioridad) params.append('prioridad', filtroPrioridad);
+      
+      // ✅ Agregar parámetros de paginación
+      params.append('page', page.toString());
+      params.append('limit', itemsPerPage.toString());
       
       const url = `${config.API_URL}/backlog?${params.toString()}`;
       
@@ -131,6 +145,14 @@ const ProductBacklog = () => {
       if (response.ok) {
         const data = await response.json();
         setItems(data.items || []);
+        
+        // ✅ Actualizar información de paginación
+        if (data.pagination) {
+          setCurrentPage(data.pagination.current_page || 1);
+          setTotalPages(data.pagination.total_pages || 1);
+          setTotalItems(data.pagination.total_items || 0);
+        }
+        
         setError('');
       } else {
         const errorText = await response.text();
@@ -143,7 +165,7 @@ const ProductBacklog = () => {
       setLoading(false);
       setIsFiltering(false);
     }
-  }, [getToken, searchTerm, filtroProducto, filtroEstado, filtroPrioridad]);
+  }, [getToken, searchTerm, filtroProducto, filtroEstado, filtroPrioridad, currentPage, itemsPerPage]);
 
   // ✅ OPTIMIZADO: Solo cargar items inicialmente, productos/usuarios/sprints vienen de hooks
   useEffect(() => {
@@ -177,11 +199,33 @@ const ProductBacklog = () => {
     }
 
     const timeoutId = setTimeout(() => {
-      fetchItems();
+      // Resetear a página 1 cuando cambian los filtros
+      setCurrentPage(1);
+      fetchItems(1);
     }, 300); // Debounce de 300ms
 
     return () => clearTimeout(timeoutId);
-  }, [fetchItems, loadingProducts]);
+  }, [searchTerm, filtroProducto, filtroEstado, filtroPrioridad, loadingProducts]);
+
+  // ✅ Funciones de navegación de paginación
+  const goToPage = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+      fetchItems(page);
+    }
+  };
+
+  const goToFirstPage = () => goToPage(1);
+  const goToLastPage = () => goToPage(totalPages);
+  const goToPreviousPage = () => goToPage(currentPage - 1);
+  const goToNextPage = () => goToPage(currentPage + 1);
+
+  // ✅ Cambiar items por página
+  const handleItemsPerPageChange = (newLimit) => {
+    setItemsPerPage(newLimit);
+    setCurrentPage(1);
+    fetchItems(1);
+  };
 
   const handleCloseModal = () => {
     setShowModal(false);
@@ -190,7 +234,7 @@ const ProductBacklog = () => {
 
   const handleModalSuccess = (message) => {
     setError(`success:${message}`);
-    fetchItems();
+    fetchItems(currentPage);
   };
 
   const handleDelete = async (item) => {
@@ -210,7 +254,12 @@ const ProductBacklog = () => {
       
       if (response.ok) {
         setError('success:Item eliminado exitosamente');
-        fetchItems();
+        // Si era el último item de la página, ir a la página anterior
+        if (items.length === 1 && currentPage > 1) {
+          goToPage(currentPage - 1);
+        } else {
+          fetchItems(currentPage);
+        }
       } else {
         const errorData = await response.json();
         throw new Error(errorData.message || 'Error al eliminar item');
@@ -477,8 +526,16 @@ const ProductBacklog = () => {
         )}
         
         <div className="mt-4 flex justify-between items-center">
-          <div className="text-sm text-gray-500 flex items-center gap-2">
-            {items.length > 0 && `Mostrando ${items.length} elementos`}
+          <div className={`text-sm flex items-center gap-2 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>
+            {totalItems > 0 ? (
+              <>
+                Mostrando {((currentPage - 1) * itemsPerPage) + 1} - {Math.min(currentPage * itemsPerPage, totalItems)} de {totalItems} registros
+              </>
+            ) : (
+              'No hay registros'
+            )}
             {isFiltering && (
               <>
                 <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-600"></div>
@@ -652,6 +709,155 @@ const ProductBacklog = () => {
           </div>
         )}
       </div>
+
+      {/* Paginación */}
+      {totalItems > 0 && totalPages > 1 && (
+        <div className={`rounded-lg border p-4 ${
+          theme === 'dark'
+            ? 'bg-gray-800 border-gray-700'
+            : 'bg-white border-gray-200'
+        }`}>
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+            {/* Información de paginación y selector de items por página */}
+            <div className="flex flex-col sm:flex-row items-center gap-4">
+              <div className={`text-sm ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>
+                Página <span className="font-semibold">{currentPage}</span> de <span className="font-semibold">{totalPages}</span>
+              </div>
+              
+              <div className="flex items-center gap-2">
+                <label className={`text-sm ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
+                  Mostrar:
+                </label>
+                <select
+                  value={itemsPerPage}
+                  onChange={(e) => handleItemsPerPageChange(Number(e.target.value))}
+                  className={`px-3 py-1.5 rounded-lg border text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                    theme === 'dark'
+                      ? 'bg-gray-700 border-gray-600 text-white'
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
+                >
+                  <option value={10}>10</option>
+                  <option value={20}>20</option>
+                  <option value={50}>50</option>
+                  <option value={100}>100</option>
+                </select>
+                <span className={`text-sm ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
+                  por página
+                </span>
+              </div>
+            </div>
+
+            {/* Controles de navegación */}
+            <div className="flex items-center gap-2">
+              {/* Primera página */}
+              <button
+                onClick={goToFirstPage}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  theme === 'dark'
+                    ? 'text-gray-400 hover:bg-gray-700 hover:text-white disabled:hover:bg-transparent disabled:hover:text-gray-400'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:hover:bg-transparent disabled:hover:text-gray-600'
+                }`}
+                title="Primera página"
+              >
+                <ChevronsLeft className="h-5 w-5" />
+              </button>
+
+              {/* Página anterior */}
+              <button
+                onClick={goToPreviousPage}
+                disabled={currentPage === 1}
+                className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  theme === 'dark'
+                    ? 'text-gray-400 hover:bg-gray-700 hover:text-white disabled:hover:bg-transparent disabled:hover:text-gray-400'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:hover:bg-transparent disabled:hover:text-gray-600'
+                }`}
+                title="Página anterior"
+              >
+                <ChevronLeft className="h-5 w-5" />
+              </button>
+
+              {/* Indicador numérico de páginas */}
+              <div className="flex items-center gap-1">
+                {/* Mostrar páginas alrededor de la actual */}
+                {Array.from({ length: totalPages }, (_, i) => i + 1)
+                  .filter(page => {
+                    // Mostrar: primera, última, actual, y páginas cercanas a la actual
+                    return (
+                      page === 1 ||
+                      page === totalPages ||
+                      (page >= currentPage - 1 && page <= currentPage + 1)
+                    );
+                  })
+                  .map((page, index, array) => {
+                    // Agregar separador "..." si hay salto
+                    const prevPage = array[index - 1];
+                    const showSeparator = prevPage && page - prevPage > 1;
+
+                    return (
+                      <React.Fragment key={page}>
+                        {showSeparator && (
+                          <span className={`px-2 ${
+                            theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+                          }`}>
+                            ...
+                          </span>
+                        )}
+                        <button
+                          onClick={() => goToPage(page)}
+                          className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+                            page === currentPage
+                              ? 'bg-blue-600 text-white'
+                              : theme === 'dark'
+                                ? 'text-gray-400 hover:bg-gray-700 hover:text-white'
+                                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      </React.Fragment>
+                    );
+                  })}
+              </div>
+
+              {/* Página siguiente */}
+              <button
+                onClick={goToNextPage}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  theme === 'dark'
+                    ? 'text-gray-400 hover:bg-gray-700 hover:text-white disabled:hover:bg-transparent disabled:hover:text-gray-400'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:hover:bg-transparent disabled:hover:text-gray-600'
+                }`}
+                title="Página siguiente"
+              >
+                <ChevronRight className="h-5 w-5" />
+              </button>
+
+              {/* Última página */}
+              <button
+                onClick={goToLastPage}
+                disabled={currentPage === totalPages}
+                className={`p-2 rounded-lg transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                  theme === 'dark'
+                    ? 'text-gray-400 hover:bg-gray-700 hover:text-white disabled:hover:bg-transparent disabled:hover:text-gray-400'
+                    : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 disabled:hover:bg-transparent disabled:hover:text-gray-600'
+                }`}
+                title="Última página"
+              >
+                <ChevronsRight className="h-5 w-5" />
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal */}
       <ModalBacklogItem

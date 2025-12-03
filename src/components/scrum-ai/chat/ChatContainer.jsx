@@ -7,15 +7,15 @@ import { Trash2, ArrowDown } from 'lucide-react';
 import { useState } from 'react';
 import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
-import { QuickStartActions } from './QuickStartActions';
+import { WelcomeChat } from './WelcomeChat';
 
 export const ChatContainer = ({ messages, isTyping, onClearHistory, onOpenCanvas, onSendMessage, selectedProduct }) => {
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
 
-  // Mostrar Quick Actions cuando no hay mensajes
-  const showQuickStart = messages.length === 0;
+  // Mostrar Welcome cuando no hay mensajes
+  const showWelcome = messages.length === 0;
 
   // Auto-scroll al final
   useEffect(() => {
@@ -34,45 +34,40 @@ export const ChatContainer = ({ messages, isTyping, onClearHistory, onOpenCanvas
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
-  // Manejar acciones rápidas desde QuickStartActions
-  const handleQuickAction = (message, actionId) => {
-    if (onSendMessage) {
-      onSendMessage(message);
-    }
-  };
-
   return (
     <div
       ref={containerRef}
       onScroll={handleScroll}
-      className="flex-1 overflow-y-auto px-4 md:px-8 py-6"
+      className="flex-1 overflow-y-auto px-4 md:px-8 py-6 relative"
     >
-      {/* Contenedor centrado con ancho máximo */}
-      <div className="max-w-4xl mx-auto space-y-6">
-        {/* Quick Start Actions - Mostrar cuando no hay mensajes */}
-        {showQuickStart && !isTyping && (
-          <QuickStartActions 
-            onAction={handleQuickAction}
-            selectedProduct={selectedProduct}
-          />
-        )}
+      {/* Welcome Screen - Cuando no hay mensajes */}
+      {showWelcome && !isTyping && (
+        <WelcomeChat onSendMessage={onSendMessage} />
+      )}
 
-        {/* Mensajes del chat */}
-        {messages.map((message) => (
-          <ChatMessage 
-            key={message.id} 
-            message={message} 
-            onOpenCanvas={onOpenCanvas}
-            onSendMessage={onSendMessage}
-          />
-        ))}
+      {/* Mensajes del chat */}
+      {!showWelcome && (
+        <div className="max-w-4xl mx-auto space-y-6">
+          {messages.map((message) => (
+            <ChatMessage 
+              key={message.id} 
+              message={message} 
+              onOpenCanvas={onOpenCanvas}
+              onSendMessage={onSendMessage}
+            />
+          ))}
+        </div>
+      )}
 
-        {/* Typing Indicator */}
-        {isTyping && <TypingIndicator />}
+      {/* Typing Indicator */}
+      {isTyping && (
+        <div className="max-w-4xl mx-auto">
+          <TypingIndicator />
+        </div>
+      )}
 
-        {/* Scroll anchor */}
-        <div ref={messagesEndRef} />
-      </div>
+      {/* Scroll anchor */}
+      <div ref={messagesEndRef} />
 
       {/* Botón scroll to bottom */}
       {showScrollButton && (

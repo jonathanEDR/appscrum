@@ -88,19 +88,32 @@ export const CanvasPanel = ({
 
   return (
     <>
+      {/* Overlay de fondo para móvil */}
+      <div 
+        className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 md:hidden"
+        onClick={onClose}
+      />
+
       <div 
         className={`
-          flex flex-col h-full
+          flex flex-col
           bg-white dark:bg-gray-950
           border-l border-gray-200/60 dark:border-gray-800/60
           transition-all duration-300
-          ${isExpanded ? 'w-[600px]' : 'w-[400px]'}
+          
+          /* Móvil: fullscreen overlay */
+          fixed inset-0 z-50
+          md:relative md:inset-auto md:z-auto
+          
+          /* Desktop: panel lateral */
+          md:h-full
+          ${isExpanded ? 'md:w-[600px]' : 'md:w-[400px]'}
         `}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200/60 dark:border-gray-800/60">
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+        <div className="flex items-center justify-between p-3 md:p-4 border-b border-gray-200/60 dark:border-gray-800/60 bg-white dark:bg-gray-950">
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${
               isStructureEditMode 
                 ? 'bg-gradient-to-br from-violet-500 to-purple-600' 
                 : isDatabaseEditMode
@@ -111,8 +124,8 @@ export const CanvasPanel = ({
             }`}>
               <LayoutGrid className="w-4 h-4 text-white" />
             </div>
-            <div>
-              <h3 className="text-sm font-semibold text-gray-900 dark:text-white">
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-gray-900 dark:text-white truncate">
                 {isStructureEditMode 
                   ? 'Estructura del Proyecto' 
                   : isDatabaseEditMode 
@@ -122,18 +135,18 @@ export const CanvasPanel = ({
                   : (title || 'Canvas')}
               </h3>
               {(isStructureEditMode || isDatabaseEditMode || isEndpointsEditMode) ? (
-                <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                  Modo edición • {isStructureEditMode ? 'Carpetas y archivos' : isDatabaseEditMode ? 'Tablas y campos' : 'Rutas y métodos HTTP'}
+                <p className="text-[10px] text-gray-500 dark:text-gray-400 truncate">
+                  Modo edición • {isStructureEditMode ? 'Carpetas y archivos' : isDatabaseEditMode ? 'Tablas y campos' : 'Rutas HTTP'}
                 </p>
               ) : metadata?.count !== undefined && (
                 <p className="text-[10px] text-gray-500 dark:text-gray-400">
-                  {metadata.count} elementos • Clic para ver detalles
+                  {metadata.count} elementos
                 </p>
               )}
             </div>
           </div>
 
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-0.5 md:gap-1 flex-shrink-0">
             {onRefresh && (
               <button
                 onClick={onRefresh}
@@ -145,9 +158,10 @@ export const CanvasPanel = ({
               </button>
             )}
             
+            {/* Botón expandir solo en desktop */}
             <button
               onClick={() => setIsExpanded(!isExpanded)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+              className="hidden md:block p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               title={isExpanded ? 'Reducir' : 'Expandir'}
             >
               {isExpanded ? (

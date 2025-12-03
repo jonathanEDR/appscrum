@@ -166,35 +166,35 @@ const DatabaseSchemaPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className={`rounded-lg shadow-sm p-6 ${
+      <div className={`rounded-lg shadow-sm p-4 md:p-6 ${
         theme === 'dark' ? 'bg-gray-800' : 'bg-white'
       }`}>
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex flex-col gap-4">
           {/* Título y selector de producto */}
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl">
-              <Database className="h-7 w-7 text-indigo-600 dark:text-indigo-400" />
+          <div className="flex items-center gap-3 md:gap-4">
+            <div className="p-2 md:p-3 bg-indigo-100 dark:bg-indigo-900/30 rounded-lg md:rounded-xl flex-shrink-0">
+              <Database className="h-5 w-5 md:h-7 md:w-7 text-indigo-600 dark:text-indigo-400" />
             </div>
-            <div>
-              <h1 className={`text-2xl font-bold ${
+            <div className="min-w-0 flex-1">
+              <h1 className={`text-lg md:text-2xl font-bold truncate ${
                 theme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>
                 Database Schema
               </h1>
-              <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>
-                Gestiona la estructura de base de datos del proyecto
+              <p className={`text-sm hidden sm:block ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                Gestiona la estructura de base de datos
               </p>
             </div>
           </div>
 
           {/* Selector de producto */}
-          <div className="flex items-center gap-3">
+          <div className="w-full">
             <div className="relative">
               <select
                 value={productId || ''}
                 onChange={handleProductChange}
                 disabled={loadingProducts}
-                className={`appearance-none pl-4 pr-10 py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 min-w-[200px] ${
+                className={`appearance-none w-full pl-3 md:pl-4 pr-10 py-2 md:py-2.5 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm md:text-base ${
                   theme === 'dark'
                     ? 'bg-gray-700 border-gray-600 text-white'
                     : 'bg-white border-gray-300 text-gray-900'
@@ -207,7 +207,7 @@ const DatabaseSchemaPage = () => {
                   </option>
                 ))}
               </select>
-              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 pointer-events-none ${
+              <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 md:h-5 md:w-5 pointer-events-none ${
                 theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
               }`} />
             </div>
@@ -216,44 +216,46 @@ const DatabaseSchemaPage = () => {
 
         {/* Stats */}
         {productId && schema && (
-          <div className={`mt-6 pt-6 border-t ${
+          <div className={`mt-4 md:mt-6 pt-4 md:pt-6 border-t ${
             theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
           }`}>
-            <div className="flex flex-wrap gap-6">
-              <div className="flex items-center gap-2">
-                <Layers size={18} className="text-indigo-500" />
-                <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
-                  <strong>{stats.total_entities}</strong> Entidades
+            <div className="grid grid-cols-3 gap-2 md:flex md:flex-wrap md:gap-6">
+              <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left">
+                <Layers size={16} className="text-indigo-500" />
+                <span className={`text-xs md:text-base ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <strong>{stats.total_entities}</strong> <span className="hidden md:inline">Entidades</span><span className="md:hidden">Ent.</span>
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <Database size={18} className="text-green-500" />
-                <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
-                  <strong>{stats.total_fields}</strong> Campos
+              <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left">
+                <Database size={16} className="text-green-500" />
+                <span className={`text-xs md:text-base ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <strong>{stats.total_fields}</strong> <span className="hidden md:inline">Campos</span><span className="md:hidden">Camp.</span>
                 </span>
               </div>
-              <div className="flex items-center gap-2">
-                <GitBranch size={18} className="text-blue-500" />
-                <span className={theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}>
-                  <strong>{stats.total_relationships}</strong> Relaciones
+              <div className="flex flex-col md:flex-row items-center gap-1 md:gap-2 text-center md:text-left">
+                <GitBranch size={16} className="text-blue-500" />
+                <span className={`text-xs md:text-base ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
+                  <strong>{stats.total_relationships}</strong> <span className="hidden md:inline">Relaciones</span><span className="md:hidden">Rel.</span>
                 </span>
               </div>
               {schema.version && (
-                <div className={`px-2 py-1 rounded text-sm ${
-                  theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
-                }`}>
-                  v{schema.version}
-                </div>
-              )}
-              {schema.status && (
-                <div className={`px-2 py-1 rounded text-sm capitalize ${
-                  schema.status === 'active' 
-                    ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                    : schema.status === 'draft'
-                    ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                    : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
-                }`}>
-                  {schema.status}
+                <div className={`col-span-3 md:col-span-1 flex justify-center md:justify-start items-center gap-2 mt-2 md:mt-0`}>
+                  <span className={`px-2 py-1 rounded text-xs md:text-sm ${
+                    theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
+                  }`}>
+                    v{schema.version}
+                  </span>
+                  {schema.status && (
+                    <span className={`px-2 py-1 rounded text-xs md:text-sm capitalize ${
+                      schema.status === 'active' 
+                        ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                        : schema.status === 'draft'
+                        ? 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                        : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'
+                    }`}>
+                      {schema.status}
+                    </span>
+                  )}
                 </div>
               )}
             </div>
@@ -313,17 +315,17 @@ const DatabaseSchemaPage = () => {
           theme === 'dark' ? 'bg-gray-800' : 'bg-white'
         }`}>
           {/* Tabs y acciones */}
-          <div className={`flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 p-4 border-b ${
+          <div className={`flex flex-col gap-3 p-3 md:p-4 border-b ${
             theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
           }`}>
             {/* Tabs */}
-            <div className="flex gap-1">
+            <div className="flex gap-1 overflow-x-auto">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => !tab.disabled && setActiveTab(tab.id)}
                   disabled={tab.disabled}
-                  className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-4 py-2 rounded-lg text-xs md:text-sm font-medium transition-colors whitespace-nowrap ${
                     activeTab === tab.id
                       ? 'bg-indigo-600 text-white'
                       : tab.disabled
@@ -335,8 +337,8 @@ const DatabaseSchemaPage = () => {
                         : 'text-gray-600 hover:bg-gray-100'
                   }`}
                 >
-                  <tab.icon size={18} />
-                  {tab.label}
+                  <tab.icon size={16} />
+                  <span className="hidden sm:inline">{tab.label}</span>
                   {tab.count !== undefined && (
                     <span className={`px-1.5 py-0.5 text-xs rounded ${
                       activeTab === tab.id
@@ -346,52 +348,48 @@ const DatabaseSchemaPage = () => {
                       {tab.count}
                     </span>
                   )}
-                  {tab.badge && (
-                    <span className="px-1.5 py-0.5 text-xs rounded bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400">
-                      {tab.badge}
-                    </span>
-                  )}
                 </button>
               ))}
             </div>
 
             {/* Acciones */}
-            <div className="flex gap-2">
+            <div className="flex gap-2 overflow-x-auto">
               <button
                 onClick={refresh}
                 disabled={loading}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg text-xs md:text-sm transition-colors whitespace-nowrap ${
                   theme === 'dark'
                     ? 'text-gray-300 hover:bg-gray-700'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
-                <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-                Actualizar
+                <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+                <span className="hidden sm:inline">Actualizar</span>
               </button>
               <button
                 onClick={handleExport}
-                className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                className={`flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg text-xs md:text-sm transition-colors whitespace-nowrap ${
                   theme === 'dark'
                     ? 'text-gray-300 hover:bg-gray-700'
                     : 'text-gray-600 hover:bg-gray-100'
                 }`}
               >
-                <Download size={18} />
-                Exportar
+                <Download size={16} />
+                <span className="hidden sm:inline">Exportar</span>
               </button>
               <button
                 onClick={() => setShowImportModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                className="flex items-center gap-1.5 px-3 md:px-4 py-1.5 md:py-2 bg-indigo-600 text-white rounded-lg text-xs md:text-sm font-medium hover:bg-indigo-700 transition-colors whitespace-nowrap"
               >
-                <Plus size={18} />
-                Importar Código
+                <Plus size={16} />
+                <span className="hidden xs:inline">Importar</span>
+                <span className="hidden sm:inline">Código</span>
               </button>
             </div>
           </div>
 
           {/* Contenido del tab */}
-          <div className="p-4">
+          <div className="p-3 md:p-4">
             {activeTab === 'entities' && (
               <EntityList
                 entities={entities}

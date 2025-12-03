@@ -146,34 +146,34 @@ const EntityList = ({
           </p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           {filteredEntities.map((entity, index) => (
             <div
               key={entity.entity || index}
-              className={`relative rounded-lg border p-4 transition-all hover:shadow-md ${
+              className={`relative rounded-lg border p-3 md:p-4 transition-all hover:shadow-md ${
                 theme === 'dark'
                   ? 'bg-gray-750 border-gray-700 hover:border-gray-600'
                   : 'bg-white border-gray-200 hover:border-gray-300'
               }`}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-2 md:gap-4">
                 {/* Icono */}
-                <div className={`p-2.5 rounded-lg ${
+                <div className={`p-2 md:p-2.5 rounded-lg flex-shrink-0 ${
                   theme === 'dark' ? 'bg-indigo-900/30' : 'bg-indigo-100'
                 }`}>
-                  <Database className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+                  <Database className="h-4 w-4 md:h-5 md:w-5 text-indigo-600 dark:text-indigo-400" />
                 </div>
 
                 {/* Contenido */}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <h3 className={`text-lg font-semibold truncate ${
+                    <h3 className={`text-sm md:text-lg font-semibold truncate ${
                       theme === 'dark' ? 'text-white' : 'text-gray-900'
                     }`}>
                       {entity.entity}
                     </h3>
                     {entity.source_type && (
-                      <span className={`px-2 py-0.5 text-xs rounded-full ${
+                      <span className={`px-1.5 md:px-2 py-0.5 text-[10px] md:text-xs rounded-full flex-shrink-0 ${
                         sourceTypeColors[entity.source_type] || sourceTypeColors.manual
                       }`}>
                         {entity.source_type}
@@ -182,7 +182,7 @@ const EntityList = ({
                   </div>
 
                   {entity.description && (
-                    <p className={`text-sm mb-2 line-clamp-2 ${
+                    <p className={`text-xs md:text-sm mb-2 line-clamp-1 md:line-clamp-2 ${
                       theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
                     }`}>
                       {entity.description}
@@ -190,76 +190,69 @@ const EntityList = ({
                   )}
 
                   {/* Estadísticas */}
-                  <div className="flex flex-wrap items-center gap-4 text-sm">
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 text-xs md:text-sm">
                     <div className={`flex items-center gap-1 ${
                       theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
                     }`}>
-                      <Database size={14} />
-                      <span>{entity.fields_count || entity.fields?.length || 0} campos</span>
+                      <Database size={12} />
+                      <span>{entity.fields_count || entity.fields?.length || 0} <span className="hidden sm:inline">campos</span></span>
                     </div>
                     <div className={`flex items-center gap-1 ${
                       theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
                     }`}>
-                      <GitBranch size={14} />
-                      <span>{entity.relationships_count || entity.relationships?.length || 0} relaciones</span>
+                      <GitBranch size={12} />
+                      <span>{entity.relationships_count || entity.relationships?.length || 0} <span className="hidden sm:inline">rel.</span></span>
                     </div>
                     {entity.imported_at && (
-                      <div className={`flex items-center gap-1 ${
+                      <div className={`hidden md:flex items-center gap-1 ${
                         theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
                       }`}>
-                        <Calendar size={14} />
-                        <span>Importado: {formatDate(entity.imported_at)}</span>
-                      </div>
-                    )}
-                    {entity.module && (
-                      <div className={`px-2 py-0.5 rounded text-xs ${
-                        theme === 'dark' ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-600'
-                      }`}>
-                        {entity.module}
+                        <Calendar size={12} />
+                        <span>{formatDate(entity.imported_at)}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Acciones */}
-                <div className="flex items-center gap-1">
+                {/* Acciones - Desktop */}
+                <div className="hidden sm:flex items-center gap-1 flex-shrink-0">
                   {/* Botón Ver */}
                   <button
                     onClick={() => onView?.(entity.entity)}
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`p-1.5 md:p-2 rounded-lg transition-colors ${
                       theme === 'dark'
                         ? 'text-gray-400 hover:text-white hover:bg-gray-700'
                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                     }`}
                     title="Ver detalles"
                   >
-                    <Eye size={18} />
+                    <Eye size={16} />
                   </button>
 
                   {/* Botón Código */}
                   <button
                     onClick={() => handleGenerateCode(entity.entity)}
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`p-1.5 md:p-2 rounded-lg transition-colors ${
                       theme === 'dark'
                         ? 'text-gray-400 hover:text-white hover:bg-gray-700'
                         : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                     }`}
                     title="Generar código"
                   >
-                    <Code size={18} />
+                    <Code size={16} />
                   </button>
 
                   {/* Botón Eliminar */}
                   <button
                     onClick={() => onDelete?.(entity.entity)}
-                    className={`p-2 rounded-lg transition-colors ${
+                    className={`p-1.5 md:p-2 rounded-lg transition-colors ${
                       theme === 'dark'
                         ? 'text-red-400 hover:text-red-300 hover:bg-red-900/30'
                         : 'text-red-500 hover:text-red-600 hover:bg-red-50'
                     }`}
                     title="Eliminar"
                   >
-                    <Trash2 size={18} />
+                    <Trash2 size={16} />
                   </button>
 
                   {/* Menú de más acciones */}
@@ -269,19 +262,19 @@ const EntityList = ({
                         e.stopPropagation();
                         setShowActionsFor(showActionsFor === entity.entity ? null : entity.entity);
                       }}
-                      className={`p-2 rounded-lg transition-colors ${
+                      className={`p-1.5 md:p-2 rounded-lg transition-colors ${
                         theme === 'dark'
                           ? 'text-gray-400 hover:text-white hover:bg-gray-700'
                           : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
                       }`}
                     >
-                      <MoreVertical size={18} />
+                      <MoreVertical size={16} />
                     </button>
 
                     {/* Dropdown de acciones */}
                     {showActionsFor === entity.entity && (
                       <div 
-                        className={`absolute right-0 top-full mt-1 w-48 rounded-lg shadow-lg border z-10 ${
+                        className={`absolute right-0 top-full mt-1 w-40 md:w-48 rounded-lg shadow-lg border z-10 ${
                           theme === 'dark'
                             ? 'bg-gray-800 border-gray-700'
                             : 'bg-white border-gray-200'
@@ -294,40 +287,104 @@ const EntityList = ({
                               setShowActionsFor(null);
                               onResync?.(entity.entity);
                             }}
-                            className={`w-full flex items-center gap-2 px-4 py-2 text-sm ${
+                            className={`w-full flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm ${
                               theme === 'dark'
                                 ? 'text-gray-300 hover:bg-gray-700'
                                 : 'text-gray-700 hover:bg-gray-100'
                             }`}
                           >
-                            <RefreshCw size={16} />
+                            <RefreshCw size={14} />
                             Re-sincronizar
                           </button>
                           <button
                             onClick={() => handleGenerateCode(entity.entity)}
-                            className={`w-full flex items-center gap-2 px-4 py-2 text-sm ${
+                            className={`w-full flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm ${
                               theme === 'dark'
                                 ? 'text-gray-300 hover:bg-gray-700'
                                 : 'text-gray-700 hover:bg-gray-100'
                             }`}
                           >
-                            <Copy size={16} />
+                            <Copy size={14} />
                             Copiar código
                           </button>
                           <button
-                            className={`w-full flex items-center gap-2 px-4 py-2 text-sm ${
+                            className={`w-full flex items-center gap-2 px-3 md:px-4 py-2 text-xs md:text-sm ${
                               theme === 'dark'
                                 ? 'text-gray-300 hover:bg-gray-700'
                                 : 'text-gray-700 hover:bg-gray-100'
                             }`}
                           >
-                            <Download size={16} />
+                            <Download size={14} />
                             Descargar .js
                           </button>
                         </div>
                       </div>
                     )}
                   </div>
+                </div>
+
+                {/* Acciones - Mobile */}
+                <div className="flex sm:hidden items-center gap-1 flex-shrink-0">
+                  <button
+                    onClick={() => onView?.(entity.entity)}
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      theme === 'dark'
+                        ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <Eye size={16} />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowActionsFor(showActionsFor === entity.entity ? null : entity.entity);
+                    }}
+                    className={`p-1.5 rounded-lg transition-colors ${
+                      theme === 'dark'
+                        ? 'text-gray-400 hover:text-white hover:bg-gray-700'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                    }`}
+                  >
+                    <MoreVertical size={16} />
+                  </button>
+                  
+                  {/* Dropdown mobile */}
+                  {showActionsFor === entity.entity && (
+                    <div 
+                      className={`absolute right-2 top-12 w-36 rounded-lg shadow-lg border z-10 ${
+                        theme === 'dark'
+                          ? 'bg-gray-800 border-gray-700'
+                          : 'bg-white border-gray-200'
+                      }`}
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <div className="py-1">
+                        <button
+                          onClick={() => handleGenerateCode(entity.entity)}
+                          className={`w-full flex items-center gap-2 px-3 py-2 text-xs ${
+                            theme === 'dark'
+                              ? 'text-gray-300 hover:bg-gray-700'
+                              : 'text-gray-700 hover:bg-gray-100'
+                          }`}
+                        >
+                          <Code size={12} />
+                          Código
+                        </button>
+                        <button
+                          onClick={() => onDelete?.(entity.entity)}
+                          className={`w-full flex items-center gap-2 px-3 py-2 text-xs ${
+                            theme === 'dark'
+                              ? 'text-red-400 hover:bg-gray-700'
+                              : 'text-red-500 hover:bg-gray-100'
+                          }`}
+                        >
+                          <Trash2 size={12} />
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

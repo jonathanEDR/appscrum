@@ -315,85 +315,85 @@ module.exports = mongoose.model('User', UserSchema);`;
       />
 
       {/* Modal */}
-      <div className={`relative w-full max-w-4xl max-h-[90vh] overflow-hidden rounded-xl shadow-2xl ${
+      <div className={`relative w-full max-w-4xl max-h-[90vh] mx-2 md:mx-4 overflow-hidden rounded-xl shadow-2xl ${
         theme === 'dark' ? 'bg-gray-800' : 'bg-white'
       }`}>
         {/* Header */}
-        <div className={`flex items-center justify-between p-4 border-b ${
+        <div className={`flex items-center justify-between p-3 md:p-4 border-b ${
           theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
         }`}>
-          <div className="flex items-center gap-3">
-            <div className={`p-2 rounded-lg ${
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <div className={`p-1.5 md:p-2 rounded-lg flex-shrink-0 ${
               theme === 'dark' ? 'bg-indigo-900/30' : 'bg-indigo-100'
             }`}>
-              <Code className="h-5 w-5 text-indigo-600 dark:text-indigo-400" />
+              <Code className="h-4 w-4 md:h-5 md:w-5 text-indigo-600 dark:text-indigo-400" />
             </div>
-            <div>
-              <h2 className={`text-lg font-semibold ${
+            <div className="min-w-0">
+              <h2 className={`text-sm md:text-lg font-semibold truncate ${
                 theme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>
-                Importar {importMode === 'bulk' ? 'Múltiples Entidades' : 'Entidad'} desde Código
+                Importar {importMode === 'bulk' ? 'Múltiples' : 'Entidad'}
               </h2>
-              <p className={`text-sm ${
+              <p className={`text-xs md:text-sm hidden sm:block ${
                 theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
               }`}>
                 {importMode === 'bulk' 
-                  ? `${codeFiles.length} archivo(s) - ${codeFiles.filter(f => f.code.trim()).length} con código`
-                  : 'Pega el código de tu modelo para importarlo'}
+                  ? `${codeFiles.length} archivo(s)`
+                  : 'Pega el código de tu modelo'}
               </p>
             </div>
           </div>
           
           {/* Modo Toggle */}
-          <div className="flex items-center gap-3">
-            <div className={`flex rounded-lg p-1 ${
+          <div className="flex items-center gap-1 md:gap-3 flex-shrink-0">
+            <div className={`flex rounded-lg p-0.5 md:p-1 ${
               theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
             }`}>
               <button
                 onClick={() => setImportMode('single')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors ${
                   importMode === 'single'
                     ? 'bg-indigo-600 text-white'
                     : theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <Code size={16} />
-                Individual
+                <Code size={14} />
+                <span className="hidden sm:inline">Individual</span>
               </button>
               <button
                 onClick={() => setImportMode('bulk')}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`flex items-center gap-1 px-2 md:px-3 py-1 md:py-1.5 rounded-md text-xs md:text-sm font-medium transition-colors ${
                   importMode === 'bulk'
                     ? 'bg-indigo-600 text-white'
                     : theme === 'dark' ? 'text-gray-300 hover:text-white' : 'text-gray-600 hover:text-gray-900'
                 }`}
               >
-                <Files size={16} />
-                Múltiple
+                <Files size={14} />
+                <span className="hidden sm:inline">Múltiple</span>
               </button>
             </div>
             
             <button
               onClick={handleClose}
               disabled={importing}
-              className={`p-2 rounded-lg transition-colors ${
+              className={`p-1.5 md:p-2 rounded-lg transition-colors ${
                 theme === 'dark'
                   ? 'text-gray-400 hover:text-white hover:bg-gray-700'
                   : 'text-gray-400 hover:text-gray-600 hover:bg-gray-100'
               }`}
             >
-              <X size={20} />
+              <X size={18} />
             </button>
           </div>
         </div>
 
         {/* Content */}
-        <div className="p-4 overflow-y-auto max-h-[calc(90vh-180px)]">
+        <div className="p-3 md:p-4 overflow-y-auto max-h-[calc(90vh-160px)] md:max-h-[calc(90vh-180px)]">
           {/* Opciones compartidas */}
-          <div className="flex flex-wrap gap-4 mb-4">
+          <div className="flex flex-col sm:flex-row flex-wrap gap-3 md:gap-4 mb-3 md:mb-4">
             {/* Selector de ORM */}
-            <div className="flex-1 min-w-[200px]">
-              <label className={`block text-sm font-medium mb-1 ${
+            <div className="flex-1 min-w-0 sm:min-w-[180px]">
+              <label className={`block text-xs md:text-sm font-medium mb-1 ${
                 theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
               }`}>
                 Tipo de ORM/ODM
@@ -402,7 +402,7 @@ module.exports = mongoose.model('User', UserSchema);`;
                 <select
                   value={ormType}
                   onChange={(e) => setOrmType(e.target.value)}
-                  className={`w-full appearance-none pl-3 pr-10 py-2 rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
+                  className={`w-full appearance-none pl-3 pr-8 py-2 text-sm rounded-lg border focus:outline-none focus:ring-2 focus:ring-indigo-500 ${
                     theme === 'dark'
                       ? 'bg-gray-700 border-gray-600 text-white'
                       : 'bg-white border-gray-300 text-gray-900'
@@ -414,14 +414,14 @@ module.exports = mongoose.model('User', UserSchema);`;
                     </option>
                   ))}
                 </select>
-                <ChevronDown className={`absolute right-3 top-1/2 -translate-y-1/2 h-5 w-5 pointer-events-none ${
+                <ChevronDown className={`absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 pointer-events-none ${
                   theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
                 }`} />
               </div>
             </div>
 
             {/* Checkbox sobrescribir */}
-            <div className="flex items-end pb-2">
+            <div className="flex items-end pb-1 md:pb-2">
               <label className="flex items-center gap-2 cursor-pointer">
                 <input
                   type="checkbox"
@@ -429,17 +429,17 @@ module.exports = mongoose.model('User', UserSchema);`;
                   onChange={(e) => setOverwrite(e.target.checked)}
                   className="w-4 h-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
-                <span className={`text-sm ${
+                <span className={`text-xs md:text-sm ${
                   theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
                 }`}>
-                  Sobrescribir si existe
+                  Sobrescribir
                 </span>
               </label>
             </div>
 
             {/* Botón subir archivos (solo en bulk) */}
             {importMode === 'bulk' && (
-              <div className="flex items-end pb-2">
+              <div className="flex items-end pb-1 md:pb-2">
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -450,14 +450,15 @@ module.exports = mongoose.model('User', UserSchema);`;
                 />
                 <button
                   onClick={() => fileInputRef.current?.click()}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm transition-colors ${
+                  className={`flex items-center gap-1.5 px-2.5 md:px-3 py-1.5 md:py-2 rounded-lg text-xs md:text-sm transition-colors ${
                     theme === 'dark'
                       ? 'bg-gray-700 text-gray-300 hover:bg-gray-600'
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
                 >
-                  <FolderOpen size={18} />
-                  Subir Archivos
+                  <FolderOpen size={16} />
+                  <span className="hidden sm:inline">Subir Archivos</span>
+                  <span className="sm:hidden">Subir</span>
                 </button>
               </div>
             )}

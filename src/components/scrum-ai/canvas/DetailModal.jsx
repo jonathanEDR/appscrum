@@ -132,7 +132,7 @@ export const DetailModal = ({ isOpen, onClose, item, type }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
+    <div className="fixed inset-0 z-50 flex items-end md:items-center justify-center">
       {/* Backdrop */}
       <div 
         className="absolute inset-0 bg-black/50 backdrop-blur-sm"
@@ -140,15 +140,15 @@ export const DetailModal = ({ isOpen, onClose, item, type }) => {
       />
       
       {/* Modal */}
-      <div className="relative w-full max-w-2xl max-h-[90vh] mx-4 bg-white dark:bg-gray-900 rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative w-full md:max-w-2xl max-h-[85vh] md:max-h-[90vh] md:mx-4 bg-white dark:bg-gray-900 rounded-t-2xl md:rounded-2xl shadow-2xl overflow-hidden animate-in fade-in slide-in-from-bottom md:zoom-in-95 duration-200">
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <FileText className="w-5 h-5 text-white" />
+        <div className="flex items-center justify-between p-3 md:p-4 border-b border-gray-200 dark:border-gray-800">
+          <div className="flex items-center gap-2 md:gap-3 min-w-0">
+            <div className="w-9 h-9 md:w-10 md:h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+              <FileText className="w-4 h-4 md:w-5 md:h-5 text-white" />
             </div>
-            <div>
-              <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
+            <div className="min-w-0">
+              <h2 className="text-base md:text-lg font-semibold text-gray-900 dark:text-white truncate">
                 {getTitle()}
               </h2>
               <p className="text-xs text-gray-500 capitalize">{type}</p>
@@ -157,14 +157,14 @@ export const DetailModal = ({ isOpen, onClose, item, type }) => {
           
           <button
             onClick={onClose}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors flex-shrink-0"
           >
             <X className="w-5 h-5 text-gray-500" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+        <div className="p-4 md:p-6 overflow-y-auto max-h-[calc(85vh-70px)] md:max-h-[calc(90vh-80px)]">
           {renderContent()}
         </div>
       </div>

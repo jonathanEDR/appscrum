@@ -117,31 +117,33 @@ const ProjectArchitecturePage = () => {
   const selectedProduct = productos.find(p => p._id === selectedProductId);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 px-2 md:px-0">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-6">
+        <div className="mb-4 md:mb-6">
           <button
             onClick={() => navigate('/product_owner/productos')}
-            className={`flex items-center mb-4 transition-colors ${
+            className={`flex items-center mb-3 md:mb-4 transition-colors text-sm md:text-base ${
               theme === 'dark' 
                 ? 'text-gray-400 hover:text-gray-200' 
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
-            <ArrowLeft size={20} className="mr-2" />
-            Volver a Productos
+            <ArrowLeft size={18} className="mr-1.5 md:mr-2" />
+            <span className="hidden sm:inline">Volver a Productos</span>
+            <span className="sm:hidden">Volver</span>
           </button>
 
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
             <div>
-              <h1 className={`text-3xl font-bold flex items-center gap-3 ${
+              <h1 className={`text-xl md:text-3xl font-bold flex items-center gap-2 md:gap-3 ${
                 theme === 'dark' ? 'text-white' : 'text-gray-900'
               }`}>
-                <Boxes className="text-blue-600" size={32} />
-                Arquitectura del Proyecto
+                <Boxes className="text-blue-600 flex-shrink-0" size={24} />
+                <span className="hidden sm:inline">Arquitectura del Proyecto</span>
+                <span className="sm:hidden">Arquitectura</span>
               </h1>
-              <p className={`mt-1 ${
+              <p className={`mt-1 text-sm md:text-base hidden sm:block ${
                 theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
               }`}>
                 Gestiona la arquitectura técnica completa de tu proyecto
@@ -151,7 +153,7 @@ const ProjectArchitecturePage = () => {
         </div>
 
         {/* Selector de Producto */}
-        <div className={`rounded-xl shadow-md p-6 mb-6 border ${
+        <div className={`rounded-xl shadow-md p-4 md:p-6 mb-4 md:mb-6 border ${
           theme === 'dark' 
             ? 'bg-gray-800 border-gray-700' 
             : 'bg-white border-gray-200'
@@ -164,7 +166,7 @@ const ProjectArchitecturePage = () => {
           <select
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
-            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+            className={`w-full px-3 md:px-4 py-2.5 md:py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all text-sm md:text-base ${
               theme === 'dark'
                 ? 'bg-gray-700 border-gray-600 text-white'
                 : 'bg-white border-gray-300 text-gray-900'
@@ -260,124 +262,126 @@ const ProjectArchitecturePage = () => {
         ) : (
           <>
             {/* Stats Header */}
-            <div className={`rounded-xl shadow-md p-6 mb-6 border ${
+            <div className={`rounded-xl shadow-md p-4 md:p-6 mb-4 md:mb-6 border ${
               theme === 'dark' 
                 ? 'bg-gray-800 border-gray-700' 
                 : 'bg-white border-gray-200'
             }`}>
-              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+              <div className="grid grid-cols-3 md:grid-cols-5 gap-2 md:gap-4">
                 {/* Completeness Score */}
-                <div className={`text-center p-4 rounded-lg ${
+                <div className={`text-center p-2 md:p-4 rounded-lg col-span-3 md:col-span-1 ${
                   theme === 'dark'
                     ? 'bg-blue-900/30'
                     : 'bg-gradient-to-br from-blue-50 to-blue-100'
                 }`}>
-                  <div className={`text-3xl font-bold ${getCompletenessColor(stats.completenessScore)}`}>
+                  <div className={`text-2xl md:text-3xl font-bold ${getCompletenessColor(stats.completenessScore)}`}>
                     {stats.completenessScore}%
                   </div>
-                  <div className={`text-sm mt-1 ${
+                  <div className={`text-xs md:text-sm mt-1 ${
                     theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
                   }`}>Completitud</div>
                 </div>
 
                 {/* Módulos */}
-                <div className={`text-center p-4 rounded-lg ${
+                <div className={`text-center p-2 md:p-4 rounded-lg ${
                   theme === 'dark'
                     ? 'bg-purple-900/30'
                     : 'bg-gradient-to-br from-purple-50 to-purple-100'
                 }`}>
-                  <div className="text-3xl font-bold text-purple-600">
+                  <div className="text-xl md:text-3xl font-bold text-purple-600">
                     {stats.totalModules}
                   </div>
-                  <div className={`text-sm mt-1 ${
+                  <div className={`text-[10px] md:text-sm mt-1 ${
                     theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
                   }`}>Módulos</div>
                 </div>
 
                 {/* Endpoints */}
-                <div className={`text-center p-4 rounded-lg ${
+                <div className={`text-center p-2 md:p-4 rounded-lg ${
                   theme === 'dark'
                     ? 'bg-green-900/30'
                     : 'bg-gradient-to-br from-green-50 to-green-100'
                 }`}>
-                  <div className="text-3xl font-bold text-green-600">
+                  <div className="text-xl md:text-3xl font-bold text-green-600">
                     {stats.totalEndpoints}
                   </div>
-                  <div className={`text-sm mt-1 ${
+                  <div className={`text-[10px] md:text-sm mt-1 ${
                     theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
                   }`}>Endpoints</div>
                 </div>
 
                 {/* Integraciones */}
-                <div className={`text-center p-4 rounded-lg ${
+                <div className={`text-center p-2 md:p-4 rounded-lg ${
                   theme === 'dark'
                     ? 'bg-orange-900/30'
                     : 'bg-gradient-to-br from-orange-50 to-orange-100'
                 }`}>
-                  <div className="text-3xl font-bold text-orange-600">
+                  <div className="text-xl md:text-3xl font-bold text-orange-600">
                     {stats.totalIntegrations}
                   </div>
-                  <div className={`text-sm mt-1 ${
+                  <div className={`text-[10px] md:text-sm mt-1 ${
                     theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
                   }`}>Integraciones</div>
                 </div>
 
                 {/* Decisiones */}
-                <div className={`text-center p-4 rounded-lg ${
+                <div className={`text-center p-2 md:p-4 rounded-lg hidden md:block ${
                   theme === 'dark'
                     ? 'bg-pink-900/30'
                     : 'bg-gradient-to-br from-pink-50 to-pink-100'
                 }`}>
-                  <div className="text-3xl font-bold text-pink-600">
+                  <div className="text-xl md:text-3xl font-bold text-pink-600">
                     {stats.totalDecisions}
                   </div>
-                  <div className={`text-sm mt-1 ${
+                  <div className={`text-[10px] md:text-sm mt-1 ${
                     theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
                   }`}>Decisiones</div>
                 </div>
               </div>
 
               {/* Metadata */}
-              <div className={`mt-4 pt-4 border-t flex items-center justify-between text-sm ${
+              <div className={`mt-3 md:mt-4 pt-3 md:pt-4 border-t flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-xs md:text-sm ${
                 theme === 'dark' 
                   ? 'border-gray-700 text-gray-400' 
                   : 'border-gray-200 text-gray-600'
               }`}>
-                <div>
+                <div className="truncate max-w-full">
                   <span className="font-medium">Proyecto:</span> {selectedProduct?.nombre}
                 </div>
-                <div>
-                  <span className="font-medium">Estado:</span>{' '}
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    architecture.general?.status === 'active' 
-                      ? theme === 'dark' ? 'bg-green-900/50 text-green-400' : 'bg-green-100 text-green-800'
-                      : architecture.general?.status === 'draft' 
-                        ? theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-800'
-                        : theme === 'dark' ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-800'
-                  }`}>
-                    {architecture.general?.status || 'draft'}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-medium">Versión:</span> {architecture.general?.version || '1.0.0'}
+                <div className="flex items-center gap-2 sm:gap-4">
+                  <div>
+                    <span className="font-medium">Estado:</span>{' '}
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] md:text-xs font-medium ${
+                      architecture.general?.status === 'active' 
+                        ? theme === 'dark' ? 'bg-green-900/50 text-green-400' : 'bg-green-100 text-green-800'
+                        : architecture.general?.status === 'draft' 
+                          ? theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-800'
+                          : theme === 'dark' ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-800'
+                    }`}>
+                      {architecture.general?.status || 'draft'}
+                    </span>
+                  </div>
+                  <div className="hidden sm:block">
+                    <span className="font-medium">v</span>{architecture.general?.version || '1.0.0'}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Tabs Navigation */}
-            <div className={`rounded-t-xl shadow-md border border-b-0 overflow-x-auto ${
+            <div className={`rounded-t-xl shadow-md border border-b-0 overflow-x-auto scrollbar-hide ${
               theme === 'dark' 
                 ? 'bg-gray-800 border-gray-700' 
                 : 'bg-white border-gray-200'
             }`}>
-              <div className="flex">
+              <div className="flex min-w-max">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveTab(tab.id)}
-                      className={`flex items-center gap-2 px-6 py-4 font-medium transition-all whitespace-nowrap ${
+                      className={`flex items-center gap-1.5 md:gap-2 px-3 md:px-6 py-3 md:py-4 font-medium transition-all whitespace-nowrap text-xs md:text-sm ${
                         activeTab === tab.id
                           ? theme === 'dark'
                             ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-900/30'
@@ -387,8 +391,8 @@ const ProjectArchitecturePage = () => {
                             : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
-                      <Icon size={18} />
-                      {tab.label}
+                      <Icon size={16} className="md:w-[18px] md:h-[18px]" />
+                      <span className="hidden sm:inline">{tab.label}</span>
                     </button>
                   );
                 })}
@@ -396,7 +400,7 @@ const ProjectArchitecturePage = () => {
             </div>
 
             {/* Tab Content */}
-            <div className={`rounded-b-xl shadow-md p-6 border min-h-[400px] ${
+            <div className={`rounded-b-xl shadow-md p-3 md:p-6 border min-h-[300px] md:min-h-[400px] ${
               theme === 'dark' 
                 ? 'bg-gray-800 border-gray-700' 
                 : 'bg-white border-gray-200'

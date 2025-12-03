@@ -6,6 +6,8 @@
 export { ScrumAILayout } from './layout/ScrumAILayout';
 export { InsightsPanel } from './layout/InsightsPanel';
 export { ChatPanel } from './layout/ChatPanel';
+export { Sidebar } from './layout/Sidebar';
+export { MobileMenu } from './layout/MobileMenu';
 
 // Chat
 export { ChatContainer } from './chat/ChatContainer';
@@ -14,6 +16,7 @@ export { ChatInput } from './chat/ChatInput';
 export { TypingIndicator } from './chat/TypingIndicator';
 export { ContextBadge } from './chat/ContextBadge';
 export { ActiveConversationBadge } from './chat/ActiveConversationBadge';
+export { WelcomeChat } from './chat/WelcomeChat';
 
 // Insights
 export { ProjectContextCard } from './insights/ProjectContextCard';
