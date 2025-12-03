@@ -37,11 +37,18 @@ const INTEGRATION_TYPES = [
 ];
 
 // Estados de integración según backend: planned, configured, active, deprecated
+const getIntegrationStatusColors = (theme) => ({
+  planned: theme === 'dark' ? 'bg-yellow-900/50 text-yellow-400' : 'bg-yellow-100 text-yellow-700',
+  configured: theme === 'dark' ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-700',
+  active: theme === 'dark' ? 'bg-green-900/50 text-green-400' : 'bg-green-100 text-green-700',
+  deprecated: theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-700'
+});
+
 const INTEGRATION_STATUS = [
-  { value: 'planned', label: 'Planificado', color: 'bg-yellow-100 text-yellow-700' },
-  { value: 'configured', label: 'Configurado', color: 'bg-blue-100 text-blue-700' },
-  { value: 'active', label: 'Activo', color: 'bg-green-100 text-green-700' },
-  { value: 'deprecated', label: 'Deprecado', color: 'bg-gray-100 text-gray-700' }
+  { value: 'planned', label: 'Planificado' },
+  { value: 'configured', label: 'Configurado' },
+  { value: 'active', label: 'Activo' },
+  { value: 'deprecated', label: 'Deprecado' }
 ];
 
 // Estructura según backend: name, type, provider, status, api_version, environment_vars, documentation_url, notes
@@ -73,7 +80,7 @@ const EMPTY_INTEGRATION = {
  * - Formato nuevo: [{name: string, value: string, var_type: 'config'|'secret'}]
  * - Formato antiguo: [string] (retrocompatibilidad)
  */
-const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture, loading = false }) => {
+const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture, loading = false, theme = 'light' }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [formData, setFormData] = useState(EMPTY_INTEGRATION);
@@ -94,6 +101,9 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
   const [visibleSecrets, setVisibleSecrets] = useState({});
 
   const integrations = architecture?.integrations || [];
+  
+  // Obtener colores según el tema
+  const statusColors = getIntegrationStatusColors(theme);
 
   // Toggle visibilidad de una clave secreta - optimizado con useCallback
   const toggleSecretVisibility = useCallback((index) => {
@@ -257,7 +267,11 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
   };
 
   const getStatusConfig = (status) => {
-    return INTEGRATION_STATUS.find(s => s.value === status) || INTEGRATION_STATUS[2];
+    const statusItem = INTEGRATION_STATUS.find(s => s.value === status) || INTEGRATION_STATUS[2];
+    return {
+      ...statusItem,
+      color: statusColors[status] || statusColors.active
+    };
   };
 
   return (
@@ -265,11 +279,15 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className={`text-2xl font-bold flex items-center gap-2 ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             <Plug className="text-orange-600" />
             Integraciones Externas
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className={`mt-1 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             Gestiona las integraciones con servicios externos
           </p>
         </div>
@@ -284,7 +302,9 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className={`rounded-xl border p-4 ${
+        theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -294,7 +314,11 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
               placeholder="Buscar integraciones..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                theme === 'dark' 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
 
@@ -302,7 +326,11 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
           <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+            className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
+              theme === 'dark' 
+                ? 'bg-gray-700 border-gray-600 text-white' 
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
           >
             <option value="all">Todos los tipos</option>
             {INTEGRATION_TYPES.map(type => (
@@ -314,7 +342,11 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+            className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
+              theme === 'dark' 
+                ? 'bg-gray-700 border-gray-600 text-white' 
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
           >
             <option value="all">Todos los estados</option>
             {INTEGRATION_STATUS.map(status => (
@@ -327,15 +359,21 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
       {/* Integration Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+          <div className={`rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className={`p-6 border-b ${
+              theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+            }`}>
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className={`text-xl font-bold ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>
                   {editingIndex !== null ? 'Editar Integración' : 'Nueva Integración'}
                 </h3>
                 <button
                   onClick={resetForm}
-                  className="text-gray-400 hover:text-gray-600"
+                  className={theme === 'dark' ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}
                 >
                   <X size={24} />
                 </button>
@@ -345,7 +383,9 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Nombre de la Integración *
                 </label>
                 <input
@@ -355,21 +395,31 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                   onChange={handleInputChange}
                   required
                   placeholder="ej: Stripe, SendGrid, Cloudinary"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent ${
+                    theme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Tipo
                   </label>
                   <select
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   >
                     {INTEGRATION_TYPES.map(type => (
                       <option key={type.value} value={type.value}>{type.label}</option>
@@ -379,14 +429,20 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
 
                 {/* Status */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Estado
                   </label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   >
                     {INTEGRATION_STATUS.map(status => (
                       <option key={status.value} value={status.value}>{status.label}</option>
@@ -398,7 +454,9 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
               {/* Provider & API Version */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Proveedor
                   </label>
                   <input
@@ -407,11 +465,17 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                     value={formData.provider}
                     onChange={handleInputChange}
                     placeholder="ej: Stripe, SendGrid, Twilio, AWS"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Versión de API
                   </label>
                   <input
@@ -420,14 +484,20 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                     value={formData.api_version}
                     onChange={handleInputChange}
                     placeholder="ej: v1, 2024-01-01"
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   />
                 </div>
               </div>
 
               {/* Documentation URL */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   URL Documentación
                 </label>
                 <div className="relative">
@@ -438,15 +508,23 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                     value={formData.documentation_url}
                     onChange={handleInputChange}
                     placeholder="https://docs.service.com"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   />
                 </div>
               </div>
 
               {/* Variables de Entorno - Sistema con Nombre y Valor */}
-              <div className="bg-gray-50 rounded-lg p-4">
-                <h4 className="font-medium text-gray-700 mb-3 flex items-center gap-2">
-                  <Key size={18} className="text-gray-600" />
+              <div className={`rounded-lg p-4 ${
+                theme === 'dark' ? 'bg-gray-700' : 'bg-gray-50'
+              }`}>
+                <h4 className={`font-medium mb-3 flex items-center gap-2 ${
+                  theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                }`}>
+                  <Key size={18} className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} />
                   Variables de Entorno Requeridas
                 </h4>
 
@@ -455,8 +533,12 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                   <div className="space-y-2 mb-4">
                     {/* Variables de Configuración */}
                     {configVars.length > 0 && (
-                      <div className="bg-blue-50 rounded-lg p-3">
-                        <span className="text-xs text-blue-600 font-medium flex items-center gap-1 mb-2">
+                      <div className={`rounded-lg p-3 ${
+                        theme === 'dark' ? 'bg-blue-900/30' : 'bg-blue-50'
+                      }`}>
+                        <span className={`text-xs font-medium flex items-center gap-1 mb-2 ${
+                          theme === 'dark' ? 'text-blue-400' : 'text-blue-600'
+                        }`}>
                           <Globe size={12} /> Variables de Configuración ({configVars.length})
                         </span>
                         <div className="space-y-1">
@@ -465,18 +547,30 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                             return (
                               <div 
                                 key={`config-${idx}`}
-                                className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-blue-200"
+                                className={`flex items-center justify-between rounded-lg px-3 py-2 border ${
+                                  theme === 'dark' 
+                                    ? 'bg-gray-800 border-blue-800' 
+                                    : 'bg-white border-blue-200'
+                                }`}
                               >
                                 <div className="flex-1 min-w-0">
-                                  <span className="font-mono text-sm text-blue-800 font-medium">{variable.name}</span>
+                                  <span className={`font-mono text-sm font-medium ${
+                                    theme === 'dark' ? 'text-blue-400' : 'text-blue-800'
+                                  }`}>{variable.name}</span>
                                   {variable.value && (
-                                    <span className="text-gray-500 text-xs ml-2">= {variable.value}</span>
+                                    <span className={`text-xs ml-2 ${
+                                      theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                                    }`}>= {variable.value}</span>
                                   )}
                                 </div>
                                 <button
                                   type="button"
                                   onClick={() => handleRemoveVariable(originalIndex)}
-                                  className="ml-2 text-blue-400 hover:text-red-600 p-1 rounded hover:bg-red-50"
+                                  className={`ml-2 p-1 rounded ${
+                                    theme === 'dark' 
+                                      ? 'text-blue-400 hover:text-red-400 hover:bg-red-900/50' 
+                                      : 'text-blue-400 hover:text-red-600 hover:bg-red-50'
+                                  }`}
                                 >
                                   <X size={16} />
                                 </button>
@@ -489,8 +583,12 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
 
                     {/* Claves Secretas */}
                     {secretVars.length > 0 && (
-                      <div className="bg-orange-50 rounded-lg p-3">
-                        <span className="text-xs text-orange-600 font-medium flex items-center gap-1 mb-2">
+                      <div className={`rounded-lg p-3 ${
+                        theme === 'dark' ? 'bg-orange-900/30' : 'bg-orange-50'
+                      }`}>
+                        <span className={`text-xs font-medium flex items-center gap-1 mb-2 ${
+                          theme === 'dark' ? 'text-orange-400' : 'text-orange-600'
+                        }`}>
                           🔐 Claves Secretas ({secretVars.length})
                         </span>
                         <div className="space-y-1">
@@ -500,12 +598,20 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                             return (
                               <div 
                                 key={`secret-${idx}`}
-                                className="flex items-center justify-between bg-white rounded-lg px-3 py-2 border border-orange-200"
+                                className={`flex items-center justify-between rounded-lg px-3 py-2 border ${
+                                  theme === 'dark' 
+                                    ? 'bg-gray-800 border-orange-800' 
+                                    : 'bg-white border-orange-200'
+                                }`}
                               >
                                 <div className="flex-1 min-w-0 flex items-center gap-2">
-                                  <span className="font-mono text-sm text-orange-800 font-medium">🔐 {variable.name}</span>
+                                  <span className={`font-mono text-sm font-medium ${
+                                    theme === 'dark' ? 'text-orange-400' : 'text-orange-800'
+                                  }`}>🔐 {variable.name}</span>
                                   {variable.value && (
-                                    <span className="text-gray-500 text-xs font-mono">
+                                    <span className={`text-xs font-mono ${
+                                      theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                                    }`}>
                                       = {isVisible ? variable.value : '••••••••'}
                                     </span>
                                   )}
@@ -516,7 +622,11 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                                     <button
                                       type="button"
                                       onClick={() => toggleSecretVisibility(originalIndex)}
-                                      className="p-1 text-orange-400 hover:text-orange-600 rounded hover:bg-orange-100"
+                                      className={`p-1 rounded ${
+                                        theme === 'dark' 
+                                          ? 'text-orange-400 hover:text-orange-300 hover:bg-orange-900/50' 
+                                          : 'text-orange-400 hover:text-orange-600 hover:bg-orange-100'
+                                      }`}
                                       title={isVisible ? 'Ocultar valor' : 'Mostrar valor'}
                                     >
                                       {isVisible ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -526,7 +636,11 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                                   <button
                                     type="button"
                                     onClick={() => handleRemoveVariable(originalIndex)}
-                                    className="p-1 text-orange-400 hover:text-red-600 rounded hover:bg-red-50"
+                                    className={`p-1 rounded ${
+                                      theme === 'dark' 
+                                        ? 'text-orange-400 hover:text-red-400 hover:bg-red-900/50' 
+                                        : 'text-orange-400 hover:text-red-600 hover:bg-red-50'
+                                    }`}
                                     title="Eliminar variable"
                                   >
                                     <X size={16} />
@@ -542,44 +656,64 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                 )}
 
                 {/* Formulario para agregar nueva variable */}
-                <div className="bg-white rounded-lg border border-gray-200 p-3">
+                <div className={`rounded-lg border p-3 ${
+                  theme === 'dark' ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-200'
+                }`}>
                   <div className="grid grid-cols-1 md:grid-cols-12 gap-2">
                     {/* Nombre de la variable */}
                     <div className="md:col-span-4">
-                      <label className="block text-xs text-gray-500 mb-1">Nombre de Variable</label>
+                      <label className={`block text-xs mb-1 ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>Nombre de Variable</label>
                       <input
                         type="text"
                         value={newVarName}
                         onChange={(e) => setNewVarName(e.target.value.toUpperCase())}
                         onKeyDown={handleVarKeyDown}
                         placeholder="STRIPE_API_KEY"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 font-mono text-sm"
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 font-mono text-sm ${
+                          theme === 'dark' 
+                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                        }`}
                       />
                     </div>
                     
                     {/* Valor/Descripción */}
                     <div className="md:col-span-4">
-                      <label className="block text-xs text-gray-500 mb-1">Valor o Descripción</label>
+                      <label className={`block text-xs mb-1 ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>Valor o Descripción</label>
                       <input
                         type="text"
                         value={newVarValue}
                         onChange={(e) => setNewVarValue(e.target.value)}
                         onKeyDown={handleVarKeyDown}
                         placeholder="sk_live_xxx... o descripción"
-                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 text-sm"
+                        className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 text-sm ${
+                          theme === 'dark' 
+                            ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' 
+                            : 'bg-white border-gray-300 text-gray-900'
+                        }`}
                       />
                     </div>
                     
                     {/* Tipo */}
                     <div className="md:col-span-2">
-                      <label className="block text-xs text-gray-500 mb-1">Tipo</label>
+                      <label className={`block text-xs mb-1 ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>Tipo</label>
                       <select
                         value={newVarType}
                         onChange={(e) => setNewVarType(e.target.value)}
                         className={`w-full px-3 py-2 border rounded-lg text-sm font-medium ${
                           newVarType === 'secret' 
-                            ? 'border-orange-300 bg-orange-50 text-orange-700' 
-                            : 'border-blue-300 bg-blue-50 text-blue-700'
+                            ? theme === 'dark'
+                              ? 'border-orange-700 bg-orange-900/30 text-orange-400'
+                              : 'border-orange-300 bg-orange-50 text-orange-700'
+                            : theme === 'dark'
+                              ? 'border-blue-700 bg-blue-900/30 text-blue-400'
+                              : 'border-blue-300 bg-blue-50 text-blue-700'
                         }`}
                       >
                         <option value="config">📋 Config</option>
@@ -600,7 +734,9 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                       </button>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className={`text-xs mt-2 ${
+                    theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                  }`}>
                     ⚠️ Las claves secretas nunca deben estar en el código, guárdalas en un archivo .env
                   </p>
                 </div>
@@ -608,7 +744,9 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
 
               {/* Notes */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Notas Adicionales
                 </label>
                 <textarea
@@ -617,16 +755,22 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                   onChange={handleInputChange}
                   rows={2}
                   placeholder="Información adicional, limitaciones, etc."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-orange-500 ${
+                    theme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className={`flex justify-end gap-3 pt-4 border-t ${
+                theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+              }`}>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className={theme === 'dark' ? 'px-4 py-2 text-gray-400 hover:text-gray-200' : 'px-4 py-2 text-gray-600 hover:text-gray-800'}
                 >
                   Cancelar
                 </button>
@@ -647,20 +791,28 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
       {/* Delete Confirmation Modal */}
       {confirmDelete !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className={`rounded-xl shadow-xl max-w-md w-full p-6 ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-red-100 rounded-full">
+              <div className={`p-3 rounded-full ${
+                theme === 'dark' ? 'bg-red-900/50' : 'bg-red-100'
+              }`}>
                 <AlertCircle className="text-red-600" size={24} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Confirmar Eliminación</h3>
+              <h3 className={`text-xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Confirmar Eliminación</h3>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className={`mb-6 ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               ¿Estás seguro de eliminar la integración <strong>{confirmDelete.name}</strong>?
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className={theme === 'dark' ? 'px-4 py-2 text-gray-400 hover:text-gray-200' : 'px-4 py-2 text-gray-600 hover:text-gray-800'}
               >
                 Cancelar
               </button>
@@ -686,16 +838,26 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
             return (
               <div
                 key={index}
-                className="bg-white rounded-xl border border-gray-200 p-5 hover:shadow-md transition-shadow"
+                className={`rounded-xl border p-5 transition-shadow ${
+                  theme === 'dark' 
+                    ? 'bg-gray-800 border-gray-700 hover:shadow-lg hover:shadow-gray-900/50' 
+                    : 'bg-white border-gray-200 hover:shadow-md'
+                }`}
               >
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-100 rounded-lg">
+                    <div className={`p-2 rounded-lg ${
+                      theme === 'dark' ? 'bg-orange-900/50' : 'bg-orange-100'
+                    }`}>
                       <TypeIcon className="text-orange-600" size={24} />
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-900">{integration.name}</h4>
-                      <span className="text-xs text-gray-500">{typeConfig.label}</span>
+                      <h4 className={`font-semibold ${
+                        theme === 'dark' ? 'text-white' : 'text-gray-900'
+                      }`}>{integration.name}</h4>
+                      <span className={`text-xs ${
+                        theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                      }`}>{typeConfig.label}</span>
                     </div>
                   </div>
                   <span className={`text-xs px-2 py-1 rounded-full ${statusConfig.color}`}>
@@ -704,20 +866,28 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                 </div>
 
                 {integration.provider && (
-                  <p className="text-sm text-gray-600 mb-2">
+                  <p className={`text-sm mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>
                     <span className="font-medium">Proveedor:</span> {integration.provider}
                   </p>
                 )}
 
                 {integration.api_version && (
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-2">
+                  <div className={`flex items-center gap-2 text-sm mb-2 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
                     <span className="font-medium">Versión:</span> 
-                    <span className="font-mono text-xs bg-gray-100 px-2 py-0.5 rounded">{integration.api_version}</span>
+                    <span className={`font-mono text-xs px-2 py-0.5 rounded ${
+                      theme === 'dark' ? 'bg-gray-700' : 'bg-gray-100'
+                    }`}>{integration.api_version}</span>
                   </div>
                 )}
 
                 {integration.environment_vars?.length > 0 && (
-                  <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                  <div className={`flex items-center gap-2 text-sm mb-3 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                  }`}>
                     <Key size={14} />
                     <span className="font-mono text-xs truncate">
                       {/* Soportar formato nuevo (objetos) y antiguo (strings) */}
@@ -730,14 +900,20 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                   </div>
                 )}
 
-                <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+                <div className={`flex items-center justify-between pt-3 border-t ${
+                  theme === 'dark' ? 'border-gray-700' : 'border-gray-100'
+                }`}>
                   <div className="flex items-center gap-2">
                     {integration.documentation_url && (
                       <a
                         href={integration.documentation_url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50"
+                        className={`p-2 rounded-lg ${
+                          theme === 'dark' 
+                            ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/50' 
+                            : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                        }`}
                         title="Ver documentación"
                       >
                         <ExternalLink size={16} />
@@ -747,13 +923,21 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
                   <div className="flex items-center gap-1">
                     <button
                       onClick={() => handleEdit(integration, integration.originalIndex)}
-                      className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50"
+                      className={`p-2 rounded-lg ${
+                        theme === 'dark' 
+                          ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/50' 
+                          : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                      }`}
                     >
                       <Edit2 size={16} />
                     </button>
                     <button
                       onClick={() => setConfirmDelete({ ...integration, index: integration.originalIndex })}
-                      className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50"
+                      className={`p-2 rounded-lg ${
+                        theme === 'dark' 
+                          ? 'text-gray-400 hover:text-red-400 hover:bg-red-900/50' 
+                          : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                      }`}
                     >
                       <Trash2 size={16} />
                     </button>
@@ -764,12 +948,18 @@ const IntegrationsTab = ({ architecture, onAddIntegration, onUpdateArchitecture,
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className={`rounded-xl border p-12 text-center ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <Plug size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <h3 className={`text-lg font-semibold mb-2 ${
+            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+          }`}>
             {integrations.length === 0 ? 'No hay integraciones configuradas' : 'No se encontraron resultados'}
           </h3>
-          <p className="text-gray-500 mb-4">
+          <p className={`mb-4 ${
+            theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+          }`}>
             {integrations.length === 0 
               ? 'Agrega las integraciones externas que usa tu proyecto'
               : 'Intenta ajustar los filtros de búsqueda'

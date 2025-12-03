@@ -25,8 +25,9 @@ import {
  * @param {Object} props.architecture - Arquitectura del proyecto
  * @param {Function} props.onSave - Callback para guardar cambios
  * @param {boolean} props.loading - Estado de carga
+ * @param {string} props.theme - Tema actual ('light' | 'dark')
  */
-const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
+const DirectoryStructureTab = ({ architecture, onSave, loading = false, theme = 'light' }) => {
   const [expandedFolders, setExpandedFolders] = useState({
     frontend: true,
     backend: true,
@@ -248,14 +249,16 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
       return (
         <div key={currentPath}>
           <div 
-            className={`flex items-center gap-2 py-2 px-3 rounded-lg hover:bg-gray-50 group transition-colors ${
-              isBeingEdited ? 'bg-blue-50 ring-2 ring-blue-300' : ''
+            className={`flex items-center gap-2 py-2 px-3 rounded-lg group transition-colors ${
+              isBeingEdited 
+                ? theme === 'dark' ? 'bg-blue-900/50 ring-2 ring-blue-500' : 'bg-blue-50 ring-2 ring-blue-300'
+                : theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
             }`}
             style={{ marginLeft: `${indent}px` }}
           >
             {isFolderType ? (
               <button 
-                className="p-0.5 text-gray-400 hover:text-gray-600"
+                className={`p-0.5 ${theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
                 onClick={() => toggleFolder(currentPath)}
               >
                 {isExpanded ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
@@ -287,23 +290,37 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                       setNewItemName('');
                     }
                   }}
-                  className="flex-1 px-2 py-1 text-sm border border-blue-300 rounded focus:ring-2 focus:ring-blue-500"
+                  className={`flex-1 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-blue-500 ${
+                    theme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600 text-white' 
+                      : 'bg-white border-blue-300'
+                  }`}
                   autoFocus
                 />
-                <button onClick={handleRename} className="p-1 text-green-600 hover:bg-green-100 rounded" title="Guardar">
+                <button onClick={handleRename} className={`p-1 rounded ${
+                  theme === 'dark' ? 'text-green-400 hover:bg-green-900/50' : 'text-green-600 hover:bg-green-100'
+                }`} title="Guardar">
                   <Check size={16} />
                 </button>
-                <button onClick={() => { setEditingItem(null); setNewItemName(''); }} className="p-1 text-gray-400 hover:bg-gray-100 rounded" title="Cancelar">
+                <button onClick={() => { setEditingItem(null); setNewItemName(''); }} className={`p-1 rounded ${
+                  theme === 'dark' ? 'text-gray-500 hover:bg-gray-700' : 'text-gray-400 hover:bg-gray-100'
+                }`} title="Cancelar">
                   <X size={16} />
                 </button>
               </div>
             ) : (
               <>
-                <span className={`font-medium ${isFolderType ? 'text-gray-800' : 'text-gray-600'}`}>
+                <span className={`font-medium ${
+                  isFolderType 
+                    ? theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                    : theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                }`}>
                   {key}{isFolderType ? '/' : ''}
                 </span>
                 {!isFolderType && typeof value === 'string' && (
-                  <span className="text-sm text-gray-400 ml-2 truncate">// {value}</span>
+                  <span className={`text-sm ml-2 truncate ${
+                    theme === 'dark' ? 'text-gray-500' : 'text-gray-400'
+                  }`}>// {value}</span>
                 )}
               </>
             )}
@@ -318,7 +335,9 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                         setAddingType('folder');
                         setExpandedFolders(prev => ({ ...prev, [currentPath]: true }));
                       }}
-                      className="p-1 text-green-500 hover:bg-green-50 rounded"
+                      className={`p-1 rounded ${
+                        theme === 'dark' ? 'text-green-400 hover:bg-green-900/50' : 'text-green-500 hover:bg-green-50'
+                      }`}
                       title="Agregar carpeta"
                     >
                       <FolderPlus size={14} />
@@ -329,7 +348,9 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                         setAddingType('file');
                         setExpandedFolders(prev => ({ ...prev, [currentPath]: true }));
                       }}
-                      className="p-1 text-blue-500 hover:bg-blue-50 rounded"
+                      className={`p-1 rounded ${
+                        theme === 'dark' ? 'text-blue-400 hover:bg-blue-900/50' : 'text-blue-500 hover:bg-blue-50'
+                      }`}
                       title="Agregar archivo"
                     >
                       <FilePlus size={14} />
@@ -338,14 +359,18 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                 )}
                 <button 
                   onClick={() => startEditingItem(currentPath, isFolderType, key)}
-                  className="p-1 text-blue-500 hover:bg-blue-50 rounded"
+                  className={`p-1 rounded ${
+                    theme === 'dark' ? 'text-blue-400 hover:bg-blue-900/50' : 'text-blue-500 hover:bg-blue-50'
+                  }`}
                   title="Renombrar"
                 >
                   <Edit2 size={14} />
                 </button>
                 <button 
                   onClick={() => setConfirmDelete({ path: currentPath, name: key, isFolder: isFolderType })}
-                  className="p-1 text-red-500 hover:bg-red-50 rounded"
+                  className={`p-1 rounded ${
+                    theme === 'dark' ? 'text-red-400 hover:bg-red-900/50' : 'text-red-500 hover:bg-red-50'
+                  }`}
                   title="Eliminar"
                 >
                   <Trash2 size={14} />
@@ -360,7 +385,9 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
               
               {addingTo === currentPath && (
                 <div 
-                  className="flex items-center gap-2 py-2 px-3 bg-green-50 rounded-lg border border-green-200 my-1"
+                  className={`flex items-center gap-2 py-2 px-3 rounded-lg border my-1 ${
+                    theme === 'dark' ? 'bg-green-900/30 border-green-700' : 'bg-green-50 border-green-200'
+                  }`}
                   style={{ marginLeft: `${(level + 1) * 20}px` }}
                 >
                   {addingType === 'folder' ? (
@@ -373,7 +400,11 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                     value={newItemName}
                     onChange={(e) => setNewItemName(e.target.value)}
                     placeholder={addingType === 'folder' ? 'nombre-carpeta' : 'archivo.ext'}
-                    className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500"
+                    className={`flex-1 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-green-500 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' 
+                        : 'bg-white border-gray-300'
+                    }`}
                     autoFocus
                     onKeyDown={(e) => {
                       if (e.key === 'Enter') {
@@ -393,16 +424,24 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                       value={newItemDescription}
                       onChange={(e) => setNewItemDescription(e.target.value)}
                       placeholder="Descripción"
-                      className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500"
+                      className={`flex-1 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-green-500 ${
+                        theme === 'dark' 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' 
+                          : 'bg-white border-gray-300'
+                      }`}
                       onKeyDown={(e) => {
                         if (e.key === 'Enter') handleAddFile();
                       }}
                     />
                   )}
-                  <button onClick={addingType === 'folder' ? handleAddFolder : handleAddFile} className="p-1 text-green-600 hover:bg-green-100 rounded" title="Agregar">
+                  <button onClick={addingType === 'folder' ? handleAddFolder : handleAddFile} className={`p-1 rounded ${
+                    theme === 'dark' ? 'text-green-400 hover:bg-green-900/50' : 'text-green-600 hover:bg-green-100'
+                  }`} title="Agregar">
                     <Check size={16} />
                   </button>
-                  <button onClick={() => { setAddingTo(null); setAddingType(null); setNewItemName(''); setNewItemDescription(''); }} className="p-1 text-gray-400 hover:bg-gray-100 rounded" title="Cancelar">
+                  <button onClick={() => { setAddingTo(null); setAddingType(null); setNewItemName(''); setNewItemDescription(''); }} className={`p-1 rounded ${
+                    theme === 'dark' ? 'text-gray-500 hover:bg-gray-700' : 'text-gray-400 hover:bg-gray-100'
+                  }`} title="Cancelar">
                     <X size={16} />
                   </button>
                 </div>
@@ -448,19 +487,23 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
 
   // Renderizar sección de directorio (Frontend/Backend/Shared)
   const renderSection = (sectionKey, stats, colorConfig) => {
-    const { bgColor, textColor, iconColor, hoverColor } = colorConfig;
+    const { bgColor, textColor, iconColor, hoverColor, darkBgColor, darkTextColor, darkHoverColor } = colorConfig;
     const sectionName = sectionKey.charAt(0).toUpperCase() + sectionKey.slice(1);
     
+    const currentBgColor = theme === 'dark' ? darkBgColor : bgColor;
+    const currentTextColor = theme === 'dark' ? darkTextColor : textColor;
+    const currentHoverColor = theme === 'dark' ? darkHoverColor : hoverColor;
+    
     return (
-      <div className={sectionKey !== 'shared' ? 'border-b border-gray-100' : ''}>
+      <div className={sectionKey !== 'shared' ? `border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-100'}` : ''}>
         <div 
-          className={`flex items-center gap-3 p-4 ${bgColor} cursor-pointer ${hoverColor} transition-colors`}
+          className={`flex items-center gap-3 p-4 ${currentBgColor} cursor-pointer ${currentHoverColor} transition-colors`}
           onClick={() => toggleFolder(sectionKey)}
         >
           {expandedFolders[sectionKey] ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
           <FolderOpen size={22} className={iconColor} />
-          <span className={`font-bold ${textColor}`}>{sectionKey}/</span>
-          <span className={`text-sm ${textColor.replace('800', '600')} ml-auto`}>
+          <span className={`font-bold ${currentTextColor}`}>{sectionKey}/</span>
+          <span className={`text-sm ml-auto ${theme === 'dark' ? 'text-gray-400' : textColor.replace('800', '600')}`}>
             {stats.folders} carpetas, {stats.files} archivos
           </span>
           {isEditing && (
@@ -472,7 +515,9 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                   setAddingType('folder');
                   setExpandedFolders(prev => ({ ...prev, [sectionKey]: true }));
                 }}
-                className="p-1 text-green-600 hover:bg-green-100 rounded"
+                className={`p-1 rounded ${
+                  theme === 'dark' ? 'text-green-400 hover:bg-green-900/50' : 'text-green-600 hover:bg-green-100'
+                }`}
                 title="Agregar carpeta"
               >
                 <FolderPlus size={16} />
@@ -484,7 +529,9 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                   setAddingType('file');
                   setExpandedFolders(prev => ({ ...prev, [sectionKey]: true }));
                 }}
-                className="p-1 text-blue-600 hover:bg-blue-100 rounded"
+                className={`p-1 rounded ${
+                  theme === 'dark' ? 'text-blue-400 hover:bg-blue-900/50' : 'text-blue-600 hover:bg-blue-100'
+                }`}
                 title="Agregar archivo"
               >
                 <FilePlus size={16} />
@@ -493,10 +540,12 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
           )}
         </div>
         {expandedFolders[sectionKey] && (
-          <div className="p-2 bg-white">
+          <div className={`p-2 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             {renderStructure(directoryStructure[sectionKey], sectionKey, 1)}
             {addingTo === sectionKey && (
-              <div className="flex items-center gap-2 py-2 px-3 bg-green-50 rounded-lg border border-green-200 my-1 ml-5">
+              <div className={`flex items-center gap-2 py-2 px-3 rounded-lg border my-1 ml-5 ${
+                theme === 'dark' ? 'bg-green-900/30 border-green-700' : 'bg-green-50 border-green-200'
+              }`}>
                 {addingType === 'folder' ? (
                   <FolderPlus size={18} className="text-green-500" />
                 ) : (
@@ -507,7 +556,11 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                   value={newItemName}
                   onChange={(e) => setNewItemName(e.target.value)}
                   placeholder={addingType === 'folder' ? 'nombre-carpeta' : 'archivo.ext'}
-                  className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded focus:ring-2 focus:ring-green-500"
+                  className={`flex-1 px-2 py-1 text-sm border rounded focus:ring-2 focus:ring-green-500 ${
+                    theme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' 
+                      : 'bg-white border-gray-300'
+                  }`}
                   autoFocus
                   onKeyDown={(e) => {
                     if (e.key === 'Enter') {
@@ -526,13 +579,21 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
                     value={newItemDescription}
                     onChange={(e) => setNewItemDescription(e.target.value)}
                     placeholder="Descripción"
-                    className="flex-1 px-2 py-1 text-sm border border-gray-300 rounded"
+                    className={`flex-1 px-2 py-1 text-sm border rounded ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-500' 
+                        : 'bg-white border-gray-300'
+                    }`}
                   />
                 )}
-                <button onClick={addingType === 'folder' ? handleAddFolder : handleAddFile} className="p-1 text-green-600 hover:bg-green-100 rounded">
+                <button onClick={addingType === 'folder' ? handleAddFolder : handleAddFile} className={`p-1 rounded ${
+                  theme === 'dark' ? 'text-green-400 hover:bg-green-900/50' : 'text-green-600 hover:bg-green-100'
+                }`}>
                   <Check size={16} />
                 </button>
-                <button onClick={() => { setAddingTo(null); setAddingType(null); setNewItemName(''); }} className="p-1 text-gray-400 hover:bg-gray-100 rounded">
+                <button onClick={() => { setAddingTo(null); setAddingType(null); setNewItemName(''); }} className={`p-1 rounded ${
+                  theme === 'dark' ? 'text-gray-500 hover:bg-gray-700' : 'text-gray-400 hover:bg-gray-100'
+                }`}>
                   <X size={16} />
                 </button>
               </div>
@@ -548,11 +609,13 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-3">
+          <h2 className={`text-2xl font-bold flex items-center gap-3 ${
+            theme === 'dark' ? 'text-white' : 'text-gray-800'
+          }`}>
             <FolderTree className="text-yellow-500" size={28} />
             Estructura del Proyecto
           </h2>
-          <p className="text-gray-500 mt-1">
+          <p className={`mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
             Organización de carpetas y archivos del proyecto
           </p>
         </div>
@@ -570,7 +633,11 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
               </button>
               <button
                 onClick={cancelEditing}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors ${
+                  theme === 'dark' 
+                    ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' 
+                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                }`}
               >
                 <X size={18} />
                 Cancelar
@@ -590,10 +657,10 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
 
       {/* Save Message */}
       {saveMessage && (
-        <div className={`flex items-center gap-2 p-4 rounded-lg ${
+        <div className={`flex items-center gap-2 p-4 rounded-lg border ${
           saveMessage.type === 'success' 
-            ? 'bg-green-50 text-green-800 border border-green-200'
-            : 'bg-red-50 text-red-800 border border-red-200'
+            ? theme === 'dark' ? 'bg-green-900/30 text-green-400 border-green-700' : 'bg-green-50 text-green-800 border-green-200'
+            : theme === 'dark' ? 'bg-red-900/30 text-red-400 border-red-700' : 'bg-red-50 text-red-800 border-red-200'
         }`}>
           {saveMessage.text}
         </div>
@@ -602,41 +669,58 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
       {/* Stats Cards */}
       {hasStructure && (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <StatCard title="Frontend" folders={frontendStats.folders} files={frontendStats.files} color="blue" />
-          <StatCard title="Backend" folders={backendStats.folders} files={backendStats.files} color="green" />
-          <StatCard title="Shared" folders={sharedStats.folders} files={sharedStats.files} color="purple" />
+          <StatCard title="Frontend" folders={frontendStats.folders} files={frontendStats.files} color="blue" theme={theme} />
+          <StatCard title="Backend" folders={backendStats.folders} files={backendStats.files} color="green" theme={theme} />
+          <StatCard title="Shared" folders={sharedStats.folders} files={sharedStats.files} color="purple" theme={theme} />
         </div>
       )}
 
       {/* Directory Tree */}
       {hasStructure || isEditing ? (
-        <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className={`rounded-xl border shadow-sm overflow-hidden ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           {renderSection('frontend', frontendStats, {
             bgColor: 'bg-blue-50',
             textColor: 'text-blue-800',
             iconColor: 'text-blue-500',
-            hoverColor: 'hover:bg-blue-100'
+            hoverColor: 'hover:bg-blue-100',
+            darkBgColor: 'bg-blue-900/30',
+            darkTextColor: 'text-blue-400',
+            darkHoverColor: 'hover:bg-blue-900/50'
           })}
           {renderSection('backend', backendStats, {
             bgColor: 'bg-green-50',
             textColor: 'text-green-800',
             iconColor: 'text-green-500',
-            hoverColor: 'hover:bg-green-100'
+            hoverColor: 'hover:bg-green-100',
+            darkBgColor: 'bg-green-900/30',
+            darkTextColor: 'text-green-400',
+            darkHoverColor: 'hover:bg-green-900/50'
           })}
           {renderSection('shared', sharedStats, {
             bgColor: 'bg-purple-50',
             textColor: 'text-purple-800',
             iconColor: 'text-purple-500',
-            hoverColor: 'hover:bg-purple-100'
+            hoverColor: 'hover:bg-purple-100',
+            darkBgColor: 'bg-purple-900/30',
+            darkTextColor: 'text-purple-400',
+            darkHoverColor: 'hover:bg-purple-900/50'
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className={`rounded-xl border p-12 text-center ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <FolderTree size={64} className="mx-auto text-gray-300 mb-4" />
-          <h3 className="text-xl font-semibold text-gray-700 mb-2">
+          <h3 className={`text-xl font-semibold mb-2 ${
+            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+          }`}>
             Sin estructura definida
           </h3>
-          <p className="text-gray-500 mb-6 max-w-md mx-auto">
+          <p className={`mb-6 max-w-md mx-auto ${
+            theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+          }`}>
             La estructura del proyecto aún no ha sido definida. 
             Puedes crearla manualmente o generarla automáticamente con el asistente Scrum AI.
           </p>
@@ -655,17 +739,25 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
       {/* Confirm Delete Modal */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-6 max-w-md w-full mx-4 shadow-xl">
+          <div className={`rounded-xl p-6 max-w-md w-full mx-4 shadow-xl ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-red-100 rounded-full">
+              <div className={`p-3 rounded-full ${
+                theme === 'dark' ? 'bg-red-900/50' : 'bg-red-100'
+              }`}>
                 <AlertCircle className="text-red-600" size={24} />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Confirmar eliminación</h3>
-                <p className="text-gray-500 text-sm">Esta acción no se puede deshacer</p>
+                <h3 className={`text-lg font-bold ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>Confirmar eliminación</h3>
+                <p className={`text-sm ${
+                  theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                }`}>Esta acción no se puede deshacer</p>
               </div>
             </div>
-            <p className="text-gray-700 mb-6">
+            <p className={`mb-6 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
               ¿Estás seguro de que deseas eliminar {confirmDelete.isFolder ? 'la carpeta' : 'el archivo'}{' '}
               <strong>"{confirmDelete.name}"</strong>
               {confirmDelete.isFolder && ' y todo su contenido'}?
@@ -673,7 +765,11 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
             <div className="flex gap-3 justify-end">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200"
+                className={`px-4 py-2 rounded-lg ${
+                  theme === 'dark' 
+                    ? 'text-gray-400 bg-gray-700 hover:bg-gray-600' 
+                    : 'text-gray-700 bg-gray-100 hover:bg-gray-200'
+                }`}
               >
                 Cancelar
               </button>
@@ -689,9 +785,13 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
       )}
 
       {/* Info Card */}
-      <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 flex items-start gap-3">
-        <Info size={20} className="text-blue-500 flex-shrink-0 mt-0.5" />
-        <div className="text-sm text-blue-800">
+      <div className={`rounded-xl p-4 flex items-start gap-3 border ${
+        theme === 'dark' ? 'bg-blue-900/30 border-blue-800' : 'bg-blue-50 border-blue-200'
+      }`}>
+        <Info size={20} className={`flex-shrink-0 mt-0.5 ${
+          theme === 'dark' ? 'text-blue-400' : 'text-blue-500'
+        }`} />
+        <div className={`text-sm ${theme === 'dark' ? 'text-blue-300' : 'text-blue-800'}`}>
           <strong>Tip:</strong> La estructura del proyecto puede ser generada automáticamente 
           por Scrum AI al analizar tu producto. En modo edición puedes agregar carpetas 
           <FolderPlus size={14} className="inline mx-1" /> y archivos 
@@ -703,11 +803,11 @@ const DirectoryStructureTab = ({ architecture, onSave, loading = false }) => {
 };
 
 // Stat Card Component
-const StatCard = ({ title, folders, files, color }) => {
+const StatCard = ({ title, folders, files, color, theme = 'light' }) => {
   const colorClasses = {
-    blue: 'bg-blue-50 border-blue-200 text-blue-800',
-    green: 'bg-green-50 border-green-200 text-green-800',
-    purple: 'bg-purple-50 border-purple-200 text-purple-800'
+    blue: theme === 'dark' ? 'bg-blue-900/30 border-blue-700 text-blue-400' : 'bg-blue-50 border-blue-200 text-blue-800',
+    green: theme === 'dark' ? 'bg-green-900/30 border-green-700 text-green-400' : 'bg-green-50 border-green-200 text-green-800',
+    purple: theme === 'dark' ? 'bg-purple-900/30 border-purple-700 text-purple-400' : 'bg-purple-50 border-purple-200 text-purple-800'
   };
 
   const iconColors = {

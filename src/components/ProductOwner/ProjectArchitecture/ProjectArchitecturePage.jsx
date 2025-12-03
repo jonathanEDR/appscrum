@@ -15,6 +15,7 @@ import {
 } from 'lucide-react';
 import useProjectArchitecture from '../../../hooks/useProjectArchitecture';
 import { useAuth } from '@clerk/clerk-react';
+import { useTheme } from '../../../context/ThemeContext';
 import TechStackEditor from './TechStackTab/TechStackEditor';
 import { OverviewTab } from './OverviewTab';
 import { ModulesTab } from './ModulesTab';
@@ -31,6 +32,7 @@ const ProjectArchitecturePage = () => {
   const { productId: urlProductId } = useParams();
   const navigate = useNavigate();
   const { getToken } = useAuth();
+  const { theme } = useTheme();
   
   const [selectedProductId, setSelectedProductId] = useState(urlProductId || '');
   const [productos, setProductos] = useState([]);
@@ -115,13 +117,17 @@ const ProjectArchitecturePage = () => {
   const selectedProduct = productos.find(p => p._id === selectedProductId);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
+    <div className="space-y-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-6">
           <button
             onClick={() => navigate('/product_owner/productos')}
-            className="flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+            className={`flex items-center mb-4 transition-colors ${
+              theme === 'dark' 
+                ? 'text-gray-400 hover:text-gray-200' 
+                : 'text-gray-600 hover:text-gray-900'
+            }`}
           >
             <ArrowLeft size={20} className="mr-2" />
             Volver a Productos
@@ -129,11 +135,15 @@ const ProjectArchitecturePage = () => {
 
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <h1 className={`text-3xl font-bold flex items-center gap-3 ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>
                 <Boxes className="text-blue-600" size={32} />
                 Arquitectura del Proyecto
               </h1>
-              <p className="text-gray-600 mt-1">
+              <p className={`mt-1 ${
+                theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+              }`}>
                 Gestiona la arquitectura técnica completa de tu proyecto
               </p>
             </div>
@@ -141,14 +151,24 @@ const ProjectArchitecturePage = () => {
         </div>
 
         {/* Selector de Producto */}
-        <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+        <div className={`rounded-xl shadow-md p-6 mb-6 border ${
+          theme === 'dark' 
+            ? 'bg-gray-800 border-gray-700' 
+            : 'bg-white border-gray-200'
+        }`}>
+          <label className={`block text-sm font-medium mb-2 ${
+            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+          }`}>
             Seleccionar Producto
           </label>
           <select
             value={selectedProductId}
             onChange={(e) => setSelectedProductId(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all ${
+              theme === 'dark'
+                ? 'bg-gray-700 border-gray-600 text-white'
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
             disabled={loadingProducts}
           >
             <option value="">Seleccione un producto...</option>
@@ -162,14 +182,22 @@ const ProjectArchitecturePage = () => {
 
         {/* Mensajes */}
         {successMessage && (
-          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+          <div className={`px-4 py-3 rounded-lg mb-4 flex items-center gap-2 ${
+            theme === 'dark'
+              ? 'bg-green-900/30 border border-green-800 text-green-400'
+              : 'bg-green-50 border border-green-200 text-green-800'
+          }`}>
             <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
             {successMessage}
           </div>
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+          <div className={`px-4 py-3 rounded-lg mb-4 flex items-center gap-2 ${
+            theme === 'dark'
+              ? 'bg-red-900/30 border border-red-800 text-red-400'
+              : 'bg-red-50 border border-red-200 text-red-800'
+          }`}>
             <AlertCircle size={20} />
             {error}
           </div>
@@ -177,27 +205,49 @@ const ProjectArchitecturePage = () => {
 
         {/* Contenido Principal */}
         {!selectedProductId ? (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-200">
-            <Boxes size={64} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+          <div className={`rounded-xl shadow-md p-12 text-center border ${
+            theme === 'dark' 
+              ? 'bg-gray-800 border-gray-700' 
+              : 'bg-white border-gray-200'
+          }`}>
+            <Boxes size={64} className={`mx-auto mb-4 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+            <h3 className={`text-xl font-semibold mb-2 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               Selecciona un Producto
             </h3>
-            <p className="text-gray-500">
+            <p className={theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}>
               Elige un producto para gestionar su arquitectura
             </p>
           </div>
         ) : loading ? (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-200">
+          <div className={`rounded-xl shadow-md p-12 text-center border ${
+            theme === 'dark' 
+              ? 'bg-gray-800 border-gray-700' 
+              : 'bg-white border-gray-200'
+          }`}>
             <Loader2 size={48} className="mx-auto text-blue-600 animate-spin mb-4" />
-            <p className="text-gray-600">Cargando arquitectura...</p>
+            <p className={theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}>Cargando arquitectura...</p>
           </div>
         ) : !architecture ? (
-          <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-200">
-            <Boxes size={64} className="mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+          <div className={`rounded-xl shadow-md p-12 text-center border ${
+            theme === 'dark' 
+              ? 'bg-gray-800 border-gray-700' 
+              : 'bg-white border-gray-200'
+          }`}>
+            <Boxes size={64} className={`mx-auto mb-4 ${
+              theme === 'dark' ? 'text-gray-600' : 'text-gray-400'
+            }`} />
+            <h3 className={`text-xl font-semibold mb-2 ${
+              theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+            }`}>
               No hay arquitectura definida
             </h3>
-            <p className="text-gray-500 mb-6">
+            <p className={`mb-6 ${
+              theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+            }`}>
               Este producto aún no tiene una arquitectura configurada
             </p>
             <button
@@ -210,60 +260,100 @@ const ProjectArchitecturePage = () => {
         ) : (
           <>
             {/* Stats Header */}
-            <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200">
+            <div className={`rounded-xl shadow-md p-6 mb-6 border ${
+              theme === 'dark' 
+                ? 'bg-gray-800 border-gray-700' 
+                : 'bg-white border-gray-200'
+            }`}>
               <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
                 {/* Completeness Score */}
-                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                <div className={`text-center p-4 rounded-lg ${
+                  theme === 'dark'
+                    ? 'bg-blue-900/30'
+                    : 'bg-gradient-to-br from-blue-50 to-blue-100'
+                }`}>
                   <div className={`text-3xl font-bold ${getCompletenessColor(stats.completenessScore)}`}>
                     {stats.completenessScore}%
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">Completitud</div>
+                  <div className={`text-sm mt-1 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Completitud</div>
                 </div>
 
                 {/* Módulos */}
-                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
+                <div className={`text-center p-4 rounded-lg ${
+                  theme === 'dark'
+                    ? 'bg-purple-900/30'
+                    : 'bg-gradient-to-br from-purple-50 to-purple-100'
+                }`}>
                   <div className="text-3xl font-bold text-purple-600">
                     {stats.totalModules}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">Módulos</div>
+                  <div className={`text-sm mt-1 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Módulos</div>
                 </div>
 
                 {/* Endpoints */}
-                <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                <div className={`text-center p-4 rounded-lg ${
+                  theme === 'dark'
+                    ? 'bg-green-900/30'
+                    : 'bg-gradient-to-br from-green-50 to-green-100'
+                }`}>
                   <div className="text-3xl font-bold text-green-600">
                     {stats.totalEndpoints}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">Endpoints</div>
+                  <div className={`text-sm mt-1 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Endpoints</div>
                 </div>
 
                 {/* Integraciones */}
-                <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
+                <div className={`text-center p-4 rounded-lg ${
+                  theme === 'dark'
+                    ? 'bg-orange-900/30'
+                    : 'bg-gradient-to-br from-orange-50 to-orange-100'
+                }`}>
                   <div className="text-3xl font-bold text-orange-600">
                     {stats.totalIntegrations}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">Integraciones</div>
+                  <div className={`text-sm mt-1 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Integraciones</div>
                 </div>
 
                 {/* Decisiones */}
-                <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg">
+                <div className={`text-center p-4 rounded-lg ${
+                  theme === 'dark'
+                    ? 'bg-pink-900/30'
+                    : 'bg-gradient-to-br from-pink-50 to-pink-100'
+                }`}>
                   <div className="text-3xl font-bold text-pink-600">
                     {stats.totalDecisions}
                   </div>
-                  <div className="text-sm text-gray-600 mt-1">Decisiones</div>
+                  <div className={`text-sm mt-1 ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+                  }`}>Decisiones</div>
                 </div>
               </div>
 
               {/* Metadata */}
-              <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-600">
+              <div className={`mt-4 pt-4 border-t flex items-center justify-between text-sm ${
+                theme === 'dark' 
+                  ? 'border-gray-700 text-gray-400' 
+                  : 'border-gray-200 text-gray-600'
+              }`}>
                 <div>
                   <span className="font-medium">Proyecto:</span> {selectedProduct?.nombre}
                 </div>
                 <div>
                   <span className="font-medium">Estado:</span>{' '}
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                    architecture.general?.status === 'active' ? 'bg-green-100 text-green-800' :
-                    architecture.general?.status === 'draft' ? 'bg-gray-100 text-gray-800' :
-                    'bg-blue-100 text-blue-800'
+                    architecture.general?.status === 'active' 
+                      ? theme === 'dark' ? 'bg-green-900/50 text-green-400' : 'bg-green-100 text-green-800'
+                      : architecture.general?.status === 'draft' 
+                        ? theme === 'dark' ? 'bg-gray-700 text-gray-400' : 'bg-gray-100 text-gray-800'
+                        : theme === 'dark' ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-800'
                   }`}>
                     {architecture.general?.status || 'draft'}
                   </span>
@@ -275,7 +365,11 @@ const ProjectArchitecturePage = () => {
             </div>
 
             {/* Tabs Navigation */}
-            <div className="bg-white rounded-t-xl shadow-md border border-b-0 border-gray-200 overflow-x-auto">
+            <div className={`rounded-t-xl shadow-md border border-b-0 overflow-x-auto ${
+              theme === 'dark' 
+                ? 'bg-gray-800 border-gray-700' 
+                : 'bg-white border-gray-200'
+            }`}>
               <div className="flex">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
@@ -285,8 +379,12 @@ const ProjectArchitecturePage = () => {
                       onClick={() => setActiveTab(tab.id)}
                       className={`flex items-center gap-2 px-6 py-4 font-medium transition-all whitespace-nowrap ${
                         activeTab === tab.id
-                          ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                          ? theme === 'dark'
+                            ? 'text-blue-400 border-b-2 border-blue-400 bg-blue-900/30'
+                            : 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                          : theme === 'dark'
+                            ? 'text-gray-400 hover:text-gray-200 hover:bg-gray-700'
+                            : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
                       }`}
                     >
                       <Icon size={18} />
@@ -298,11 +396,16 @@ const ProjectArchitecturePage = () => {
             </div>
 
             {/* Tab Content */}
-            <div className="bg-white rounded-b-xl shadow-md p-6 border border-gray-200 min-h-[400px]">
+            <div className={`rounded-b-xl shadow-md p-6 border min-h-[400px] ${
+              theme === 'dark' 
+                ? 'bg-gray-800 border-gray-700' 
+                : 'bg-white border-gray-200'
+            }`}>
               {activeTab === 'overview' && (
                 <OverviewTab 
                   architecture={architecture}
                   stats={stats}
+                  theme={theme}
                 />
               )}
               {activeTab === 'tech-stack' && (
@@ -310,6 +413,7 @@ const ProjectArchitecturePage = () => {
                   architecture={architecture}
                   onSave={updateTechStack}
                   loading={loading}
+                  theme={theme}
                 />
               )}
               {activeTab === 'structure' && (
@@ -317,6 +421,7 @@ const ProjectArchitecturePage = () => {
                   architecture={architecture}
                   onSave={updateArchitecture}
                   loading={loading}
+                  theme={theme}
                 />
               )}
               {activeTab === 'modules' && (
@@ -326,6 +431,7 @@ const ProjectArchitecturePage = () => {
                   onUpdateModule={updateModule}
                   onDeleteModule={deleteModule}
                   loading={loading}
+                  theme={theme}
                 />
               )}
               {activeTab === 'endpoints' && (
@@ -334,6 +440,7 @@ const ProjectArchitecturePage = () => {
                   onAddEndpoint={addEndpoint}
                   onUpdateEndpoints={updateEndpoints}
                   loading={loading}
+                  theme={theme}
                 />
               )}
               {activeTab === 'integrations' && (
@@ -342,6 +449,7 @@ const ProjectArchitecturePage = () => {
                   onAddIntegration={addIntegration}
                   onUpdateArchitecture={updateArchitecture}
                   loading={loading}
+                  theme={theme}
                 />
               )}
               {activeTab === 'decisions' && (
@@ -350,6 +458,7 @@ const ProjectArchitecturePage = () => {
                   onAddDecision={addDecision}
                   onUpdateArchitecture={updateArchitecture}
                   loading={loading}
+                  theme={theme}
                 />
               )}
               {activeTab === 'config' && (
@@ -357,6 +466,7 @@ const ProjectArchitecturePage = () => {
                   architecture={architecture}
                   onUpdateArchitecture={updateArchitecture}
                   loading={loading}
+                  theme={theme}
                 />
               )}
             </div>

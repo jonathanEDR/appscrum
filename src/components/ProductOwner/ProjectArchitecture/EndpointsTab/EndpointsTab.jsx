@@ -15,21 +15,38 @@ import {
   CheckCircle
 } from 'lucide-react';
 
+// Función para obtener colores de métodos HTTP según el tema
+const getHttpMethodColors = (theme) => ({
+  GET: theme === 'dark' ? 'bg-blue-900/50 text-blue-400 border-blue-700' : 'bg-blue-100 text-blue-700 border-blue-200',
+  POST: theme === 'dark' ? 'bg-green-900/50 text-green-400 border-green-700' : 'bg-green-100 text-green-700 border-green-200',
+  PUT: theme === 'dark' ? 'bg-yellow-900/50 text-yellow-400 border-yellow-700' : 'bg-yellow-100 text-yellow-700 border-yellow-200',
+  PATCH: theme === 'dark' ? 'bg-orange-900/50 text-orange-400 border-orange-700' : 'bg-orange-100 text-orange-700 border-orange-200',
+  DELETE: theme === 'dark' ? 'bg-red-900/50 text-red-400 border-red-700' : 'bg-red-100 text-red-700 border-red-200'
+});
+
 const HTTP_METHODS = [
-  { value: 'GET', label: 'GET', color: 'bg-blue-100 text-blue-700 border-blue-200' },
-  { value: 'POST', label: 'POST', color: 'bg-green-100 text-green-700 border-green-200' },
-  { value: 'PUT', label: 'PUT', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' },
-  { value: 'PATCH', label: 'PATCH', color: 'bg-orange-100 text-orange-700 border-orange-200' },
-  { value: 'DELETE', label: 'DELETE', color: 'bg-red-100 text-red-700 border-red-200' }
+  { value: 'GET', label: 'GET' },
+  { value: 'POST', label: 'POST' },
+  { value: 'PUT', label: 'PUT' },
+  { value: 'PATCH', label: 'PATCH' },
+  { value: 'DELETE', label: 'DELETE' }
 ];
 
 // Estados válidos según el modelo del backend
+const getEndpointStatusColors = (theme) => ({
+  planned: theme === 'dark' ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-100 text-blue-700',
+  in_development: theme === 'dark' ? 'bg-yellow-900/50 text-yellow-400' : 'bg-yellow-100 text-yellow-700',
+  implemented: theme === 'dark' ? 'bg-green-900/50 text-green-400' : 'bg-green-100 text-green-700',
+  testing: theme === 'dark' ? 'bg-purple-900/50 text-purple-400' : 'bg-purple-100 text-purple-700',
+  deprecated: theme === 'dark' ? 'bg-red-900/50 text-red-400' : 'bg-red-100 text-red-700'
+});
+
 const ENDPOINT_STATUS = [
-  { value: 'planned', label: 'Planificado', color: 'bg-blue-100 text-blue-700' },
-  { value: 'in_development', label: 'En Desarrollo', color: 'bg-yellow-100 text-yellow-700' },
-  { value: 'implemented', label: 'Implementado', color: 'bg-green-100 text-green-700' },
-  { value: 'testing', label: 'En Pruebas', color: 'bg-purple-100 text-purple-700' },
-  { value: 'deprecated', label: 'Deprecado', color: 'bg-red-100 text-red-700' }
+  { value: 'planned', label: 'Planificado' },
+  { value: 'in_development', label: 'En Desarrollo' },
+  { value: 'implemented', label: 'Implementado' },
+  { value: 'testing', label: 'En Pruebas' },
+  { value: 'deprecated', label: 'Deprecado' }
 ];
 
 const EMPTY_ENDPOINT = {
@@ -46,7 +63,7 @@ const EMPTY_ENDPOINT = {
 /**
  * EndpointsTab - CRUD de Endpoints API
  */
-const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading }) => {
+const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading, theme = 'light' }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [formData, setFormData] = useState(EMPTY_ENDPOINT);
@@ -59,6 +76,10 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
 
   const endpoints = architecture?.api_endpoints || [];
   const modules = architecture?.modules || [];
+  
+  // Obtener colores según el tema
+  const httpMethodColors = getHttpMethodColors(theme);
+  const statusColors = getEndpointStatusColors(theme);
 
   // Obtener paths base únicos de los endpoints existentes agrupados por módulo
   const getModuleBasePaths = (moduleName) => {
@@ -263,21 +284,31 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
     return HTTP_METHODS.find(m => m.value === method) || HTTP_METHODS[0];
   };
 
+  const getMethodColor = (method) => {
+    return httpMethodColors[method] || httpMethodColors.GET;
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className={`text-2xl font-bold flex items-center gap-2 ${
+            theme === 'dark' ? 'text-white' : 'text-gray-900'
+          }`}>
             <Workflow className="text-green-600" />
             Endpoints API
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className={`mt-1 ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+          }`}>
             Documenta los endpoints de tu API REST
           </p>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-sm text-gray-500">
+          <span className={`text-sm ${
+            theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+          }`}>
             {endpoints.length} endpoint{endpoints.length !== 1 ? 's' : ''}
           </span>
           <button
@@ -292,7 +323,9 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className={`rounded-xl border p-4 ${
+        theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+      }`}>
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -302,7 +335,11 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
               placeholder="Buscar por path o descripción..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent ${
+                theme === 'dark' 
+                  ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             />
           </div>
 
@@ -312,7 +349,11 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
             <select
               value={filterMethod}
               onChange={(e) => setFilterMethod(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+              className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                theme === 'dark' 
+                  ? 'bg-gray-700 border-gray-600 text-white' 
+                  : 'bg-white border-gray-300 text-gray-900'
+              }`}
             >
               <option value="all">Todos los métodos</option>
               {HTTP_METHODS.map(method => (
@@ -325,7 +366,11 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
           <select
             value={filterAuth}
             onChange={(e) => setFilterAuth(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+            className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+              theme === 'dark' 
+                ? 'bg-gray-700 border-gray-600 text-white' 
+                : 'bg-white border-gray-300 text-gray-900'
+            }`}
           >
             <option value="all">Auth: Todos</option>
             <option value="auth">Requiere Auth</option>
@@ -337,15 +382,21 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
       {/* Endpoint Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+          <div className={`rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
+            <div className={`p-6 border-b ${
+              theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+            }`}>
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className={`text-xl font-bold ${
+                  theme === 'dark' ? 'text-white' : 'text-gray-900'
+                }`}>
                   {editingIndex !== null ? 'Editar Endpoint' : 'Nuevo Endpoint'}
                 </h3>
                 <button
                   onClick={resetForm}
-                  className="text-gray-400 hover:text-gray-600"
+                  className={theme === 'dark' ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}
                 >
                   <X size={24} />
                 </button>
@@ -356,14 +407,20 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
               {/* Method & Path */}
               <div className="flex gap-4">
                 <div className="w-32">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Método *
                   </label>
                   <select
                     name="method"
                     value={formData.method}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   >
                     {HTTP_METHODS.map(method => (
                       <option key={method.value} value={method.value}>{method.label}</option>
@@ -371,11 +428,17 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                   </select>
                 </div>
                 <div className="flex-1 relative">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Path * <span className="text-gray-400 text-xs">(debe comenzar con /)</span>
+                  <label className={`block text-sm font-medium mb-1 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
+                    Path * <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>(debe comenzar con /)</span>
                   </label>
                   <div className="relative flex">
-                    <span className="inline-flex items-center px-3 bg-gray-100 border border-r-0 border-gray-300 rounded-l-lg text-gray-500 font-mono">
+                    <span className={`inline-flex items-center px-3 border border-r-0 rounded-l-lg font-mono ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-gray-400' 
+                        : 'bg-gray-100 border-gray-300 text-gray-500'
+                    }`}>
                       /
                     </span>
                     <input
@@ -394,21 +457,35 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                       onBlur={() => setTimeout(() => setShowPathSuggestions(false), 200)}
                       required
                       placeholder="api/v1/resource"
-                      className="flex-1 px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-green-500 font-mono"
+                      className={`flex-1 px-4 py-2 border rounded-r-lg focus:ring-2 focus:ring-green-500 font-mono ${
+                        theme === 'dark' 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900'
+                      }`}
                     />
                   </div>
                   
                   {/* Path Suggestions Dropdown */}
                   {showPathSuggestions && getPathSuggestions().length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto">
-                      <div className="p-2 border-b border-gray-100">
-                        <span className="text-xs text-gray-500 font-medium">Rutas sugeridas:</span>
+                    <div className={`absolute top-full left-0 right-0 mt-1 border rounded-lg shadow-lg z-10 max-h-48 overflow-y-auto ${
+                      theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+                    }`}>
+                      <div className={`p-2 border-b ${
+                        theme === 'dark' ? 'border-gray-700' : 'border-gray-100'
+                      }`}>
+                        <span className={`text-xs font-medium ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                        }`}>Rutas sugeridas:</span>
                       </div>
                       {getPathSuggestions().map((suggestion, idx) => (
                         <button
                           key={idx}
                           type="button"
-                          className="w-full text-left px-3 py-2 hover:bg-green-50 text-sm font-mono text-gray-700 flex items-center gap-2"
+                          className={`w-full text-left px-3 py-2 text-sm font-mono flex items-center gap-2 ${
+                            theme === 'dark' 
+                              ? 'hover:bg-green-900/50 text-gray-300' 
+                              : 'hover:bg-green-50 text-gray-700'
+                          }`}
                           onClick={() => {
                             setFormData(prev => ({
                               ...prev,
@@ -418,7 +495,7 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                           }}
                         >
                           <span className="text-green-600">{suggestion}</span>
-                          <span className="text-gray-400 text-xs">+ agregar recurso</span>
+                          <span className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`}>+ agregar recurso</span>
                         </button>
                       ))}
                     </div>
@@ -428,7 +505,9 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Descripción
                 </label>
                 <input
@@ -437,21 +516,31 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                   value={formData.description}
                   onChange={handleInputChange}
                   placeholder="Descripción breve del endpoint"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                    theme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Module - Primero para que autocomplete el path */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${
+                    theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                  }`}>
                     Módulo Asociado
                   </label>
                   <select
                     name="module"
                     value={formData.module}
                     onChange={handleModuleChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 ${
+                      theme === 'dark' 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
                   >
                     <option value="">Sin módulo</option>
                     {modules.map((mod, idx) => (
@@ -459,7 +548,9 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                     ))}
                   </select>
                   {formData.module && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className={`text-xs mt-1 ${
+                      theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                    }`}>
                       Al seleccionar un módulo, se sugiere automáticamente una ruta base
                     </p>
                   )}
@@ -475,7 +566,9 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                       onChange={handleInputChange}
                       className="w-5 h-5 rounded text-green-600 focus:ring-green-500"
                     />
-                    <span className="text-sm font-medium text-gray-700">
+                    <span className={`text-sm font-medium ${
+                      theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                    }`}>
                       Requiere Autenticación
                     </span>
                   </label>
@@ -484,7 +577,9 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
 
               {/* Request Body */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Request Body (JSON Schema o ejemplo)
                 </label>
                 <textarea
@@ -493,13 +588,19 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                   onChange={handleInputChange}
                   rows={3}
                   placeholder='{"field": "value"}'
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 font-mono text-sm ${
+                    theme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
 
               {/* Response Example */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${
+                  theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+                }`}>
                   Response Example (JSON)
                 </label>
                 <textarea
@@ -508,16 +609,22 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                   onChange={handleInputChange}
                   rows={3}
                   placeholder='{"success": true, "data": {...}}'
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 font-mono text-sm"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-green-500 font-mono text-sm ${
+                    theme === 'dark' 
+                      ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                      : 'bg-white border-gray-300 text-gray-900'
+                  }`}
                 />
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className={`flex justify-end gap-3 pt-4 border-t ${
+                theme === 'dark' ? 'border-gray-700' : 'border-gray-200'
+              }`}>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className={theme === 'dark' ? 'px-4 py-2 text-gray-400 hover:text-gray-200' : 'px-4 py-2 text-gray-600 hover:text-gray-800'}
                 >
                   Cancelar
                 </button>
@@ -538,20 +645,28 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
       {/* Delete Confirmation Modal */}
       {confirmDelete !== null && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className={`rounded-xl shadow-xl max-w-md w-full p-6 ${
+            theme === 'dark' ? 'bg-gray-800' : 'bg-white'
+          }`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-red-100 rounded-full">
+              <div className={`p-3 rounded-full ${
+                theme === 'dark' ? 'bg-red-900/50' : 'bg-red-100'
+              }`}>
                 <AlertCircle className="text-red-600" size={24} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Confirmar Eliminación</h3>
+              <h3 className={`text-xl font-bold ${
+                theme === 'dark' ? 'text-white' : 'text-gray-900'
+              }`}>Confirmar Eliminación</h3>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className={`mb-6 ${
+              theme === 'dark' ? 'text-gray-400' : 'text-gray-600'
+            }`}>
               ¿Estás seguro de eliminar el endpoint <strong className="font-mono">{confirmDelete.path}</strong>?
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className={theme === 'dark' ? 'px-4 py-2 text-gray-400 hover:text-gray-200' : 'px-4 py-2 text-gray-600 hover:text-gray-800'}
               >
                 Cancelar
               </button>
@@ -570,33 +685,47 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
       {Object.keys(groupedEndpoints).length > 0 ? (
         <div className="space-y-6">
           {Object.entries(groupedEndpoints).map(([moduleName, moduleEndpoints]) => (
-            <div key={moduleName} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-              <div className="bg-gray-50 px-4 py-3 border-b border-gray-200">
-                <h4 className="font-semibold text-gray-700">
+            <div key={moduleName} className={`rounded-xl border overflow-hidden ${
+              theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+            }`}>
+              <div className={`px-4 py-3 border-b ${
+                theme === 'dark' ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'
+              }`}>
+                <h4 className={`font-semibold ${
+                  theme === 'dark' ? 'text-gray-200' : 'text-gray-700'
+                }`}>
                   {moduleName} ({moduleEndpoints.length})
                 </h4>
               </div>
-              <div className="divide-y divide-gray-100">
+              <div className={`divide-y ${
+                theme === 'dark' ? 'divide-gray-700' : 'divide-gray-100'
+              }`}>
                 {moduleEndpoints.map((endpoint) => {
-                  const methodConfig = getMethodConfig(endpoint.method);
+                  const methodColor = getMethodColor(endpoint.method);
                   
                   return (
                     <div
                       key={endpoint.originalIndex}
-                      className="p-4 hover:bg-gray-50 transition-colors"
+                      className={`p-4 transition-colors ${
+                        theme === 'dark' ? 'hover:bg-gray-700' : 'hover:bg-gray-50'
+                      }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3 flex-1">
-                          <span className={`text-xs font-bold px-2 py-1 rounded border ${methodConfig.color}`}>
+                          <span className={`text-xs font-bold px-2 py-1 rounded border ${methodColor}`}>
                             {endpoint.method}
                           </span>
                           <div className="flex items-center gap-2">
-                            <code className="font-mono text-sm text-gray-800">
+                            <code className={`font-mono text-sm ${
+                              theme === 'dark' ? 'text-gray-200' : 'text-gray-800'
+                            }`}>
                               {endpoint.path}
                             </code>
                             <button
                               onClick={() => copyToClipboard(endpoint.path)}
-                              className="p-1 text-gray-400 hover:text-gray-600"
+                              className={`p-1 ${
+                                theme === 'dark' ? 'text-gray-500 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'
+                              }`}
                               title="Copiar path"
                             >
                               {copiedPath === endpoint.path ? (
@@ -607,7 +736,7 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                             </button>
                           </div>
                           {endpoint.auth_required ? (
-                            <Lock size={14} className="text-gray-400" title="Requiere autenticación" />
+                            <Lock size={14} className={theme === 'dark' ? 'text-gray-500' : 'text-gray-400'} title="Requiere autenticación" />
                           ) : (
                             <Unlock size={14} className="text-green-500" title="Endpoint público" />
                           )}
@@ -616,13 +745,21 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => handleEdit(endpoint, endpoint.originalIndex)}
-                            className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50"
+                            className={`p-2 rounded-lg ${
+                              theme === 'dark' 
+                                ? 'text-gray-400 hover:text-blue-400 hover:bg-blue-900/50' 
+                                : 'text-gray-400 hover:text-blue-600 hover:bg-blue-50'
+                            }`}
                           >
                             <Edit2 size={18} />
                           </button>
                           <button
                             onClick={() => setConfirmDelete(endpoint)}
-                            className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50"
+                            className={`p-2 rounded-lg ${
+                              theme === 'dark' 
+                                ? 'text-gray-400 hover:text-red-400 hover:bg-red-900/50' 
+                                : 'text-gray-400 hover:text-red-600 hover:bg-red-50'
+                            }`}
                           >
                             <Trash2 size={18} />
                           </button>
@@ -630,7 +767,9 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
                       </div>
                       
                       {endpoint.description && (
-                        <p className="text-sm text-gray-500 mt-2 ml-16">
+                        <p className={`text-sm mt-2 ml-16 ${
+                          theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                        }`}>
                           {endpoint.description}
                         </p>
                       )}
@@ -642,12 +781,18 @@ const EndpointsTab = ({ architecture, onAddEndpoint, onUpdateEndpoints, loading 
           ))}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className={`rounded-xl border p-12 text-center ${
+          theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'
+        }`}>
           <Workflow size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <h3 className={`text-lg font-semibold mb-2 ${
+            theme === 'dark' ? 'text-gray-300' : 'text-gray-700'
+          }`}>
             {endpoints.length === 0 ? 'No hay endpoints definidos' : 'No se encontraron resultados'}
           </h3>
-          <p className="text-gray-500 mb-4">
+          <p className={`mb-4 ${
+            theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+          }`}>
             {endpoints.length === 0 
               ? 'Documenta los endpoints de tu API para tener una referencia clara'
               : 'Intenta ajustar los filtros de búsqueda'

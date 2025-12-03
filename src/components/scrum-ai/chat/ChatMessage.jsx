@@ -789,9 +789,11 @@ export const ChatMessage = ({ message, onOpenCanvas, onSendMessage }) => {
             }
           `}
         >
-          <div className={`prose prose-sm dark:prose-invert max-w-none prose-p:leading-relaxed prose-p:my-2 prose-ul:my-2 prose-li:my-0.5 prose-headings:mt-4 prose-headings:mb-2 ${
-            message.status === 'error' ? 'text-red-700 dark:text-red-300' : ''
-          }`}>
+          <div className={`prose prose-sm max-w-none prose-p:leading-relaxed prose-p:my-2 prose-ul:my-2 prose-li:my-0.5 prose-headings:mt-4 prose-headings:mb-2 
+            ${message.status === 'error' 
+              ? 'text-red-700 dark:text-red-300' 
+              : 'text-gray-800 dark:text-gray-100 [&_strong]:text-gray-900 dark:[&_strong]:text-white [&_a]:text-indigo-600 dark:[&_a]:text-indigo-400 [&_code]:text-pink-600 dark:[&_code]:text-pink-400 [&_code]:bg-gray-100 dark:[&_code]:bg-gray-700 [&_li]:text-gray-700 dark:[&_li]:text-gray-200 [&_h1]:text-gray-900 dark:[&_h1]:text-white [&_h2]:text-gray-900 dark:[&_h2]:text-white [&_h3]:text-gray-900 dark:[&_h3]:text-white [&_blockquote]:text-gray-600 dark:[&_blockquote]:text-gray-300 [&_blockquote]:border-gray-300 dark:[&_blockquote]:border-gray-600'
+            }`}>
             <ReactMarkdown>{(sectionOptions.length > 0 || actionOptions.length > 0 || inputFields.length > 0) ? cleanedMessage : message.message}</ReactMarkdown>
           </div>
 

@@ -48,7 +48,7 @@ const EMPTY_MODULE = {
 /**
  * ModulesTab - CRUD de Módulos de la arquitectura
  */
-const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule, loading }) => {
+const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule, loading, theme = 'light' }) => {
   const [showForm, setShowForm] = useState(false);
   const [editingModule, setEditingModule] = useState(null);
   const [formData, setFormData] = useState(EMPTY_MODULE);
@@ -203,11 +203,11 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className={`text-2xl font-bold flex items-center gap-2 ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
             <Package className="text-purple-600" />
             Módulos del Sistema
           </h2>
-          <p className="text-gray-600 mt-1">
+          <p className={`mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
             Define los componentes y módulos principales de tu arquitectura
           </p>
         </div>
@@ -222,7 +222,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
       </div>
 
       {/* Filters */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4">
+      <div className={`rounded-xl border p-4 ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
         <div className="flex flex-col md:flex-row gap-4">
           {/* Search */}
           <div className="flex-1 relative">
@@ -232,7 +232,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
               placeholder="Buscar módulos..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
             />
           </div>
 
@@ -242,7 +242,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
             <select
               value={filterType}
               onChange={(e) => setFilterType(e.target.value)}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+              className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
             >
               <option value="all">Todos los tipos</option>
               {MODULE_TYPES.map(type => (
@@ -255,7 +255,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
           <select
             value={filterStatus}
             onChange={(e) => setFilterStatus(e.target.value)}
-            className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+            className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
           >
             <option value="all">Todos los estados</option>
             {MODULE_STATUS.map(status => (
@@ -268,15 +268,15 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
       {/* Module Form Modal */}
       {showForm && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
+          <div className={`rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className={`p-6 border-b ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-900">
+                <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>
                   {editingModule ? 'Editar Módulo' : 'Nuevo Módulo'}
                 </h3>
                 <button
                   onClick={resetForm}
-                  className="text-gray-400 hover:text-gray-600"
+                  className={`${theme === 'dark' ? 'text-gray-400 hover:text-gray-200' : 'text-gray-400 hover:text-gray-600'}`}
                 >
                   <X size={24} />
                 </button>
@@ -286,7 +286,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               {/* Name */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                   Nombre del Módulo *
                 </label>
                 <input
@@ -296,13 +296,13 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                   onChange={handleInputChange}
                   required
                   placeholder="ej: AuthenticationModule"
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                   Descripción
                 </label>
                 <textarea
@@ -311,21 +311,21 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                   onChange={handleInputChange}
                   rows={3}
                   placeholder="Describe la función principal del módulo..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {/* Type */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                     Tipo
                   </label>
                   <select
                     name="type"
                     value={formData.type}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   >
                     {MODULE_TYPES.map(type => (
                       <option key={type.value} value={type.value}>{type.label}</option>
@@ -335,14 +335,14 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
 
                 {/* Status */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                  <label className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                     Estado
                   </label>
                   <select
                     name="status"
                     value={formData.status}
                     onChange={handleInputChange}
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   >
                     {MODULE_STATUS.map(status => (
                       <option key={status.value} value={status.value}>{status.label}</option>
@@ -353,7 +353,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
 
               {/* Path con sugerencias */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                   Ruta / Path
                 </label>
                 <div className="relative">
@@ -370,7 +370,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                     onFocus={() => setShowPathSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowPathSuggestions(false), 200)}
                     placeholder="ej: src/modules/auth"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                     autoComplete="off"
                   />
                   
@@ -385,8 +385,8 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
 
                   {/* Dropdown de sugerencias */}
                   {showPathSuggestions && filteredPaths.length > 0 && (
-                    <div className="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
-                      <div className="px-3 py-2 bg-gray-50 border-b border-gray-200 text-xs font-medium text-gray-500 flex items-center gap-2">
+                    <div className={`absolute z-20 w-full mt-1 border rounded-lg shadow-lg max-h-48 overflow-y-auto ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                      <div className={`px-3 py-2 border-b text-xs font-medium flex items-center gap-2 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-gray-400' : 'bg-gray-50 border-gray-200 text-gray-500'}`}>
                         <Folder size={14} />
                         Rutas disponibles del proyecto ({filteredPaths.length})
                       </div>
@@ -399,14 +399,14 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                             setPathFilter('');
                             setShowPathSuggestions(false);
                           }}
-                          className="w-full text-left px-3 py-2 text-sm hover:bg-purple-50 hover:text-purple-700 flex items-center gap-2 border-b border-gray-50 last:border-0"
+                          className={`w-full text-left px-3 py-2 text-sm flex items-center gap-2 last:border-0 ${theme === 'dark' ? 'hover:bg-purple-900/50 hover:text-purple-400 border-b border-gray-700' : 'hover:bg-purple-50 hover:text-purple-700 border-b border-gray-50'}`}
                         >
                           <Folder size={14} className="text-yellow-500 flex-shrink-0" />
-                          <span className="font-mono text-gray-700">{path}</span>
+                          <span className={`font-mono ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{path}</span>
                         </button>
                       ))}
                       {formData.path && !availablePaths.includes(formData.path) && (
-                        <div className="px-3 py-2 bg-blue-50 text-xs text-blue-600 flex items-center gap-2">
+                        <div className={`px-3 py-2 text-xs flex items-center gap-2 ${theme === 'dark' ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-50 text-blue-600'}`}>
                           <Plus size={14} />
                           Nueva ruta: <span className="font-mono">{formData.path}</span>
                         </div>
@@ -415,7 +415,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                   )}
                 </div>
                 {availablePaths.length === 0 && (
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className={`mt-1 text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
                     💡 Tip: Define la estructura de directorios en la pestaña "Estructura" para ver rutas sugeridas aquí.
                   </p>
                 )}
@@ -423,7 +423,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
 
               {/* Responsibilities */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                   Responsabilidades
                 </label>
                 <textarea
@@ -432,13 +432,13 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                   onChange={handleInputChange}
                   rows={2}
                   placeholder="Lista las responsabilidades principales..."
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                 />
               </div>
 
               {/* Dependencies */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className={`block text-sm font-medium mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
                   Dependencias
                 </label>
                 <div className="flex gap-2 mb-2">
@@ -447,13 +447,13 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                     value={dependencyInput}
                     onChange={(e) => setDependencyInput(e.target.value)}
                     placeholder="Nombre del módulo dependiente"
-                    className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                    className={`flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 ${theme === 'dark' ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900'}`}
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddDependency())}
                   />
                   <button
                     type="button"
                     onClick={handleAddDependency}
-                    className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                    className={`px-4 py-2 rounded-lg ${theme === 'dark' ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                   >
                     <Plus size={20} />
                   </button>
@@ -462,14 +462,14 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                   {formData.dependencies.map((dep, index) => (
                     <span
                       key={index}
-                      className="inline-flex items-center gap-1 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-sm"
+                      className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm ${theme === 'dark' ? 'bg-purple-900/50 text-purple-400' : 'bg-purple-100 text-purple-700'}`}
                     >
                       <Link2 size={14} />
                       {dep}
                       <button
                         type="button"
                         onClick={() => handleRemoveDependency(dep)}
-                        className="ml-1 hover:text-purple-900"
+                        className={`ml-1 ${theme === 'dark' ? 'hover:text-purple-300' : 'hover:text-purple-900'}`}
                       >
                         <X size={14} />
                       </button>
@@ -479,11 +479,11 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
               </div>
 
               {/* Actions */}
-              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+              <div className={`flex justify-end gap-3 pt-4 border-t ${theme === 'dark' ? 'border-gray-700' : 'border-gray-200'}`}>
                 <button
                   type="button"
                   onClick={resetForm}
-                  className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                  className={`px-4 py-2 ${theme === 'dark' ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}
                 >
                   Cancelar
                 </button>
@@ -504,21 +504,21 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
       {/* Delete Confirmation Modal */}
       {confirmDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
+          <div className={`rounded-xl shadow-xl max-w-md w-full p-6 ${theme === 'dark' ? 'bg-gray-800' : 'bg-white'}`}>
             <div className="flex items-center gap-3 mb-4">
-              <div className="p-3 bg-red-100 rounded-full">
+              <div className={`p-3 rounded-full ${theme === 'dark' ? 'bg-red-900/50' : 'bg-red-100'}`}>
                 <AlertCircle className="text-red-600" size={24} />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Confirmar Eliminación</h3>
+              <h3 className={`text-xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>Confirmar Eliminación</h3>
             </div>
-            <p className="text-gray-600 mb-6">
+            <p className={`mb-6 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
               ¿Estás seguro de eliminar el módulo <strong>{confirmDelete.name}</strong>? 
               Esta acción no se puede deshacer.
             </p>
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setConfirmDelete(null)}
-                className="px-4 py-2 text-gray-600 hover:text-gray-800"
+                className={`px-4 py-2 ${theme === 'dark' ? 'text-gray-400 hover:text-gray-200' : 'text-gray-600 hover:text-gray-800'}`}
               >
                 Cancelar
               </button>
@@ -544,7 +544,7 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
             return (
               <div
                 key={module._id || index}
-                className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
+                className={`rounded-xl border overflow-hidden hover:shadow-md transition-shadow ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}
               >
                 <div
                   className="p-4 cursor-pointer"
@@ -552,12 +552,12 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                 >
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
-                      <div className="p-2 bg-purple-100 rounded-lg">
+                      <div className={`p-2 rounded-lg ${theme === 'dark' ? 'bg-purple-900/50' : 'bg-purple-100'}`}>
                         <Layers className="text-purple-600" size={20} />
                       </div>
                       <div>
-                        <h4 className="font-semibold text-gray-900">{module.name}</h4>
-                        <p className="text-sm text-gray-500 line-clamp-1">{module.description || 'Sin descripción'}</p>
+                        <h4 className={`font-semibold ${theme === 'dark' ? 'text-white' : 'text-gray-900'}`}>{module.name}</h4>
+                        <p className={`text-sm line-clamp-1 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>{module.description || 'Sin descripción'}</p>
                       </div>
                     </div>
 
@@ -571,17 +571,17 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
                       <div className="flex items-center gap-2">
                         <button
                           onClick={(e) => { e.stopPropagation(); handleEdit(module); }}
-                          className="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-blue-50"
+                          className={`p-2 text-gray-400 rounded-lg ${theme === 'dark' ? 'hover:text-blue-400 hover:bg-blue-900/50' : 'hover:text-blue-600 hover:bg-blue-50'}`}
                         >
                           <Edit2 size={18} />
                         </button>
                         <button
                           onClick={(e) => { e.stopPropagation(); setConfirmDelete(module); }}
-                          className="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50"
+                          className={`p-2 text-gray-400 rounded-lg ${theme === 'dark' ? 'hover:text-red-400 hover:bg-red-900/50' : 'hover:text-red-600 hover:bg-red-50'}`}
                         >
                           <Trash2 size={18} />
                         </button>
-                        {isExpanded ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+                        {isExpanded ? <ChevronUp size={18} className={theme === 'dark' ? 'text-gray-400' : ''} /> : <ChevronDown size={18} className={theme === 'dark' ? 'text-gray-400' : ''} />}
                       </div>
                     </div>
                   </div>
@@ -589,27 +589,27 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
 
                 {/* Expanded Details */}
                 {isExpanded && (
-                  <div className="px-4 pb-4 border-t border-gray-100 pt-4 bg-gray-50">
+                  <div className={`px-4 pb-4 border-t pt-4 ${theme === 'dark' ? 'border-gray-700 bg-gray-700' : 'border-gray-100 bg-gray-50'}`}>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       {module.path && (
                         <div>
-                          <span className="text-xs text-gray-500 uppercase">Ruta</span>
-                          <p className="font-mono text-sm text-gray-700">{module.path}</p>
+                          <span className={`text-xs uppercase ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>Ruta</span>
+                          <p className={`font-mono text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{module.path}</p>
                         </div>
                       )}
                       {module.responsibilities && (
                         <div>
-                          <span className="text-xs text-gray-500 uppercase">Responsabilidades</span>
-                          <p className="text-sm text-gray-700">{module.responsibilities}</p>
+                          <span className={`text-xs uppercase ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>Responsabilidades</span>
+                          <p className={`text-sm ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>{module.responsibilities}</p>
                         </div>
                       )}
                     </div>
                     {module.dependencies?.length > 0 && (
                       <div className="mt-4">
-                        <span className="text-xs text-gray-500 uppercase">Dependencias</span>
+                        <span className={`text-xs uppercase ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>Dependencias</span>
                         <div className="flex flex-wrap gap-2 mt-1">
                           {module.dependencies.map((dep, i) => (
-                            <span key={i} className="inline-flex items-center gap-1 px-2 py-1 bg-purple-100 text-purple-700 rounded text-sm">
+                            <span key={i} className={`inline-flex items-center gap-1 px-2 py-1 rounded text-sm ${theme === 'dark' ? 'bg-purple-900/50 text-purple-400' : 'bg-purple-100 text-purple-700'}`}>
                               <Link2 size={12} />
                               {dep}
                             </span>
@@ -624,12 +624,12 @@ const ModulesTab = ({ architecture, onAddModule, onUpdateModule, onDeleteModule,
           })}
         </div>
       ) : (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className={`rounded-xl border p-12 text-center ${theme === 'dark' ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
           <Package size={48} className="mx-auto text-gray-400 mb-4" />
-          <h3 className="text-lg font-semibold text-gray-700 mb-2">
+          <h3 className={`text-lg font-semibold mb-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-700'}`}>
             {modules.length === 0 ? 'No hay módulos definidos' : 'No se encontraron resultados'}
           </h3>
-          <p className="text-gray-500 mb-4">
+          <p className={`mb-4 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>
             {modules.length === 0 
               ? 'Comienza agregando los módulos principales de tu arquitectura'
               : 'Intenta ajustar los filtros de búsqueda'
