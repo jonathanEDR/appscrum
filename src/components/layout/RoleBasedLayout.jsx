@@ -207,6 +207,8 @@ const Sidebar = ({ isOpen, onClose, onToggle, role, onLogout }) => {
       if (path.includes('/productos')) return 'productos';
       if (path.includes('/backlog')) return 'backlog';
       if (path.includes('/roadmap')) return 'roadmap';
+      if (path.includes('/sprint-planning')) return 'sprint-planning';
+      if (path.includes('/scrum-ai')) return 'scrum-ai';
       if (path.includes('/metricas')) return 'metricas';
       if (path.includes('/colaboradores')) return 'colaboradores';
       if (path.includes('/perfil')) return 'perfil';
@@ -231,6 +233,9 @@ const Sidebar = ({ isOpen, onClose, onToggle, role, onLogout }) => {
           break;
         case 'sprint-planning':
           navigate('/product_owner/sprint-planning');
+          break;
+        case 'scrum-ai':
+          navigate('/product_owner/scrum-ai');
           break;
         case 'metricas':
           navigate('/product_owner/metricas');
