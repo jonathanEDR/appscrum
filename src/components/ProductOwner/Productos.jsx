@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import ModalProducto from '../modalproductowner/ModalProducto';
 import { useAuth } from '@clerk/clerk-react';
 import { useTheme } from '../../context/ThemeContext';
@@ -13,10 +14,13 @@ import {
   Calendar,
   RefreshCw,
   MoreVertical,
-  Eye
+  Eye,
+  Database,
+  Boxes
 } from 'lucide-react';
 
 const Productos = () => {
+  const navigate = useNavigate();
   const { getToken } = useAuth();
   const { theme } = useTheme();
   const [productos, setProductos] = useState([]);
@@ -421,6 +425,28 @@ const Productos = () => {
                     </div>
                   </div>
                   <div className="flex items-center gap-2 ml-4">
+                    <button
+                      onClick={() => navigate(`/product_owner/database-schema/${producto._id}`)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        theme === 'dark'
+                          ? 'text-indigo-400 hover:bg-gray-600'
+                          : 'text-indigo-600 hover:bg-indigo-50'
+                      }`}
+                      title="Esquema de Base de Datos"
+                    >
+                      <Database size={16} />
+                    </button>
+                    <button
+                      onClick={() => navigate(`/product_owner/architecture/${producto._id}`)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        theme === 'dark'
+                          ? 'text-blue-400 hover:bg-gray-600'
+                          : 'text-blue-600 hover:bg-blue-50'
+                      }`}
+                      title="Arquitectura del Proyecto"
+                    >
+                      <Boxes size={16} />
+                    </button>
                     <button
                       onClick={() => handleEdit(producto)}
                       className={`p-2 rounded-lg transition-colors ${

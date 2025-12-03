@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, FileText, UserCog, LogOut, Shield, Users, Menu, X, ChevronLeft, ChevronRight, Target, Calendar, BarChart3, Sparkles } from 'lucide-react';
+import { Home, FileText, UserCog, LogOut, Shield, Users, Menu, X, ChevronLeft, ChevronRight, Target, Calendar, BarChart3, Sparkles, Bot, Database, Boxes } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 import LogoDisplay from '../LogoDisplay';
 
@@ -10,6 +10,10 @@ function ProductOwnerSidebar({ currentView, onViewChange, onLogout, userRole, is
     { id: 'backlog', icon: Target, label: 'Product Backlog' },
     { id: 'roadmap', icon: Calendar, label: 'Roadmap' },
     { id: 'sprint-planning', icon: Sparkles, label: 'Planificación Sprint' },
+    { id: 'database-schema', icon: Database, label: 'Database Schema', badge: 'Nuevo' },
+    { id: 'architecture', icon: Boxes, label: 'Arquitectura', badge: 'Nuevo' },
+    { id: 'ai-agents', icon: Bot, label: 'Agentes AI' },
+    { id: 'scrum-ai', icon: Bot, label: 'SCRUM AI', badge: 'Beta' },
     { id: 'metricas', icon: BarChart3, label: 'Métricas' },
     { id: 'colaboradores', icon: Users, label: 'Colaboradores' },
     { id: 'perfil', icon: UserCog, label: 'Mi Perfil' }
@@ -101,7 +105,12 @@ function ProductOwnerSidebar({ currentView, onViewChange, onLogout, userRole, is
                   >
                     <Icon size={18} className={isActive ? 'sidebar-button-text-active' : 'sidebar-button-text'} />
                   </div>
-                  <span className="font-medium text-sm">{item.label}</span>
+                  <span className="font-medium text-sm flex-1 text-left">{item.label}</span>
+                  {item.badge && (
+                    <span className="px-2 py-0.5 text-xs rounded-full bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold">
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}

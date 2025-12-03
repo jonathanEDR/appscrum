@@ -37,6 +37,12 @@ const ProductBacklog = lazy(() => import('../components/ProductOwner/ProductBack
 const Roadmap = lazy(() => import('../components/ProductOwner/Roadmap.jsx'));
 const Metricas = lazy(() => import('../components/ProductOwner/Metricas.jsx'));
 const SprintBacklogPlanning = lazy(() => import('../components/ProductOwner/SprintBacklogPlanning.jsx'));
+const AIAgents = lazy(() => import('../components/ProductOwner/AIAgents.jsx'));
+const DatabaseSchemaPage = lazy(() => import('../components/ProductOwner/DatabaseSchema/DatabaseSchemaPage.jsx'));
+const ProjectArchitecturePage = lazy(() => import('../components/ProductOwner/ProjectArchitecture/ProjectArchitecturePage.jsx'));
+
+// SCRUM AI Module - lazy loading
+const ScrumAI = lazy(() => import('../Pages/ScrumAI.jsx'));
 
 // Componentes de Scrum Master - lazy loading
 const Impediments = lazy(() => import('../components/ScrumMaster/Impediments.jsx'));
@@ -96,7 +102,7 @@ const LazyWrapper = ({ children }) => (
   </Suspense>
 );
 
-// Configuración de rutas
+// Configuración de rutas con future flags para silenciar warnings
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -174,6 +180,14 @@ export const router = createBrowserRouter([
         path: 'cloudinary',
         element: <CloudinaryManagement />,
       },
+      {
+        path: 'ai-agents',
+        element: <LazyWrapper><AIAgents /></LazyWrapper>,
+      },
+      {
+        path: 'scrum-ai',
+        element: <LazyWrapper><ScrumAI /></LazyWrapper>,
+      },
     ],
   },
   // Dashboard para Product Owner
@@ -210,8 +224,32 @@ export const router = createBrowserRouter([
         element: <LazyWrapper><SprintBacklogPlanning /></LazyWrapper>,
       },
       {
+        path: 'ai-agents',
+        element: <LazyWrapper><AIAgents /></LazyWrapper>,
+      },
+      {
+        path: 'scrum-ai',
+        element: <LazyWrapper><ScrumAI /></LazyWrapper>,
+      },
+      {
         path: 'metricas',
         element: <LazyWrapper><Metricas /></LazyWrapper>,
+      },
+      {
+        path: 'database-schema',
+        element: <LazyWrapper><DatabaseSchemaPage /></LazyWrapper>,
+      },
+      {
+        path: 'database-schema/:productId',
+        element: <LazyWrapper><DatabaseSchemaPage /></LazyWrapper>,
+      },
+      {
+        path: 'architecture',
+        element: <LazyWrapper><ProjectArchitecturePage /></LazyWrapper>,
+      },
+      {
+        path: 'architecture/:productId',
+        element: <LazyWrapper><ProjectArchitecturePage /></LazyWrapper>,
       },
       {
         path: 'colaboradores',
@@ -390,6 +428,15 @@ export const router = createBrowserRouter([
     path: '*',
     element: <Navigate to="/" replace />,
   },
-]);
+], {
+  future: {
+    v7_startTransition: true,
+    v7_relativeSplatPath: true,
+    v7_fetcherPersist: true,
+    v7_normalizeFormMethod: true,
+    v7_partialHydration: true,
+    v7_skipActionErrorRevalidation: true,
+  }
+});
 
 export default router;

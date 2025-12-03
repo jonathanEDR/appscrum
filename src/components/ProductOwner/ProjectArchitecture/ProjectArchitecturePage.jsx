@@ -1,0 +1,370 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { 
+  ArrowLeft, 
+  BarChart3, 
+  Boxes, 
+  Package, 
+  Workflow, 
+  Plug, 
+  FileText, 
+  Settings,
+  AlertCircle,
+  Loader2,
+  FolderTree
+} from 'lucide-react';
+import useProjectArchitecture from '../../../hooks/useProjectArchitecture';
+import { useAuth } from '@clerk/clerk-react';
+import TechStackEditor from './TechStackTab/TechStackEditor';
+import { OverviewTab } from './OverviewTab';
+import { ModulesTab } from './ModulesTab';
+import { EndpointsTab } from './EndpointsTab';
+import { IntegrationsTab } from './IntegrationsTab';
+import { DecisionsTab } from './DecisionsTab';
+import { ConfigTab } from './ConfigTab';
+import { DirectoryStructureTab } from './DirectoryStructureTab';
+import { apiService } from '../../../services/apiService';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+
+const ProjectArchitecturePage = () => {
+  const { productId: urlProductId } = useParams();
+  const navigate = useNavigate();
+  const { getToken } = useAuth();
+  
+  const [selectedProductId, setSelectedProductId] = useState(urlProductId || '');
+  const [productos, setProductos] = useState([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [activeTab, setActiveTab] = useState('overview');
+
+  const {
+    architecture,
+    loading,
+    error,
+    successMessage,
+    stats,
+    createArchitecture,
+    updateArchitecture,
+    checkExists,
+    updateTechStack,
+    addModule,
+    updateModule,
+    deleteModule,
+    addEndpoint,
+    updateEndpoints,
+    addIntegration,
+    addDecision
+  } = useProjectArchitecture(selectedProductId, getToken);
+
+  // Cargar productos usando apiService
+  useEffect(() => {
+    const fetchProductos = async () => {
+      try {
+        const data = await apiService.request('/products', { method: 'GET' }, getToken);
+        setProductos(data.products || data || []);
+      } catch (err) {
+        console.error('Error al cargar productos:', err);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+
+    fetchProductos();
+  }, [getToken]);
+
+  // Actualizar URL cuando cambia el producto seleccionado
+  useEffect(() => {
+    if (selectedProductId && selectedProductId !== urlProductId) {
+      navigate(`/product_owner/architecture/${selectedProductId}`, { replace: true });
+    }
+  }, [selectedProductId, urlProductId, navigate]);
+
+  // Crear arquitectura inicial si no existe
+  const handleCreateArchitecture = async () => {
+    try {
+      await createArchitecture({
+        general: {
+          project_name: productos.find(p => p._id === selectedProductId)?.nombre || 'Nuevo Proyecto',
+          project_type: 'web_app',
+          description: '',
+          scale: 'small'
+        }
+      });
+    } catch (err) {
+      console.error('Error al crear arquitectura:', err);
+    }
+  };
+
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'tech-stack', label: 'Tech Stack', icon: Boxes },
+    { id: 'structure', label: 'Estructura', icon: FolderTree },
+    { id: 'modules', label: 'Módulos', icon: Package },
+    { id: 'endpoints', label: 'Endpoints', icon: Workflow },
+    { id: 'integrations', label: 'Integraciones', icon: Plug },
+    { id: 'decisions', label: 'Decisiones', icon: FileText },
+    { id: 'config', label: 'Configuración', icon: Settings }
+  ];
+
+  const getCompletenessColor = (score) => {
+    if (score >= 80) return 'text-green-600';
+    if (score >= 50) return 'text-yellow-600';
+    return 'text-red-600';
+  };
+
+  const selectedProduct = productos.find(p => p._id === selectedProductId);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 p-6">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="mb-6">
+          <button
+            onClick={() => navigate('/product_owner/productos')}
+            className="flex items-center text-gray-600 hover:text-gray-900 mb-4 transition-colors"
+          >
+            <ArrowLeft size={20} className="mr-2" />
+            Volver a Productos
+          </button>
+
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+                <Boxes className="text-blue-600" size={32} />
+                Arquitectura del Proyecto
+              </h1>
+              <p className="text-gray-600 mt-1">
+                Gestiona la arquitectura técnica completa de tu proyecto
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Selector de Producto */}
+        <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            Seleccionar Producto
+          </label>
+          <select
+            value={selectedProductId}
+            onChange={(e) => setSelectedProductId(e.target.value)}
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+            disabled={loadingProducts}
+          >
+            <option value="">Seleccione un producto...</option>
+            {productos.map((producto) => (
+              <option key={producto._id} value={producto._id}>
+                {producto.nombre}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Mensajes */}
+        {successMessage && (
+          <div className="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+            {successMessage}
+          </div>
+        )}
+
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-4 flex items-center gap-2">
+            <AlertCircle size={20} />
+            {error}
+          </div>
+        )}
+
+        {/* Contenido Principal */}
+        {!selectedProductId ? (
+          <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-200">
+            <Boxes size={64} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              Selecciona un Producto
+            </h3>
+            <p className="text-gray-500">
+              Elige un producto para gestionar su arquitectura
+            </p>
+          </div>
+        ) : loading ? (
+          <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-200">
+            <Loader2 size={48} className="mx-auto text-blue-600 animate-spin mb-4" />
+            <p className="text-gray-600">Cargando arquitectura...</p>
+          </div>
+        ) : !architecture ? (
+          <div className="bg-white rounded-xl shadow-md p-12 text-center border border-gray-200">
+            <Boxes size={64} className="mx-auto text-gray-400 mb-4" />
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              No hay arquitectura definida
+            </h3>
+            <p className="text-gray-500 mb-6">
+              Este producto aún no tiene una arquitectura configurada
+            </p>
+            <button
+              onClick={handleCreateArchitecture}
+              className="bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors font-medium"
+            >
+              Crear Arquitectura
+            </button>
+          </div>
+        ) : (
+          <>
+            {/* Stats Header */}
+            <div className="bg-white rounded-xl shadow-md p-6 mb-6 border border-gray-200">
+              <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+                {/* Completeness Score */}
+                <div className="text-center p-4 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg">
+                  <div className={`text-3xl font-bold ${getCompletenessColor(stats.completenessScore)}`}>
+                    {stats.completenessScore}%
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">Completitud</div>
+                </div>
+
+                {/* Módulos */}
+                <div className="text-center p-4 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg">
+                  <div className="text-3xl font-bold text-purple-600">
+                    {stats.totalModules}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">Módulos</div>
+                </div>
+
+                {/* Endpoints */}
+                <div className="text-center p-4 bg-gradient-to-br from-green-50 to-green-100 rounded-lg">
+                  <div className="text-3xl font-bold text-green-600">
+                    {stats.totalEndpoints}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">Endpoints</div>
+                </div>
+
+                {/* Integraciones */}
+                <div className="text-center p-4 bg-gradient-to-br from-orange-50 to-orange-100 rounded-lg">
+                  <div className="text-3xl font-bold text-orange-600">
+                    {stats.totalIntegrations}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">Integraciones</div>
+                </div>
+
+                {/* Decisiones */}
+                <div className="text-center p-4 bg-gradient-to-br from-pink-50 to-pink-100 rounded-lg">
+                  <div className="text-3xl font-bold text-pink-600">
+                    {stats.totalDecisions}
+                  </div>
+                  <div className="text-sm text-gray-600 mt-1">Decisiones</div>
+                </div>
+              </div>
+
+              {/* Metadata */}
+              <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between text-sm text-gray-600">
+                <div>
+                  <span className="font-medium">Proyecto:</span> {selectedProduct?.nombre}
+                </div>
+                <div>
+                  <span className="font-medium">Estado:</span>{' '}
+                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                    architecture.general?.status === 'active' ? 'bg-green-100 text-green-800' :
+                    architecture.general?.status === 'draft' ? 'bg-gray-100 text-gray-800' :
+                    'bg-blue-100 text-blue-800'
+                  }`}>
+                    {architecture.general?.status || 'draft'}
+                  </span>
+                </div>
+                <div>
+                  <span className="font-medium">Versión:</span> {architecture.general?.version || '1.0.0'}
+                </div>
+              </div>
+            </div>
+
+            {/* Tabs Navigation */}
+            <div className="bg-white rounded-t-xl shadow-md border border-b-0 border-gray-200 overflow-x-auto">
+              <div className="flex">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`flex items-center gap-2 px-6 py-4 font-medium transition-all whitespace-nowrap ${
+                        activeTab === tab.id
+                          ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                          : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      }`}
+                    >
+                      <Icon size={18} />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="bg-white rounded-b-xl shadow-md p-6 border border-gray-200 min-h-[400px]">
+              {activeTab === 'overview' && (
+                <OverviewTab 
+                  architecture={architecture}
+                  stats={stats}
+                />
+              )}
+              {activeTab === 'tech-stack' && (
+                <TechStackEditor 
+                  architecture={architecture}
+                  onSave={updateTechStack}
+                  loading={loading}
+                />
+              )}
+              {activeTab === 'structure' && (
+                <DirectoryStructureTab 
+                  architecture={architecture}
+                  onSave={updateArchitecture}
+                  loading={loading}
+                />
+              )}
+              {activeTab === 'modules' && (
+                <ModulesTab 
+                  architecture={architecture}
+                  onAddModule={addModule}
+                  onUpdateModule={updateModule}
+                  onDeleteModule={deleteModule}
+                  loading={loading}
+                />
+              )}
+              {activeTab === 'endpoints' && (
+                <EndpointsTab 
+                  architecture={architecture}
+                  onAddEndpoint={addEndpoint}
+                  onUpdateEndpoints={updateEndpoints}
+                  loading={loading}
+                />
+              )}
+              {activeTab === 'integrations' && (
+                <IntegrationsTab 
+                  architecture={architecture}
+                  onAddIntegration={addIntegration}
+                  onUpdateArchitecture={updateArchitecture}
+                  loading={loading}
+                />
+              )}
+              {activeTab === 'decisions' && (
+                <DecisionsTab 
+                  architecture={architecture}
+                  onAddDecision={addDecision}
+                  onUpdateArchitecture={updateArchitecture}
+                  loading={loading}
+                />
+              )}
+              {activeTab === 'config' && (
+                <ConfigTab 
+                  architecture={architecture}
+                  onUpdateArchitecture={updateArchitecture}
+                  loading={loading}
+                />
+              )}
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+};
+
+export default ProjectArchitecturePage;

@@ -11,7 +11,8 @@ import {
   X,
   Settings,
   Cloud,
-  GraduationCap
+  GraduationCap,
+  Bot
 } from 'lucide-react';
 import ThemeToggle from '../ThemeToggle';
 import LogoDisplay from '../LogoDisplay';
@@ -24,6 +25,8 @@ function SuperAdminSidebar({ onLogout, isOpen, onToggle }) {
     { id: 'dashboard', icon: Home, label: 'Gestión de Usuarios', path: '/super_admin/usuarios' },
     { id: 'cvs', icon: GraduationCap, label: 'Gestión de CVs', path: '/super_admin/cvs' },
     { id: 'cloudinary', icon: Cloud, label: 'Gestión de Cloudinary', path: '/super_admin/cloudinary' },
+    { id: 'ai-agents', icon: Bot, label: 'Agentes AI', path: '/super_admin/ai-agents', badge: 'Nuevo' },
+    { id: 'scrum-ai', icon: Bot, label: 'SCRUM AI', path: '/super_admin/scrum-ai', badge: 'Beta' },
     { id: 'config', icon: Settings, label: 'Configuración', path: '/super_admin/configuracion' },
     { id: 'history', icon: History, label: 'Historial', path: '/super_admin/historial' },
     { id: 'profile', icon: UserCog, label: 'Mi Perfil', path: '/super_admin/perfil' },
@@ -122,7 +125,12 @@ function SuperAdminSidebar({ onLogout, isOpen, onToggle }) {
                   >
                     <Icon size={18} className={active ? 'sidebar-button-text-active' : 'sidebar-button-text'} />
                   </div>
-                  <span className="text-sm font-medium">{item.label}</span>
+                  <span className="text-sm font-medium flex-1">{item.label}</span>
+                  {item.badge && (
+                    <span className="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-sm">
+                      {item.badge}
+                    </span>
+                  )}
                 </button>
               );
             })}
