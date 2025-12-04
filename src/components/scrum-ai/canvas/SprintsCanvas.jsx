@@ -13,12 +13,16 @@ import {
 
 const STATUS_CONFIG = {
   planning: { icon: Calendar, color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-800', label: 'Planificación' },
+  planificado: { icon: Calendar, color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-800', label: 'Planificación' },
   active: { icon: PlayCircle, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/20', label: 'Activo' },
+  activo: { icon: PlayCircle, color: 'text-emerald-500', bg: 'bg-emerald-100 dark:bg-emerald-900/20', label: 'Activo' },
   completed: { icon: CheckCircle2, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/20', label: 'Completado' },
-  cancelled: { icon: PauseCircle, color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/20', label: 'Cancelado' }
+  completado: { icon: CheckCircle2, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/20', label: 'Completado' },
+  cancelled: { icon: PauseCircle, color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/20', label: 'Cancelado' },
+  cancelado: { icon: PauseCircle, color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/20', label: 'Cancelado' }
 };
 
-export const SprintsCanvas = ({ data = [], metadata, isExpanded, onItemClick }) => {
+export const SprintsCanvas = ({ data = [], metadata, isExpanded, selectedSprint, onItemClick }) => {
   const formatDate = (dateString) => {
     if (!dateString) return 'N/A';
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -57,18 +61,37 @@ export const SprintsCanvas = ({ data = [], metadata, isExpanded, onItemClick }) 
           const statusConfig = STATUS_CONFIG[sprint.estado] || STATUS_CONFIG.planning;
           const StatusIcon = statusConfig.icon;
           const progress = calculateProgress(sprint);
+          
+          // Comparación robusta de IDs
+          const sprintId = sprint._id || sprint.id;
+          const selectedId = selectedSprint?._id || selectedSprint?.id;
+          const isSelected = !!(selectedSprint && sprintId && selectedId && String(sprintId) === String(selectedId));
 
           return (
             <div 
-              key={sprint._id || sprint.id || index}
-              onClick={() => onItemClick?.(sprint)}
-              className="p-4 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md transition-all cursor-pointer"
+              key={sprintId || index}
+              onClick={(e) => {
+                e.stopPropagation();
+                onItemClick?.(sprint);
+              }}
+              className={`p-4 rounded-xl border transition-all cursor-pointer ${
+                isSelected 
+                  ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 ring-2 ring-indigo-500/50 shadow-lg' 
+                  : 'border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-md'
+              }`}
             >
               <div className="flex items-start justify-between mb-3">
                 <div>
-                  <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
-                    {sprint.nombre || `Sprint ${sprint.numero || index + 1}`}
-                  </h4>
+                  <div className="flex items-center gap-2">
+                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white">
+                      {sprint.nombre || `Sprint ${sprint.numero || index + 1}`}
+                    </h4>
+                    {isSelected && (
+                      <span className="px-1.5 py-0.5 rounded text-[10px] bg-indigo-500 text-white font-medium">
+                        Seleccionado
+                      </span>
+                    )}
+                  </div>
                   <p className="text-xs text-gray-500 mt-0.5">
                     {formatDate(sprint.fecha_inicio)} - {formatDate(sprint.fecha_fin)}
                   </p>

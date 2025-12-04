@@ -28,7 +28,9 @@ export const ScrumAILayout = () => {
     activeConversation,
     canvasData,
     selectedProduct,
+    selectedSprint,
     selectProduct,
+    selectSprint,
     closeCanvas,
     refreshCanvas,
     openCanvas,
@@ -148,6 +150,7 @@ export const ScrumAILayout = () => {
           onOpenCanvas={handleOpenCanvas}
           onSendMessage={sendMessage}
           selectedProduct={selectedProduct}
+          selectedSprint={selectedSprint}
         />
 
         {/* Chat Input - Siempre visible */}
@@ -164,7 +167,9 @@ export const ScrumAILayout = () => {
         <CanvasPanel
           canvasData={canvasData}
           selectedProduct={selectedProduct}
+          selectedSprint={selectedSprint}
           onSelectProduct={selectProduct}
+          onSelectSprint={selectSprint}
           onClose={closeCanvas}
           onRefresh={refreshCanvas}
           isLoading={isLoading}

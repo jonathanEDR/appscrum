@@ -20,7 +20,9 @@ const ModalBacklogItem = ({
   productos, 
   usuarios, 
   sprints, 
-  onSuccess 
+  onSuccess,
+  onProductChange,
+  loadingSprints 
 }) => {
   const { getToken } = useAuth();
   const { theme } = useTheme();
@@ -170,6 +172,20 @@ const ModalBacklogItem = ({
       ...formData,
       criterios_aceptacion: [...formData.criterios_aceptacion, { descripcion: '', completado: false }]
     });
+  };
+
+  // ✅ Manejar cambio de producto - cargar sprints del producto seleccionado
+  const handleProductoChange = (productId) => {
+    setFormData({ 
+      ...formData, 
+      producto: productId,
+      sprint: '' // Resetear sprint cuando cambia el producto
+    });
+    
+    // Llamar a la función del padre para cargar los sprints
+    if (onProductChange) {
+      onProductChange(productId);
+    }
   };
 
   const removeCriterio = (index) => {
@@ -380,7 +396,7 @@ const ModalBacklogItem = ({
               </label>
               <select
                 value={formData.producto}
-                onChange={(e) => setFormData({ ...formData, producto: e.target.value })}
+                onChange={(e) => handleProductoChange(e.target.value)}
                 className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                   theme === 'dark' 
                     ? 'bg-gray-700 border-gray-600 text-white' 
@@ -410,6 +426,9 @@ const ModalBacklogItem = ({
               }`}>
                 <Calendar className="h-4 w-4 inline mr-1" />
                 Sprint
+                {loadingSprints && (
+                  <span className="ml-2 inline-block animate-spin">⟳</span>
+                )}
               </label>
               <select
                 value={formData.sprint}
@@ -419,14 +438,28 @@ const ModalBacklogItem = ({
                     ? 'bg-gray-700 border-gray-600 text-white' 
                     : 'bg-white border-gray-300 text-gray-900'
                 }`}
+                disabled={loadingSprints || !formData.producto}
               >
-                <option value="">Sin asignar</option>
+                <option value="">
+                  {!formData.producto 
+                    ? 'Seleccione un producto primero' 
+                    : loadingSprints 
+                      ? 'Cargando sprints...' 
+                      : 'Sin asignar'}
+                </option>
                 {(sprints || []).map(sprint => (
                   <option key={sprint._id} value={sprint._id}>
                     {sprint.nombre} ({sprint.estado})
                   </option>
                 ))}
               </select>
+              {formData.producto && !loadingSprints && sprints.length === 0 && (
+                <p className={`text-xs mt-1 ${
+                  theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                }`}>
+                  No hay sprints disponibles para este producto
+                </p>
+              )}
             </div>
           </div>
 

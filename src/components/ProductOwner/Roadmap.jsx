@@ -309,6 +309,29 @@ const Roadmap = () => {
     }
   };
 
+  const eliminarSprint = async (id) => {
+    if (!confirm('¿Está seguro de eliminar este sprint? Esta acción no se puede deshacer.')) return;
+
+    try {
+      const token = await getToken();
+      const response = await fetch(`${API_BASE_URL}/sprints/${id}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Error al eliminar sprint');
+      }
+
+      await cargarReleases();
+      addAlert('Sprint eliminado exitosamente', 'success');
+    } catch (error) {
+      console.error('Error eliminando sprint:', error);
+      addAlert(error.message || 'Error al eliminar sprint', 'error');
+    }
+  };
+
   const manejarCambioVersion = async (datosVersion) => {
     try {
       const token = await getToken();
@@ -672,6 +695,7 @@ const Roadmap = () => {
               onEditRelease={setEditingRelease}
               onDeleteRelease={eliminarRelease}
               onEditSprint={setEditingSprint}
+              onDeleteSprint={eliminarSprint}
               onSprintAction={cambiarEstadoSprint}
               onReleaseAction={cambiarEstadoRelease}
               onShowBurndown={setShowBurndown}
@@ -686,6 +710,7 @@ const Roadmap = () => {
               onEditRelease={setEditingRelease}
               onDeleteRelease={eliminarRelease}
               onEditSprint={setEditingSprint}
+              onDeleteSprint={eliminarSprint}
               onSprintAction={cambiarEstadoSprint}
               onReleaseAction={cambiarEstadoRelease}
               onShowHistory={setShowHistory}
@@ -799,6 +824,7 @@ const TimelineView = ({
   onEditRelease, 
   onDeleteRelease,
   onEditSprint,
+  onDeleteSprint,
   onSprintAction,
   getEstadoColor, 
   formatearFecha,
@@ -907,6 +933,7 @@ const TimelineView = ({
                     key={sprint._id}
                     sprint={sprint}
                     onEdit={onEditSprint}
+                    onDelete={onDeleteSprint}
                     onAction={onSprintAction}
                     onShowBurndown={setShowBurndown}
                     getEstadoColor={getEstadoColor}
@@ -936,6 +963,7 @@ const TimelineView = ({
                       key={sprint._id}
                       sprint={sprint}
                       onEdit={onEditSprint}
+                      onDelete={onDeleteSprint}
                       onAction={onSprintAction}
                       onShowBurndown={setShowBurndown}
                       getEstadoColor={getEstadoColor}
@@ -979,6 +1007,7 @@ const TimelineView = ({
                       key={sprint._id}
                       sprint={sprint}
                       onEdit={onEditSprint}
+                      onDelete={onDeleteSprint}
                       onAction={onSprintAction}
                       onShowBurndown={setShowBurndown}
                       getEstadoColor={getEstadoColor}
@@ -1003,6 +1032,7 @@ const KanbanView = ({
   onEditRelease, 
   onDeleteRelease,
   onEditSprint,
+  onDeleteSprint,
   onSprintAction,
   onReleaseAction,
   onShowHistory,
@@ -1198,7 +1228,8 @@ const KanbanView = ({
 // Componente SprintCard
 const SprintCard = ({ 
   sprint, 
-  onEdit, 
+  onEdit,
+  onDelete,
   onAction,
   onShowBurndown, 
   getEstadoColor, 
@@ -1257,9 +1288,23 @@ const SprintCard = ({
                 ? 'text-gray-400 hover:text-blue-400'
                 : 'text-gray-600 hover:text-blue-600'
             }`}
+            title="Editar sprint"
           >
             <Edit size={14} />
           </button>
+          {onDelete && (
+            <button
+              onClick={() => onDelete(sprint._id)}
+              className={`p-1 ${
+                theme === 'dark'
+                  ? 'text-gray-400 hover:text-red-400'
+                  : 'text-gray-600 hover:text-red-600'
+              }`}
+              title="Eliminar sprint"
+            >
+              <Trash2 size={14} />
+            </button>
+          )}
         </div>
       </div>
       

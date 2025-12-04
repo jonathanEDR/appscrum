@@ -13,7 +13,10 @@ export const ChatPanel = ({ chatHook }) => {
     isLoading,
     isTyping,
     selectedProduct,
+    selectedSprint,
     selectProduct,
+    selectSprint,
+    deselectSprint,
     sendMessage,
     clearHistory,
     openCanvas,
@@ -95,6 +98,7 @@ export const ChatPanel = ({ chatHook }) => {
         onOpenCanvas={openCanvas}
         onSendMessage={sendMessage}
         selectedProduct={selectedProduct}
+        selectedSprint={selectedSprint}
       />
 
       {/* Quick Actions - Solo si hay producto seleccionado */}
@@ -102,6 +106,8 @@ export const ChatPanel = ({ chatHook }) => {
         hasArchitecture={hasArchitecture}
         showEditSections={showEditSections}
         selectedProduct={selectedProduct}
+        selectedSprint={selectedSprint}
+        onDeselectSprint={deselectSprint}
         onAction={handleQuickAction}
       />
 

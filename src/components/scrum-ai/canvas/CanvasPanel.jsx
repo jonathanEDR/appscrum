@@ -38,7 +38,9 @@ const CANVAS_COMPONENTS = {
 export const CanvasPanel = ({ 
   canvasData, 
   selectedProduct,
+  selectedSprint,
   onSelectProduct,
+  onSelectSprint,
   onClose, 
   onRefresh,
   isLoading = false,
@@ -71,6 +73,21 @@ export const CanvasPanel = ({
     // Si es un producto, seleccionarlo además de abrir modal
     if (type === 'products' && onSelectProduct) {
       onSelectProduct(item);
+    }
+    
+    // Si es un sprint, toggle selection (si ya está seleccionado, deseleccionar)
+    if (type === 'sprints' && onSelectSprint) {
+      const currentId = selectedSprint?._id || selectedSprint?.id;
+      const clickedId = item._id || item.id;
+      
+      if (currentId && String(currentId) === String(clickedId)) {
+        // Si es el mismo sprint, deseleccionar
+        onSelectSprint(null);
+      } else {
+        // Seleccionar el nuevo sprint
+        onSelectSprint(item);
+      }
+      return; // No abrir modal para sprints
     }
     
     // Solo abrir modal si es doble clic (shouldOpenModal = true)
@@ -211,6 +228,7 @@ export const CanvasPanel = ({
               metadata={metadata}
               isExpanded={isExpanded}
               selectedProduct={selectedProduct}
+              selectedSprint={selectedSprint}
               onItemClick={handleItemClick}
               onArchitectureAction={onArchitectureAction}
             />

@@ -10,6 +10,7 @@ const TimelineWithMilestones = ({
   onEditRelease, 
   onDeleteRelease,
   onEditSprint,
+  onDeleteSprint,
   onSprintAction,
   onShowBurndown,
   getEstadoColor, 
@@ -315,11 +316,42 @@ const TimelineWithMilestones = ({
                           
                           return (
                             <div key={sprint._id} className="space-y-3">
-                              {/* Sprint Metrics Card */}
-                              <SprintMetrics 
-                                sprint={{...sprint, release_nombre: release.nombre}} 
-                                onShowBurndown={onShowBurndown}
-                              />
+                              {/* Sprint Metrics Card con botones de acción */}
+                              <div className="relative">
+                                <SprintMetrics 
+                                  sprint={{...sprint, release_nombre: release.nombre}} 
+                                  onShowBurndown={onShowBurndown}
+                                />
+                                {/* Botones de editar y eliminar */}
+                                <div className="absolute top-2 right-2 flex gap-1">
+                                  {onEditSprint && (
+                                    <button
+                                      onClick={() => onEditSprint(sprint)}
+                                      className={`p-1.5 rounded-lg transition-colors ${
+                                        theme === 'dark'
+                                          ? 'text-gray-400 hover:text-blue-400 hover:bg-gray-700'
+                                          : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
+                                      }`}
+                                      title="Editar sprint"
+                                    >
+                                      <Edit size={14} />
+                                    </button>
+                                  )}
+                                  {onDeleteSprint && (
+                                    <button
+                                      onClick={() => onDeleteSprint(sprint._id)}
+                                      className={`p-1.5 rounded-lg transition-colors ${
+                                        theme === 'dark'
+                                          ? 'text-gray-400 hover:text-red-400 hover:bg-gray-700'
+                                          : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
+                                      }`}
+                                      title="Eliminar sprint"
+                                    >
+                                      <Trash2 size={14} />
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
                               
                               {/* 🔥 NUEVO: Resumen de tareas del sprint */}
                               {sprintTasks && (
@@ -381,11 +413,42 @@ const TimelineWithMilestones = ({
                     
                     return (
                       <div key={sprint._id} className="space-y-3">
-                        {/* Sprint Metrics Card */}
-                        <SprintMetrics 
-                          sprint={sprint} 
-                          onShowBurndown={onShowBurndown}
-                        />
+                        {/* Sprint Metrics Card con botones de acción */}
+                        <div className="relative">
+                          <SprintMetrics 
+                            sprint={sprint} 
+                            onShowBurndown={onShowBurndown}
+                          />
+                          {/* Botones de editar y eliminar */}
+                          <div className="absolute top-2 right-2 flex gap-1">
+                            {onEditSprint && (
+                              <button
+                                onClick={() => onEditSprint(sprint)}
+                                className={`p-1.5 rounded-lg transition-colors ${
+                                  theme === 'dark'
+                                    ? 'text-gray-400 hover:text-blue-400 hover:bg-gray-700'
+                                    : 'text-gray-500 hover:text-blue-600 hover:bg-blue-50'
+                                }`}
+                                title="Editar sprint"
+                              >
+                                <Edit size={14} />
+                              </button>
+                            )}
+                            {onDeleteSprint && (
+                              <button
+                                onClick={() => onDeleteSprint(sprint._id)}
+                                className={`p-1.5 rounded-lg transition-colors ${
+                                  theme === 'dark'
+                                    ? 'text-gray-400 hover:text-red-400 hover:bg-gray-700'
+                                    : 'text-gray-500 hover:text-red-600 hover:bg-red-50'
+                                }`}
+                                title="Eliminar sprint"
+                              >
+                                <Trash2 size={14} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
                         
                         {/* 🔥 NUEVO: Resumen de tareas del sprint */}
                         {sprintTasks && (

@@ -9,7 +9,7 @@ import { ChatMessage } from './ChatMessage';
 import { TypingIndicator } from './TypingIndicator';
 import { WelcomeChat } from './WelcomeChat';
 
-export const ChatContainer = ({ messages, isTyping, onClearHistory, onOpenCanvas, onSendMessage, selectedProduct }) => {
+export const ChatContainer = ({ messages, isTyping, onClearHistory, onOpenCanvas, onSendMessage, selectedProduct, selectedSprint }) => {
   const messagesEndRef = useRef(null);
   const containerRef = useRef(null);
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -54,6 +54,8 @@ export const ChatContainer = ({ messages, isTyping, onClearHistory, onOpenCanvas
               message={message} 
               onOpenCanvas={onOpenCanvas}
               onSendMessage={onSendMessage}
+              selectedProduct={selectedProduct}
+              selectedSprint={selectedSprint}
             />
           ))}
         </div>

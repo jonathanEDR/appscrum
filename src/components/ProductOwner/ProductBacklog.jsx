@@ -289,10 +289,18 @@ const ProductBacklog = () => {
 
   // Función para cargar sprints de un producto específico
   const cargarSprintsDelProducto = async (productId) => {
+    if (!productId) {
+      setSprints([]);
+      return;
+    }
+    
     try {
       setLoadingSprints(true);
-      const response = await apiService.get(`/api/sprints?producto=${productId}`);
-      setSprints(response.data || []);
+      const token = await getToken();
+      const response = await apiService.get(`/api/sprints?producto=${productId}`, token);
+      // ✅ Corregido: La respuesta del backend tiene estructura { sprints: [...], pagination: {...} }
+      setSprints(response.sprints || []);
+      console.log('Sprints cargados para producto:', productId, response.sprints?.length || 0);
     } catch (error) {
       console.error('Error cargando sprints:', error);
       setSprints([]);
@@ -868,6 +876,8 @@ const ProductBacklog = () => {
         usuarios={usuarios}
         sprints={sprints}
         onSuccess={handleModalSuccess}
+        onProductChange={cargarSprintsDelProducto}
+        loadingSprints={loadingSprints}
       />
     </div>
   );

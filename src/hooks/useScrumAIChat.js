@@ -18,6 +18,7 @@ export const useScrumAIChat = () => {
   const [activeConversation, setActiveConversation] = useState(null);
   const [canvasData, setCanvasData] = useState(null); // Estado para el canvas
   const [selectedProduct, setSelectedProduct] = useState(null); // Producto seleccionado
+  const [selectedSprint, setSelectedSprint] = useState(null); // Sprint seleccionado
   const [hasArchitecture, setHasArchitecture] = useState(false); // Si el producto tiene arquitectura
   const [showEditSections, setShowEditSections] = useState(false); // Mostrar secciones de edición
   const [activeEditSection, setActiveEditSection] = useState(null); // Sección activa de edición (structure, database, endpoints, modules)
@@ -167,11 +168,32 @@ También puedes seleccionar un producto desde el panel lateral.`,
     try {
       const token = await getToken();
       
-      // Llamar al backend con session_id y producto seleccionado
+      // Obtener sprint seleccionado desde localStorage
+      const sprintFromStorage = JSON.parse(localStorage.getItem('scrum_ai_selected_sprint') || 'null');
+      const currentSprint = sprintFromStorage || selectedSprint;
+      
+      // ✅ MEJORADO: Obtener producto del sprint si no hay producto seleccionado
+      let effectiveProduct = productFromStorage || selectedProduct;
+      
+      if (!effectiveProduct && currentSprint?.producto) {
+        // El sprint tiene producto asociado
+        if (typeof currentSprint.producto === 'object' && currentSprint.producto._id) {
+          effectiveProduct = currentSprint.producto;
+        } else if (typeof currentSprint.producto === 'string') {
+          // Solo tenemos el ID, crear objeto mínimo
+          effectiveProduct = { _id: currentSprint.producto, nombre: `Producto ${currentSprint.producto.substring(0, 8)}...` };
+        }
+      }
+      
+      // Llamar al backend con session_id, producto y sprint seleccionado
       const enhancedContext = {
         ...(context || {}),
-        product_id: productFromStorage?._id || selectedProduct?._id,
-        product_name: productFromStorage?.nombre || selectedProduct?.nombre
+        product_id: effectiveProduct?._id,
+        product_name: effectiveProduct?.nombre,
+        // Agregar contexto del sprint si está seleccionado
+        sprint_id: currentSprint?._id,
+        sprint_name: currentSprint?.nombre,
+        sprint_objetivo: currentSprint?.objetivo
       };
       
       const response = await scrumAIService.chat(token, {
@@ -288,7 +310,7 @@ También puedes seleccionar un producto desde el panel lateral.`,
     } finally {
       setIsLoading(false);
     }
-  }, [getToken, context, isLoading, selectedProduct, activeConversation, activeEditSection]);
+  }, [getToken, context, isLoading, selectedProduct, selectedSprint, activeConversation, activeEditSection]);
 
   // Limpiar historial
   const clearHistory = useCallback(() => {
@@ -353,6 +375,7 @@ También puedes seleccionar un producto desde el panel lateral.`,
   // Seleccionar producto
   const selectProduct = useCallback((product) => {
     setSelectedProduct(product);
+    setSelectedSprint(null); // Reset sprint cuando cambia producto
     setShowEditSections(false); // Reset edit sections view
     setActiveEditSection(null); // Reset edit section
     
@@ -365,6 +388,49 @@ También puedes seleccionar un producto desde el panel lateral.`,
       setHasArchitecture(false);
     }
   }, [checkArchitecture]);
+
+  // Seleccionar sprint
+  const selectSprint = useCallback((sprint) => {
+    setSelectedSprint(sprint);
+    
+    if (sprint) {
+      localStorage.setItem('scrum_ai_selected_sprint', JSON.stringify(sprint));
+      
+      // Si el sprint tiene producto asociado, seleccionarlo automáticamente
+      if (sprint.producto) {
+        const productData = typeof sprint.producto === 'object' 
+          ? sprint.producto 
+          : { _id: sprint.producto }; // Si solo viene el ID
+        
+        // Validar que el _id sea un ObjectId válido (24 caracteres hex)
+        const isValidObjectId = (id) => id && typeof id === 'string' && /^[a-f\d]{24}$/i.test(id);
+        const sprintProductId = productData._id || productData;
+        
+        // Solo procesar si tenemos un ID válido
+        if (isValidObjectId(sprintProductId)) {
+          // Solo actualizar si no hay producto seleccionado o es diferente
+          const currentProduct = JSON.parse(localStorage.getItem('scrum_ai_selected_product') || 'null');
+          
+          if (!currentProduct || currentProduct._id !== sprintProductId) {
+            // Si el producto viene poblado (con nombre), usarlo directamente
+            if (productData.nombre) {
+              setSelectedProduct(productData);
+              localStorage.setItem('scrum_ai_selected_product', JSON.stringify(productData));
+              checkArchitecture(productData._id);
+            }
+          }
+        }
+      }
+    } else {
+      localStorage.removeItem('scrum_ai_selected_sprint');
+    }
+  }, [checkArchitecture]);
+
+  // Deseleccionar sprint
+  const deselectSprint = useCallback(() => {
+    setSelectedSprint(null);
+    localStorage.removeItem('scrum_ai_selected_sprint');
+  }, []);
 
   // Toggle secciones de edición
   const toggleEditSections = useCallback(() => {
@@ -488,6 +554,7 @@ También puedes seleccionar un producto desde el panel lateral.`,
     activeConversation,
     canvasData,
     selectedProduct,
+    selectedSprint,         // ✅ Sprint seleccionado
     hasArchitecture,        // ✅ Si tiene arquitectura
     showEditSections,       // ✅ Mostrar secciones de edición
     activeEditSection,      // ✅ Sección activa de edición
@@ -497,6 +564,8 @@ También puedes seleccionar un producto desde el panel lateral.`,
     loadConversation,
     startNewConversation,
     selectProduct,
+    selectSprint,           // ✅ Seleccionar sprint
+    deselectSprint,         // ✅ Deseleccionar sprint
     closeCanvas,
     refreshCanvas,
     openCanvas,
